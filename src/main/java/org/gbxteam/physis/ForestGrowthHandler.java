@@ -27,6 +27,7 @@ package org.gbxteam.physis;
 //#if MC >= 260100
 //$$ import net.minecraft.core.BlockPos;
 //$$ import net.minecraft.core.registries.BuiltInRegistries;
+//$$ import net.minecraft.resources.ResourceLocation;
 //$$ import net.minecraft.server.level.ServerLevel;
 //$$ import net.minecraft.util.RandomSource;
 //$$ import net.minecraft.world.level.block.Block;
@@ -106,7 +107,7 @@ public class ForestGrowthHandler {
 //$$        
 //$$        if (!woodType.isEmpty()) {
 //$$            return Optional.ofNullable(BuiltInRegistries.BLOCK.get(
-//$$                net.minecraft.resources.ResourceLocation.withDefaultNamespace(woodType + "_sapling")
+//$$                ResourceLocation.fromNamespaceAndPath("minecraft", woodType + "_sapling")
 //$$            ));
 //$$        }
 //$$        return Optional.empty();
