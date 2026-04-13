@@ -27,14 +27,12 @@ package org.gbxteam.physis;
 //#if MC >= 260100
 //$$ import net.minecraft.core.BlockPos;
 //$$ import net.minecraft.core.registries.BuiltInRegistries;
-//$$ import net.minecraft.resources.ResourceLocation;
 //$$ import net.minecraft.server.level.ServerLevel;
 //$$ import net.minecraft.util.RandomSource;
 //$$ import net.minecraft.world.level.block.Block;
 //$$ import net.minecraft.world.level.block.Blocks;
 //$$ import net.minecraft.world.level.block.LeavesBlock;
 //$$ import net.minecraft.world.level.block.RotatedPillarBlock;
-//$$ import net.minecraft.world.level.block.SaplingBlock;
 //$$ import net.minecraft.world.level.block.state.BlockState;
 //$$ import java.util.Optional;
 //#endif
@@ -94,22 +92,18 @@ public class ForestGrowthHandler {
 //$$
 //$$    private static Optional<Block> getRelatedSapling(Block forestBlock) {
 //$$        String name = BuiltInRegistries.BLOCK.getKey(forestBlock).getPath();
-//$$        String woodType = "";
 //$$        
-//$$        if (name.contains("oak")) woodType = "oak";
-//$$        else if (name.contains("spruce")) woodType = "spruce";
-//$$        else if (name.contains("birch")) woodType = "birch";
-//$$        else if (name.contains("jungle")) woodType = "jungle";
-//$$        else if (name.contains("acacia")) woodType = "acacia";
-//$$        else if (name.contains("dark_oak")) woodType = "dark_oak";
-//$$        else if (name.contains("cherry")) woodType = "cherry";
-//$$        else if (name.contains("mangrove")) woodType = "mangrove";
-//$$        
-//$$        if (!woodType.isEmpty()) {
-//$$            return Optional.ofNullable(BuiltInRegistries.BLOCK.get(
-//$$                ResourceLocation.fromNamespaceAndPath("minecraft", woodType + "_sapling")
-//$$            ));
+//$$        if (name.contains("oak")) {
+//$$            if (name.contains("dark_oak")) return Optional.of(Blocks.DARK_OAK_SAPLING);
+//$$            return Optional.of(Blocks.OAK_SAPLING);
 //$$        }
+//$$        if (name.contains("spruce")) return Optional.of(Blocks.SPRUCE_SAPLING);
+//$$        if (name.contains("birch")) return Optional.of(Blocks.BIRCH_SAPLING);
+//$$        if (name.contains("jungle")) return Optional.of(Blocks.JUNGLE_SAPLING);
+//$$        if (name.contains("acacia")) return Optional.of(Blocks.ACACIA_SAPLING);
+//$$        if (name.contains("cherry")) return Optional.of(Blocks.CHERRY_SAPLING);
+//$$        if (name.contains("mangrove")) return Optional.of(Blocks.MANGROVE_PROPAGULE);
+//$$        
 //$$        return Optional.empty();
 //$$    }
     //#else
