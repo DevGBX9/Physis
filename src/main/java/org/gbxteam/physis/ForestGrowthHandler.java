@@ -54,7 +54,6 @@ public class ForestGrowthHandler {
 //$$                    findNearbyForestType(level, targetPos, 2, 10).ifPresent(sapling -> {
 //$$                        level.setBlock(targetPos, sapling.defaultBlockState(), 3);
 //$$                        
-//$$                        // Modern and Stable: Transform Biome using fillbiome command logic
 //$$                        getRelatedBiomeKey(sapling).ifPresent(biomeKey -> {
 //$$                            executeFillBiome(level, targetPos, biomeKey);
 //$$                        });
@@ -69,13 +68,15 @@ public class ForestGrowthHandler {
 //$$        BlockPos min = pos.offset(-radius, -2, -radius);
 //$$        BlockPos max = pos.offset(radius, 2, radius);
 //$$        
-//$$        String biomeName = biomeKey.location().toString();
+//$$        // Final and mapping-independent way to get the biome ID from ResourceKey
+//$$        String keyStr = biomeKey.toString(); // e.g., "ResourceKey[minecraft:worldgen/biome / minecraft:forest]"
+//$$        String biomeName = keyStr.substring(keyStr.lastIndexOf("/") + 1, keyStr.length() - 1).trim();
+//$$        
 //$$        String command = String.format("fillbiome %d %d %d %d %d %d %s", 
 //$$            min.getX(), min.getY(), min.getZ(), 
 //$$            max.getX(), max.getY(), max.getZ(), 
 //$$            biomeName);
 //$$
-//$$        // Run the command silently from the server
 //$$        level.getServer().getCommands().performPrefixedCommand(
 //$$            level.getServer().createCommandSourceStack().withLevel(level).withSuppressedOutput(), 
 //$$            command);
