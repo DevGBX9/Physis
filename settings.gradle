@@ -1,6 +1,3 @@
-rootProject.name = 'Physis'
-import groovy.json.JsonSlurper
-
 pluginManagement {
 	repositories {
 		maven {
@@ -27,6 +24,9 @@ pluginManagement {
 	}
 }
 
+rootProject.name = 'Physis'
+
+import groovy.json.JsonSlurper
 def settings = new JsonSlurper().parseText(file('settings.json').text)
 for (String version : settings.versions) {
 	include(":$version")
