@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "id": "${id}",
+  "version": "${version}",
+
+  "name": "${name}",
+  "description": "A Minecraft mod dedicated to the dynamic growth and expansion of forests.",
+  "authors": [
+    "GBX Team"
+  ],
+  "contact": {
+    "homepage": "https://modrinth.com/project/physis",
+    "sources": "https://github.com/DevGBX9/Physis",
+    "issues": "https://github.com/DevGBX9/Physis/issues"
+  },
+  "license": "MIT",
+
+  "icon": "icon.png",
+
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "org.gbxteam.physis.Physis"
+    ]
+  },
+  "mixins": [
+    "physis.mixins.json"
+  ],
+
+  "depends": {
+    "fabricloader": ">=0.11.4",
+    "minecraft": "${minecraft_dependency}"
+  }
+}
