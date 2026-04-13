@@ -10,9 +10,6 @@
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
  *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -26,9 +23,7 @@ package org.gbxteam.physis;
 
 //#if MC >= 260100
 //$$ import net.minecraft.core.BlockPos;
-//$$ import net.minecraft.core.Holder;
 //$$ import net.minecraft.core.registries.BuiltInRegistries;
-//$$ import net.minecraft.core.registries.Registries;
 //$$ import net.minecraft.resources.ResourceKey;
 //$$ import net.minecraft.server.level.ServerLevel;
 //$$ import net.minecraft.util.RandomSource;
@@ -39,10 +34,7 @@ package org.gbxteam.physis;
 //$$ import net.minecraft.world.level.block.LeavesBlock;
 //$$ import net.minecraft.world.level.block.RotatedPillarBlock;
 //$$ import net.minecraft.world.level.block.state.BlockState;
-//$$ import net.minecraft.world.level.chunk.ChunkAccess;
 //$$ import java.util.Optional;
-//$$ import java.util.HashSet;
-//$$ import java.util.Set;
 //#endif
 
 public class ForestGrowthHandler {
@@ -62,9 +54,9 @@ public class ForestGrowthHandler {
 //$$                    findNearbyForestType(level, targetPos, 2, 10).ifPresent(sapling -> {
 //$$                        level.setBlock(targetPos, sapling.defaultBlockState(), 3);
 //$$                        
-//$$                        // New Feature: Transform Biome
-//$$                        getRelatedBiome(sapling).ifPresent(biomeKey -> {
-//$$                            transformBiomeArea(level, targetPos, biomeKey);
+//$$                        // Modern and Stable: Transform Biome using fillbiome command logic
+//$$                        getRelatedBiomeKey(sapling).ifPresent(biomeKey -> {
+//$$                            executeFillBiome(level, targetPos, biomeKey);
 //$$                        });
 //$$                    });
 //$$                }
@@ -72,10 +64,26 @@ public class ForestGrowthHandler {
 //$$        });
 //$$    }
 //$$
+//$$    private static void executeFillBiome(ServerLevel level, BlockPos pos, ResourceKey<Biome> biomeKey) {
+//$$        int radius = 5;
+//$$        BlockPos min = pos.offset(-radius, -2, -radius);
+//$$        BlockPos max = pos.offset(radius, 2, radius);
+//$$        
+//$$        String biomeName = biomeKey.location().toString();
+//$$        String command = String.format("fillbiome %d %d %d %d %d %d %s", 
+//$$            min.getX(), min.getY(), min.getZ(), 
+//$$            max.getX(), max.getY(), max.getZ(), 
+//$$            biomeName);
+//$$
+//$$        // Run the command silently from the server
+//$$        level.getServer().getCommands().performPrefixedCommand(
+//$$            level.getServer().createCommandSourceStack().withLevel(level).withSuppressedOutput(), 
+//$$            command);
+//$$    }
+//$$
 //$$    private static boolean isSuitableForSapling(ServerLevel level, BlockPos pos) {
 //$$        BlockState state = level.getBlockState(pos);
 //$$        BlockState ground = level.getBlockState(pos.below());
-//$$        // Allowed ground: Grass, Dirt, Moss, Nylium (for nether)
 //$$        return state.isAir() && (
 //$$            ground.is(Blocks.GRASS_BLOCK) || 
 //$$            ground.is(Blocks.DIRT) || 
@@ -125,7 +133,7 @@ public class ForestGrowthHandler {
 //$$        return Optional.empty();
 //$$    }
 //$$
-//$$    private static Optional<ResourceKey<Biome>> getRelatedBiome(Block sapling) {
+//$$    private static Optional<ResourceKey<Biome>> getRelatedBiomeKey(Block sapling) {
 //$$        if (sapling == Blocks.OAK_SAPLING) return Optional.of(Biomes.FOREST);
 //$$        if (sapling == Blocks.BIRCH_SAPLING) return Optional.of(Biomes.BIRCH_FOREST);
 //$$        if (sapling == Blocks.SPRUCE_SAPLING) return Optional.of(Biomes.TAIGA);
@@ -139,34 +147,6 @@ public class ForestGrowthHandler {
 //$$        if (sapling == Blocks.CRIMSON_FUNGUS) return Optional.of(Biomes.CRIMSON_FOREST);
 //$$        if (sapling == Blocks.WARPED_FUNGUS) return Optional.of(Biomes.WARPED_FOREST);
 //$$        return Optional.empty();
-//$$    }
-//$$
-//$$    private static void transformBiomeArea(ServerLevel level, BlockPos pos, ResourceKey<Biome> biomeKey) {
-//$$        Holder<Biome> biomeHolder = level.registryAccess().registryOrThrow(Registries.BIOME).getHolderOrThrow(biomeKey);
-//$$        int radius = 5;
-//$$        Set<ChunkAccess> modifiedChunks = new HashSet<>();
-//$$
-//$$        for (int x = -radius; x <= radius; x++) {
-//$$            for (int z = -radius; z <= radius; z++) {
-//$$                // Biomes are 3D in 4x4x4 increments. We modify a small vertical range.
-//$$                for (int y = -2; y <= 2; y++) {
-//$$                    BlockPos target = pos.offset(x, y, z);
-//$$                    // Convert block pos to quart pos (x/4)
-//$$                    int qX = target.getX() >> 2;
-//$$                    int qY = target.getY() >> 2;
-//$$                    int qZ = target.getZ() >> 2;
-//$$                    
-//$$                    ChunkAccess chunk = level.getChunk(target);
-//$$                    chunk.setBiome(qX, qY, qZ, biomeHolder);
-//$$                    modifiedChunks.add(chunk);
-//$$                }
-//$$            }
-//$$        }
-//$$
-//$$        // Sync changes to clients
-//$$        modifiedChunks.forEach(chunk -> {
-//$$            level.getChunkSource().onChunkBiomesUpdated(java.util.List.of(chunk.getPos()));
-//$$        });
 //$$    }
     //#else
     public static void tick(Object level) {}
