@@ -4,7 +4,8 @@
   "package": "org.gbxteam.physis.mixins",
   "compatibilityLevel": "{{COMPATIBILITY_LEVEL}}",
   "mixins": [
-    "MinecraftServerMixin"
+    "MinecraftServerMixin",
+    "ServerLevelMixin"
   ],
   "client": [
   ],
