@@ -43,23 +43,22 @@ public class ForestGrowthHandler {
 //$$    public static void tick(ServerLevel level) {
 //$$        RandomSource random = level.getRandom();
 //$$        
-//$$        // Only run occasionally (e.g., 1 in 100 ticks per world)
-//$$        if (random.nextInt(100) != 0) return;
+//$$        // FAST MODE FOR TESTING: Removed random checks to make it happen every tick
 //$$
-//$$        // Pick a random player to tick around, or just random location
 //$$        level.players().forEach(player -> {
-//$$            if (random.nextInt(20) != 0) return; // Reduce frequency per player
+//$$            // Run multiple attempts per player per tick for instant results
+//$$            for (int i = 0; i < 5; i++) {
+//$$                BlockPos playerPos = player.blockPosition();
+//$$                int rx = random.nextInt(48) - 24;
+//$$                int rz = random.nextInt(48) - 24;
+//$$                BlockPos targetPos = level.getHeightmapPos(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING, playerPos.offset(rx, 0, rz));
 //$$
-//$$            BlockPos playerPos = player.blockPosition();
-//$$            int rx = random.nextInt(64) - 32;
-//$$            int rz = random.nextInt(64) - 32;
-//$$            BlockPos targetPos = level.getHeightmapPos(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING, playerPos.offset(rx, 0, rz));
-//$$
-//$$            if (isSuitableForSapling(level, targetPos)) {
-//$$                // Look for a forest edge nearby (6-10 blocks away)
-//$$                findNearbyForestType(level, targetPos, 6, 12).ifPresent(sapling -> {
-//$$                    level.setBlock(targetPos, sapling.defaultBlockState(), 3);
-//$$                });
+//$$                if (isSuitableForSapling(level, targetPos)) {
+//$$                    // Look for a forest edge nearby
+//$$                    findNearbyForestType(level, targetPos, 2, 10).ifPresent(sapling -> {
+//$$                        level.setBlock(targetPos, sapling.defaultBlockState(), 3);
+//$$                    });
+//$$                }
 //$$            }
 //$$        });
 //$$    }
@@ -71,9 +70,8 @@ public class ForestGrowthHandler {
 //$$    }
 //$$
 //$$    private static Optional<Block> findNearbyForestType(ServerLevel level, BlockPos pos, int minRadius, int maxRadius) {
-//$$        // Randomly search in a ring around the target position
 //$$        RandomSource random = level.getRandom();
-//$$        for (int i = 0; i < 10; i++) {
+//$$        for (int i = 0; i < 15; i++) {
 //$$            double angle = random.nextDouble() * 2 * Math.PI;
 //$$            int dist = minRadius + random.nextInt(maxRadius - minRadius);
 //$$            int dx = (int) (Math.cos(angle) * dist);
@@ -82,7 +80,6 @@ public class ForestGrowthHandler {
 //$$            BlockPos checkPos = level.getHeightmapPos(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING, pos.offset(dx, 0, dz)).below();
 //$$            BlockState state = level.getBlockState(checkPos);
 //$$            
-//$$            // Check if it's a log or leaves
 //$$            if (state.getBlock() instanceof RotatedPillarBlock || state.getBlock() instanceof LeavesBlock) {
 //$$                return getRelatedSapling(state.getBlock());
 //$$            }
