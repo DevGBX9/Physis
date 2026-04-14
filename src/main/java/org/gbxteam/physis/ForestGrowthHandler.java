@@ -44,27 +44,23 @@ public class ForestGrowthHandler {
 //$$    public static void tick(ServerLevel level) {
 //$$        RandomSource random = level.getRandom();
 //$$        
-//$$        // Realistic growth speed: 1 attempt per player roughly every 2 seconds on average
-//$$        if (random.nextInt(40) != 0) return; 
-//$$
+//$$        // Extreme Speed for testing
 //$$        level.players().forEach(player -> {
-//$$            BlockPos playerPos = player.blockPosition();
-//$$            // Search in a 32x32 area around player
-//$$            int rx = random.nextInt(64) - 32;
-//$$            int rz = random.nextInt(64) - 32;
-//$$            BlockPos targetPos = level.getHeightmapPos(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING, playerPos.offset(rx, 0, rz));
+//$$            for (int i = 0; i < 10; i++) { // 10 attempts per tick
+//$$                BlockPos playerPos = player.blockPosition();
+//$$                int rx = random.nextInt(64) - 32;
+//$$                int rz = random.nextInt(64) - 32;
+//$$                BlockPos targetPos = level.getHeightmapPos(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING, playerPos.offset(rx, 0, rz));
 //$$
-//$$            // Logic Part 1: Check if spot is suitable and NOT overcrowded (Expansion Logic)
-//$$            if (isSuitableForSapling(level, targetPos) && !isOvercrowded(level, targetPos)) {
-//$$                
-//$$                // Logic Part 2: Find a forest tree nearby (min 4, max 12 blocks) to represent an "edge"
-//$$                findNearbyForestType(level, targetPos, 4, 12).ifPresent(sapling -> {
-//$$                    level.setBlock(targetPos, sapling.defaultBlockState(), 3);
-//$$                    
-//$$                    getRelatedBiomeKey(sapling).ifPresent(biomeKey -> {
-//$$                        executeFillBiome(level, targetPos, biomeKey);
+//$$                if (isSuitableForSapling(level, targetPos) && !isOvercrowded(level, targetPos)) {
+//$$                    findNearbyForestType(level, targetPos, 4, 15).ifPresent(sapling -> {
+//$$                        level.setBlock(targetPos, sapling.defaultBlockState(), 3);
+//$$                        
+//$$                        getRelatedBiomeKey(sapling).ifPresent(biomeKey -> {
+//$$                            executeFillBiome(level, targetPos, biomeKey);
+//$$                        });
 //$$                    });
-//$$                });
+//$$                }
 //$$            }
 //$$        });
 //$$    }
