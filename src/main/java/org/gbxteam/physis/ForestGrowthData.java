@@ -48,11 +48,12 @@ package org.gbxteam.physis;
 //$$        if (!saveFile.exists()) return;
 //$$        try {
 //$$            CompoundTag nbt = NbtIo.read(saveFile.toPath());
-//$$            if (nbt != null && nbt.contains("saplings")) {
-//$$                long[] array = nbt.getLongArray("saplings");
-//$$                for (long l : array) {
-//$$                    modPlantedSaplings.add(l);
-//$$                }
+//$$            if (nbt != null) {
+//$$                nbt.getLongArray("saplings").ifPresent(array -> {
+//$$                    for (long l : array) {
+//$$                        modPlantedSaplings.add(l);
+//$$                    }
+//$$                });
 //$$            }
 //$$        } catch (IOException e) {
 //$$            e.printStackTrace();
