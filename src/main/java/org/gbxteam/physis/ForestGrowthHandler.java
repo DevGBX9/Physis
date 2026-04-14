@@ -259,6 +259,124 @@ public class ForestGrowthHandler {
 //$$        }
 //$$    }
 
+    // ==================== HEALTH CHECKS ====================
+//$$    private static void runHealthChecks(ServerLevel level) {
+//$$        long currentTime = level.getGameTime();
+//$$        ForestGrowthData data = ForestGrowthData.get(level);
+//$$        
+//$$        data.getAllTrackedSaplings().forEach((posLong, lastTime) -> {
+//$$            BlockPos pos = BlockPos.of(posLong);
+//$$            if (!level.isLoaded(pos)) return;
+//$$
+//$$            BlockState state = level.getBlockState(pos);
+//$$            if (!(state.getBlock() instanceof SaplingBlock || state.getBlock() == Blocks.AZALEA || state.getBlock() == Blocks.MANGROVE_PROPAGULE)) {
+//$$                data.removeSapling(pos);
+//$$                return;
+//$$            }
+//$$
+//$$            long age = currentTime - lastTime;
+//$$            if ((age >= 600 && age < 640) || (age >= 1200)) {
+//$$                int spacing = getRequiredSpacing(state.getBlock());
+//$$                if (!isAreaClearForHealthCheck(level, pos, spacing)) {
+//$$                    level.setBlock(pos, Blocks.DEAD_BUSH.defaultBlockState(), 3);
+//$$                    data.removeSapling(pos);
+//$$                    data.addDeadBush(pos, currentTime);
+//$$                } else {
+//$$                    data.updateSaplingCheckTime(pos, currentTime);
+//$$                }
+//$$            }
+//$$        });
+//$$    }
+
+    // ==================== COMPOSTING ====================
+//$$    private static void runCompostChecks(ServerLevel level) {
+//$$        long currentTime = level.getGameTime();
+//$$        ForestGrowthData data = ForestGrowthData.get(level);
+//$$
+//$$        data.getAllDeadBushes().forEach((posLong, deathTime) -> {
+//$$            BlockPos pos = BlockPos.of(posLong);
+//$$            if (!level.isLoaded(pos)) return;
+//$$
+//$$            if (currentTime - deathTime >= 300) {
+//$$                if (level.getBlockState(pos).is(Blocks.DEAD_BUSH)) {
+//$$                    level.setBlock(pos, Blocks.AIR.defaultBlockState(), 3);
+//$$                    applyCompostEffect(level, pos);
+//$$                }
+//$$                data.removeDeadBush(pos);
+//$$            }
+//$$        });
+//$$    }
+//$$
+//$$    private static void applyCompostEffect(ServerLevel level, BlockPos pos) {
+//$$        RandomSource random = level.getRandom();
+//$$        for (int x = -2; x <= 2; x++) {
+//$$            for (int z = -2; z <= 2; z++) {
+//$$                BlockPos target = pos.offset(x, -1, z);
+//$$                BlockPos above = target.above();
+//$$
+//$$                if (level.getBlockState(target).is(Blocks.GRASS_BLOCK) && level.isEmptyBlock(above)) {
+//$$                    if (random.nextFloat() < 0.7f) {
+//$$                        level.levelEvent(2005, above, 0);
+//$$                        
+//$$                        String blockToPlace = "short_grass";
+//$$                        float r = random.nextFloat();
+//$$                        
+//$$                        if (r < 0.15f) {
+//$$                            String[] flowers = {"dandelion", "poppy", "oxeye_daisy", "azure_bluet", "cornflower"};
+//$$                            blockToPlace = flowers[random.nextInt(flowers.length)];
+//$$                        } else if (r < 0.25f) {
+//$$                            blockToPlace = "fern";
+//$$                        }
+//$$                        
+//$$                        level.getServer().getCommands().performPrefixedCommand(
+//$$                            level.getServer().createCommandSourceStack().withLevel(level).withSuppressedOutput(),
+//$$                            String.format("setblock %d %d %d %s keep", above.getX(), above.getY(), above.getZ(), blockToPlace));
+//$$                    }
+//$$                }
+//$$            }
+//$$        }
+//$$    }
+
+    // ==================== [10] THUNDER DAMAGE ====================
+//$$    private static void applyThunderDamage(ServerLevel level, BlockPos center) {
+//$$        RandomSource random = level.getRandom();
+//$$        int radius = 2 + random.nextInt(2);
+//$$        for (BlockPos p : BlockPos.betweenClosed(center.offset(-radius, -1, -radius), center.offset(radius, 5, radius))) {
+//$$            BlockState state = level.getBlockState(p);
+//$$            if (state.getBlock() instanceof LeavesBlock) {
+//$$                if (random.nextFloat() < 0.3f) {
+//$$                    level.setBlock(p, Blocks.AIR.defaultBlockState(), 3);
+//$$                }
+//$$            }
+//$$        }
+//$$    }
+
+    // ==================== HEALTH CHECK AREA SCAN ====================
+//$$    private static boolean isAreaClearForHealthCheck(ServerLevel level, BlockPos pos, int radius) {
+//$$        BlockState currentState = level.getBlockState(pos);
+//$$        Block currentBlock = currentState.getBlock();
+//$$        boolean is2x2Tree = (currentBlock == Blocks.DARK_OAK_SAPLING || currentBlock == Blocks.PALE_OAK_SAPLING);
+//$$
+//$$        for (BlockPos checkPos : BlockPos.betweenClosed(pos.offset(-radius, -1, -radius), pos.offset(radius, 3, radius))) {
+//$$            if (checkPos.equals(pos)) continue;
+//$$            
+//$$            BlockState state = level.getBlockState(checkPos);
+//$$            Block block = state.getBlock();
+//$$            
+//$$            if (block instanceof RotatedPillarBlock || block instanceof SaplingBlock || block == Blocks.AZALEA) {
+//$$                if (is2x2Tree && block == currentBlock) {
+//$$                    int dx = Math.abs(checkPos.getX() - pos.getX());
+//$$                    int dz = Math.abs(checkPos.getZ() - pos.getZ());
+//$$                    if (dx <= 1 && dz <= 1) {
+//$$                        continue;
+//$$                    }
+//$$                }
+//$$                return false;
+//$$            }
+//$$        }
+//$$        return true;
+//$$    }
+
     // ==================== [1] BIOME-AWARE TREE SELECTION ====================
 //$$    private static Optional<Block> determineSapling(ServerLevel level, BlockPos pos) {
 //$$        // [7] SPECIES COMPETITION: First check what's dominant nearby
