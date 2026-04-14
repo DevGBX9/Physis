@@ -75,7 +75,7 @@ public class ForestGrowthHandler {
 //$$                // Smart Space-Aware Planting
 //$$                if (isAreaClear(level, targetPos, spacing)) {
 //$$                    level.setBlock(targetPos, sapling.defaultBlockState(), 3);
-//$$                    getRelatedBiomeKey(sapling).ifPresent(biomeKey -> executeFillBiome(level, targetPos, biomeKey));
+//$$                    // Biome transformation removed from here - it will happen in SaplingBlockMixin
 //$$                }
 //$$            });
 //$$        }
@@ -110,7 +110,7 @@ public class ForestGrowthHandler {
 //$$        return 3; // Default
 //$$    }
 //$$
-//$$    private static void executeFillBiome(ServerLevel level, BlockPos pos, ResourceKey<Biome> biomeKey) {
+//$$    public static void executeFillBiome(ServerLevel level, BlockPos pos, ResourceKey<Biome> biomeKey) {
 //$$        int radius = 5;
 //$$        BlockPos min = pos.offset(-radius, -2, -radius);
 //$$        BlockPos max = pos.offset(radius, 2, radius);
@@ -180,7 +180,7 @@ public class ForestGrowthHandler {
 //$$        return Optional.empty();
 //$$    }
 //$$
-//$$    private static Optional<ResourceKey<Biome>> getRelatedBiomeKey(Block sapling) {
+//$$    public static Optional<ResourceKey<Biome>> getRelatedBiomeKey(Block sapling) {
 //$$        if (sapling == Blocks.OAK_SAPLING) return Optional.of(Biomes.FOREST);
 //$$        if (sapling == Blocks.BIRCH_SAPLING) return Optional.of(Biomes.BIRCH_FOREST);
 //$$        if (sapling == Blocks.SPRUCE_SAPLING) return Optional.of(Biomes.TAIGA);
