@@ -42,23 +42,25 @@ public class ForestGrowthHandler {
     
     //#if MC >= 260100
 //$$    public static void tick(ServerLevel level) {
+//$$        // Slow down growth to realistic levels (Check roughly every 5 seconds)
+//$$        if (level.getGameTime() % 100 != 0) return;
+//$$
 //$$        RandomSource random = level.getRandom();
 //$$        
-//$$        // Extreme Mixed Strategy: Fast nearby + Global expansion
 //$$        level.players().forEach(player -> {
 //$$            BlockPos playerPos = player.blockPosition();
 //$$
-//$$            // 1. NEARBY EXPLOSION (30 attempts)
-//$$            for (int i = 0; i < 30; i++) { 
-//$$                int rx = random.nextInt(64) - 32;
-//$$                int rz = random.nextInt(64) - 32;
+//$$            // 1. NEARBY (Slow expansion)
+//$$            for (int i = 0; i < 2; i++) { 
+//$$                int rx = random.nextInt(48) - 24;
+//$$                int rz = random.nextInt(48) - 24;
 //$$                processGrowth(level, playerPos.offset(rx, 0, rz), false);
 //$$            }
 //$$
-//$$            // 2. GLOBAL EXPANSION (150 attempts)
-//$$            for (int i = 0; i < 150; i++) { 
-//$$                int rx = random.nextInt(2000) - 1000;
-//$$                int rz = random.nextInt(2000) - 1000;
+//$$            // 2. GLOBAL (Sparse expansion in loaded chunks)
+//$$            for (int i = 0; i < 5; i++) { 
+//$$                int rx = random.nextInt(1000) - 500;
+//$$                int rz = random.nextInt(1000) - 500;
 //$$                processGrowth(level, playerPos.offset(rx, 0, rz), true);
 //$$            }
 //$$        });
