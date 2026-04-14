@@ -149,8 +149,23 @@ public class ForestGrowthHandler {
 //$$            }
 //$$        }
 //$$
-//$$        // An edge tree must have at least 2 forested directions AND at least 1 open direction
-//$$        if (forestedDirs < 2 || openDirections.isEmpty()) return;
+//$$        // PIONEER TREE: Isolated trees (0-1 forested neighbors) spread slowly nearby
+//$$        if (forestedDirs <= 1) {
+//$$            // Pioneer growth is rare (25% chance) to simulate slow natural seeding
+//$$            if (random.nextFloat() < 0.25f) {
+//$$                double angle = random.nextDouble() * 2 * Math.PI;
+//$$                int dist = 2 + random.nextInt(4); // 2-5 blocks close range
+//$$                int ox = (int) (Math.cos(angle) * dist);
+//$$                int oz = (int) (Math.sin(angle) * dist);
+//$$                BlockPos targetPos = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING,
+//$$                    treePos.offset(ox, 0, oz));
+//$$                plantAtPosition(level, targetPos, treePos);
+//$$            }
+//$$            return;
+//$$        }
+//$$
+//$$        // EDGE TREE: Must have at least 2 forested directions AND at least 1 open direction
+//$$        if (openDirections.isEmpty()) return;
 //$$
 //$$        // Step 3: Choose an open direction to expand into (with wind influence)
 //$$        int[] chosenDir;
