@@ -42,25 +42,21 @@ public class ForestGrowthHandler {
     
     //#if MC >= 260100
 //$$    public static void tick(ServerLevel level) {
-//$$        // Slow down growth to realistic levels (Check roughly every 5 seconds)
-//$$        if (level.getGameTime() % 100 != 0) return;
+//$$        // Extreme slow growth (Check roughly once every minute - 1200 ticks)
+//$$        if (level.getGameTime() % 1200 != 0) return;
 //$$
 //$$        RandomSource random = level.getRandom();
 //$$        
 //$$        level.players().forEach(player -> {
 //$$            BlockPos playerPos = player.blockPosition();
 //$$
-//$$            // 1. NEARBY (Slow expansion)
-//$$            for (int i = 0; i < 2; i++) { 
-//$$                int rx = random.nextInt(48) - 24;
-//$$                int rz = random.nextInt(48) - 24;
-//$$                processGrowth(level, playerPos.offset(rx, 0, rz), false);
-//$$            }
+//$$            // 1. NEARBY (Very slow seed scattering)
+//$$            processGrowth(level, playerPos.offset(random.nextInt(48) - 24, 0, random.nextInt(48) - 24), false);
 //$$
-//$$            // 2. GLOBAL (Sparse expansion in loaded chunks)
-//$$            for (int i = 0; i < 5; i++) { 
-//$$                int rx = random.nextInt(1000) - 500;
-//$$                int rz = random.nextInt(1000) - 500;
+//$$            // 2. GLOBAL (Sparse expansion)
+//$$            for (int i = 0; i < 3; i++) { 
+//$$                int rx = random.nextInt(800) - 400;
+//$$                int rz = random.nextInt(800) - 400;
 //$$                processGrowth(level, playerPos.offset(rx, 0, rz), true);
 //$$            }
 //$$        });
