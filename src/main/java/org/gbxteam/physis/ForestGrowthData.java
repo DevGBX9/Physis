@@ -38,6 +38,10 @@ package org.gbxteam.physis;
 //$$        save();
 //$$    }
 //$$
+//$$    public boolean isModPlanted(BlockPos pos) {
+//$$        return modPlantedSaplings.containsKey(pos.asLong());
+//$$    }
+//$$
 //$$    public Map<Long, Long> getAllTrackedSaplings() {
 //$$        return new HashMap<>(modPlantedSaplings);
 //$$    }
