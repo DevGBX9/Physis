@@ -114,16 +114,31 @@ public class ForestGrowthHandler {
 //$$    }
 //$$
 //$$    private static void applyCompostEffect(ServerLevel level, BlockPos pos) {
-//$$        // 5x5 Bonemeal area
+//$$        // 5x5 Natural Bonemeal area
+//$$        RandomSource random = level.getRandom();
 //$$        for (int x = -2; x <= 2; x++) {
 //$$            for (int z = -2; z <= 2; z++) {
 //$$                BlockPos target = pos.offset(x, -1, z);
-//$$                if (level.getBlockState(target).is(Blocks.GRASS_BLOCK)) {
-//$$                    if (level.getRandom().nextFloat() < 0.7f) { // 70% chance per block
-//$$                        level.levelEvent(2005, target.above(), 0);
+//$$                BlockPos above = target.above();
+//$$
+//$$                if (level.getBlockState(target).is(Blocks.GRASS_BLOCK) && level.isEmptyBlock(above)) {
+//$$                    if (random.nextFloat() < 0.7f) {
+//$$                        // Visual effect
+//$$                        level.levelEvent(2005, above, 0);
+//$$                        
+//$$                        String blockToPlace = "short_grass";
+//$$                        float r = random.nextFloat();
+//$$                        
+//$$                        if (r < 0.15f) { // 15% Flowers
+//$$                            String[] flowers = {"dandelion", "poppy", "oxeye_daisy", "azure_bluet", "cornflower"};
+//$$                            blockToPlace = flowers[random.nextInt(flowers.length)];
+//$$                        } else if (r < 0.25f) { // 10% Ferns
+//$$                            blockToPlace = "fern";
+//$$                        }
+//$$                        
 //$$                        level.getServer().getCommands().performPrefixedCommand(
 //$$                            level.getServer().createCommandSourceStack().withLevel(level).withSuppressedOutput(),
-//$$                            String.format("setblock %d %d %d short_grass keep", target.getX(), target.getY() + 1, target.getZ()));
+//$$                            String.format("setblock %d %d %d %s keep", above.getX(), above.getY(), above.getZ(), blockToPlace));
 //$$                    }
 //$$                }
 //$$            }
