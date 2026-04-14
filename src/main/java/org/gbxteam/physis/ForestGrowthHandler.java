@@ -48,54 +48,66 @@ public class ForestGrowthHandler {
 //$$        level.players().forEach(player -> {
 //$$            BlockPos playerPos = player.blockPosition();
 //$$
-//$$            // 1. NEARBY EXPLOSION (30 attempts in 32 blocks radius)
-//$$            // Visible impact right under player's feet
+//$$            // 1. NEARBY EXPLOSION (30 attempts)
 //$$            for (int i = 0; i < 30; i++) { 
 //$$                int rx = random.nextInt(64) - 32;
 //$$                int rz = random.nextInt(64) - 32;
-//$$                BlockPos targetPos = level.getHeightmapPos(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING, playerPos.offset(rx, 0, rz));
-//$$                if (isSuitableForSapling(level, targetPos) && !isOvercrowded(level, targetPos)) {
-//$$                    findNearbyForestType(level, targetPos, 4, 15).ifPresent(sapling -> {
-//$$                        level.setBlock(targetPos, sapling.defaultBlockState(), 3);
-//$$                        getRelatedBiomeKey(sapling).ifPresent(biomeKey -> executeFillBiome(level, targetPos, biomeKey));
-//$$                    });
-//$$                }
+//$$                processGrowth(level, playerPos.offset(rx, 0, rz), false);
 //$$            }
 //$$
-//$$            // 2. GLOBAL EXPANSION (150 attempts in 1000 blocks radius)
-//$$            // Covers all loaded chunks in the horizon
+//$$            // 2. GLOBAL EXPANSION (150 attempts)
 //$$            for (int i = 0; i < 150; i++) { 
 //$$                int rx = random.nextInt(2000) - 1000;
 //$$                int rz = random.nextInt(2000) - 1000;
-//$$                BlockPos targetPos = level.getHeightmapPos(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING, playerPos.offset(rx, 0, rz));
-//$$                if (level.isLoaded(targetPos) && isSuitableForSapling(level, targetPos) && !isOvercrowded(level, targetPos)) {
-//$$                    findNearbyForestType(level, targetPos, 4, 20).ifPresent(sapling -> {
-//$$                        level.setBlock(targetPos, sapling.defaultBlockState(), 3);
-//$$                        getRelatedBiomeKey(sapling).ifPresent(biomeKey -> executeFillBiome(level, targetPos, biomeKey));
-//$$                    });
-//$$                }
+//$$                processGrowth(level, playerPos.offset(rx, 0, rz), true);
 //$$            }
 //$$        });
 //$$    }
 //$$
-//$$    private static boolean isOvercrowded(ServerLevel level, BlockPos pos) {
-//$$        int treeOrSaplingCount = 0;
-//$$        int radius = 4;
-//$$        
-//$$        // Look around for existing trees or saplings in a 9x9 area
-//$$        for (BlockPos checkPos : BlockPos.betweenClosed(pos.offset(-radius, -1, -radius), pos.offset(radius, 4, radius))) {
-//$$            BlockState state = level.getBlockState(checkPos);
-//$$            if (state.getBlock() instanceof RotatedPillarBlock || 
-//$$                state.getBlock() instanceof LeavesBlock || 
-//$$                state.getBlock() instanceof SaplingBlock ||
-//$$                state.is(Blocks.AZALEA)) {
-//$$                treeOrSaplingCount++;
-//$$            }
-//$$            
-//$$            // If we found more than 2 tree parts, it's already a wooded area, don't plant inside
-//$$            if (treeOrSaplingCount > 2) return true;
+//$$    private static void processGrowth(ServerLevel level, BlockPos pos, boolean checkLoaded) {
+//$$        BlockPos targetPos = level.getHeightmapPos(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING, pos);
+//$$        if (checkLoaded && !level.isLoaded(targetPos)) return;
+//$$
+//$$        if (isSuitableForSapling(level, targetPos)) {
+//$$            findNearbyForestType(level, targetPos, 4, 20).ifPresent(sapling -> {
+//$$                int spacing = getRequiredSpacing(sapling);
+//$$                
+//$$                // Smart Space-Aware Planting
+//$$                if (isAreaClear(level, targetPos, spacing)) {
+//$$                    level.setBlock(targetPos, sapling.defaultBlockState(), 3);
+//$$                    getRelatedBiomeKey(sapling).ifPresent(biomeKey -> executeFillBiome(level, targetPos, biomeKey));
+//$$                }
+//$$            });
 //$$        }
-//$$        return false;
+//$$    }
+//$$
+//$$    private static boolean isAreaClear(ServerLevel level, BlockPos pos, int radius) {
+//$$        // Fast scan for logs or saplings in the required radius
+//$$        for (BlockPos checkPos : BlockPos.betweenClosed(pos.offset(-radius, -1, -radius), pos.offset(radius, 3, radius))) {
+//$$            BlockState state = level.getBlockState(checkPos);
+//$$            Block block = state.getBlock();
+//$$            
+//$$            // If we found a trunk, a sapling, or azalea, then the area is NOT clear
+//$$            if (block instanceof RotatedPillarBlock || block instanceof SaplingBlock || block.is(Blocks.AZALEA)) {
+//$$                return false;
+//$$            }
+//$$        }
+//$$        return true;
+//$$    }
+//$$
+//$$    private static int getRequiredSpacing(Block sapling) {
+//$$        if (sapling == Blocks.OAK_SAPLING) return 3;
+//$$        if (sapling == Blocks.BIRCH_SAPLING) return 3;
+//$$        if (sapling == Blocks.SPRUCE_SAPLING) return 5; // Defaulting to 5 for spruce
+//$$        if (sapling == Blocks.JUNGLE_SAPLING) return 5; // 5 for jungle (balance for giant vs small)
+//$$        if (sapling == Blocks.ACACIA_SAPLING) return 5;
+//$$        if (sapling == Blocks.DARK_OAK_SAPLING) return 4;
+//$$        if (sapling == Blocks.MANGROVE_PROPAGULE) return 5;
+//$$        if (sapling == Blocks.CHERRY_SAPLING) return 6;
+//$$        if (sapling == Blocks.AZALEA) return 4;
+//$$        if (sapling == Blocks.PALE_OAK_SAPLING) return 5;
+//$$        if (sapling == Blocks.CRIMSON_FUNGUS || sapling == Blocks.WARPED_FUNGUS) return 4;
+//$$        return 3; // Default
 //$$    }
 //$$
 //$$    private static void executeFillBiome(ServerLevel level, BlockPos pos, ResourceKey<Biome> biomeKey) {
@@ -131,7 +143,6 @@ public class ForestGrowthHandler {
 //$$
 //$$    private static Optional<Block> findNearbyForestType(ServerLevel level, BlockPos pos, int minRadius, int maxRadius) {
 //$$        RandomSource random = level.getRandom();
-//$$        // Scan 20 random points in the ring range to find a parent tree
 //$$        for (int i = 0; i < 20; i++) {
 //$$            double angle = random.nextDouble() * 2 * Math.PI;
 //$$            int dist = minRadius + random.nextInt(maxRadius - minRadius);
