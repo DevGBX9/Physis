@@ -47,9 +47,14 @@ public class ForestGrowthHandler {
     //#if MC >= 260100
     
     // ==================== [1] WIND SYSTEM ====================
-    // Wind direction changes slowly over time for natural-looking seed dispersal
 //$$    private static double windAngle = 0;
 //$$    private static long lastWindUpdate = 0;
+
+    // ==================== 8 CARDINAL + DIAGONAL DIRECTIONS ====================
+//$$    private static final int[][] DIRECTIONS = {
+//$$        {0, -1}, {0, 1}, {-1, 0}, {1, 0},  // N, S, W, E
+//$$        {-1, -1}, {1, -1}, {-1, 1}, {1, 1}  // NW, NE, SW, SE
+//$$    };
 
     // ==================== MAIN TICK ====================
 //$$    public static void tick(ServerLevel level) {
@@ -57,39 +62,37 @@ public class ForestGrowthHandler {
 //$$
 //$$        // Update wind direction every 5 minutes (6000 ticks)
 //$$        if (gameTime - lastWindUpdate > 6000) {
-//$$            windAngle += (level.getRandom().nextDouble() - 0.5) * Math.PI * 0.5; // Shift ±45°
+//$$            windAngle += (level.getRandom().nextDouble() - 0.5) * Math.PI * 0.5;
 //$$            lastWindUpdate = gameTime;
 //$$        }
 //$$
-//$$        // [10] WEATHER IMPACT: Rain boosts growth frequency
+//$$        // [10] WEATHER IMPACT
 //$$        boolean isRaining = level.isRaining();
 //$$        boolean isThundering = level.isThundering();
-//$$        int growthInterval = isRaining ? 200 : 300; // 10s in rain, 15s normally
+//$$        int growthInterval = isRaining ? 200 : 300;
 //$$
 //$$        if (gameTime % growthInterval == 0) {
 //$$            RandomSource random = level.getRandom();
-//$$            int nearbyAttempts = isRaining ? 6 : 4; // More growth during rain
-//$$            int globalAttempts = isRaining ? 15 : 10;
+//$$            int edgeAttempts = isRaining ? 8 : 5;
+//$$            int globalAttempts = isRaining ? 12 : 8;
 //$$
 //$$            level.players().forEach(player -> {
 //$$                BlockPos playerPos = player.blockPosition();
-//$$                
-//$$                // NEARBY (Scattering with wind bias)
-//$$                for (int i = 0; i < nearbyAttempts; i++) {
-//$$                    int windBiasX = (int) (Math.cos(windAngle) * 8);
-//$$                    int windBiasZ = (int) (Math.sin(windAngle) * 8);
-//$$                    int ox = random.nextInt(64) - 32 + windBiasX;
-//$$                    int oz = random.nextInt(64) - 32 + windBiasZ;
-//$$                    processGrowth(level, playerPos.offset(ox, 0, oz), false);
+//$$
+//$$                // PRIMARY: EDGE-BASED EXPANSION (find edge trees and expand outward)
+//$$                for (int i = 0; i < edgeAttempts; i++) {
+//$$                    int ox = random.nextInt(80) - 40;
+//$$                    int oz = random.nextInt(80) - 40;
+//$$                    processEdgeExpansion(level, playerPos.offset(ox, 0, oz));
 //$$                }
-//$$                
-//$$                // GLOBAL (Expansion with wind bias)
+//$$
+//$$                // SECONDARY: GLOBAL (long-range edge scanning with wind bias)
 //$$                for (int i = 0; i < globalAttempts; i++) {
-//$$                    int windBiasX = (int) (Math.cos(windAngle) * 40);
-//$$                    int windBiasZ = (int) (Math.sin(windAngle) * 40);
+//$$                    int windBiasX = (int) (Math.cos(windAngle) * 30);
+//$$                    int windBiasZ = (int) (Math.sin(windAngle) * 30);
 //$$                    int ox = random.nextInt(1200) - 600 + windBiasX;
 //$$                    int oz = random.nextInt(1200) - 600 + windBiasZ;
-//$$                    processGrowth(level, playerPos.offset(ox, 0, oz), true);
+//$$                    processEdgeExpansion(level, playerPos.offset(ox, 0, oz));
 //$$                }
 //$$            });
 //$$        }
@@ -100,10 +103,10 @@ public class ForestGrowthHandler {
 //$$            runCompostChecks(level);
 //$$        }
 //$$
-//$$        // [10] THUNDER DAMAGE: Lightning strikes can clear small areas
+//$$        // [10] THUNDER DAMAGE
 //$$        if (isThundering && gameTime % 600 == 0) {
 //$$            RandomSource random = level.getRandom();
-//$$            if (random.nextFloat() < 0.15f) { // 15% chance every 30s during thunder
+//$$            if (random.nextFloat() < 0.15f) {
 //$$                level.players().forEach(player -> {
 //$$                    BlockPos strikePos = player.blockPosition().offset(random.nextInt(200) - 100, 0, random.nextInt(200) - 100);
 //$$                    strikePos = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING, strikePos);
@@ -113,156 +116,123 @@ public class ForestGrowthHandler {
 //$$        }
 //$$    }
 
-    // ==================== HEALTH CHECKS ====================
-//$$    private static void runHealthChecks(ServerLevel level) {
-//$$        long currentTime = level.getGameTime();
-//$$        ForestGrowthData data = ForestGrowthData.get(level);
-//$$        
-//$$        data.getAllTrackedSaplings().forEach((posLong, lastTime) -> {
-//$$            BlockPos pos = BlockPos.of(posLong);
-//$$            if (!level.isLoaded(pos)) return;
-//$$
-//$$            BlockState state = level.getBlockState(pos);
-//$$            if (!(state.getBlock() instanceof SaplingBlock || state.getBlock() == Blocks.AZALEA || state.getBlock() == Blocks.MANGROVE_PROPAGULE)) {
-//$$                data.removeSapling(pos);
-//$$                return;
-//$$            }
-//$$
-//$$            long age = currentTime - lastTime;
-//$$            // Checks: first at 30s, then recurring every 60s
-//$$            if ((age >= 600 && age < 640) || (age >= 1200)) {
-//$$                int spacing = getRequiredSpacing(state.getBlock());
-//$$                if (!isAreaClearForHealthCheck(level, pos, spacing)) {
-//$$                    level.setBlock(pos, Blocks.DEAD_BUSH.defaultBlockState(), 3);
-//$$                    data.removeSapling(pos);
-//$$                    data.addDeadBush(pos, currentTime);
-//$$                } else {
-//$$                    data.updateSaplingCheckTime(pos, currentTime);
-//$$                }
-//$$            }
-//$$        });
-//$$    }
-
-    // ==================== COMPOSTING ====================
-//$$    private static void runCompostChecks(ServerLevel level) {
-//$$        long currentTime = level.getGameTime();
-//$$        ForestGrowthData data = ForestGrowthData.get(level);
-//$$
-//$$        data.getAllDeadBushes().forEach((posLong, deathTime) -> {
-//$$            BlockPos pos = BlockPos.of(posLong);
-//$$            if (!level.isLoaded(pos)) return;
-//$$
-//$$            if (currentTime - deathTime >= 300) { // 15 seconds
-//$$                if (level.getBlockState(pos).is(Blocks.DEAD_BUSH)) {
-//$$                    level.setBlock(pos, Blocks.AIR.defaultBlockState(), 3);
-//$$                    applyCompostEffect(level, pos);
-//$$                }
-//$$                data.removeDeadBush(pos);
-//$$            }
-//$$        });
-//$$    }
-//$$
-//$$    private static void applyCompostEffect(ServerLevel level, BlockPos pos) {
-//$$        // 5x5 Natural Bonemeal area
+    // ==================== CORE: EDGE-BASED EXPANSION ====================
+//$$    private static void processEdgeExpansion(ServerLevel level, BlockPos searchPos) {
+//$$        if (!level.isLoaded(searchPos)) return;
 //$$        RandomSource random = level.getRandom();
-//$$        for (int x = -2; x <= 2; x++) {
-//$$            for (int z = -2; z <= 2; z++) {
-//$$                BlockPos target = pos.offset(x, -1, z);
-//$$                BlockPos above = target.above();
 //$$
-//$$                if (level.getBlockState(target).is(Blocks.GRASS_BLOCK) && level.isEmptyBlock(above)) {
-//$$                    if (random.nextFloat() < 0.7f) {
-//$$                        level.levelEvent(2005, above, 0);
-//$$                        
-//$$                        String blockToPlace = "short_grass";
-//$$                        float r = random.nextFloat();
-//$$                        
-//$$                        if (r < 0.15f) { // 15% Flowers
-//$$                            String[] flowers = {"dandelion", "poppy", "oxeye_daisy", "azure_bluet", "cornflower"};
-//$$                            blockToPlace = flowers[random.nextInt(flowers.length)];
-//$$                        } else if (r < 0.25f) { // 10% Ferns
-//$$                            blockToPlace = "fern";
-//$$                        }
-//$$                        
-//$$                        level.getServer().getCommands().performPrefixedCommand(
-//$$                            level.getServer().createCommandSourceStack().withLevel(level).withSuppressedOutput(),
-//$$                            String.format("setblock %d %d %d %s keep", above.getX(), above.getY(), above.getZ(), blockToPlace));
-//$$                    }
+//$$        // Step 1: Find a tree near this position (search a spiral)
+//$$        BlockPos treePos = findNearbyTree(level, searchPos, 12);
+//$$        if (treePos == null) return;
+//$$
+//$$        // Step 2: Check if this tree is on the forest EDGE
+//$$        int scanRadius = 8; // How far to look for forest density in each direction
+//$$        int forestedDirs = 0;
+//$$        List<int[]> openDirections = new ArrayList<>();
+//$$
+//$$        for (int[] dir : DIRECTIONS) {
+//$$            boolean hasForest = false;
+//$$            // Sample 3 points along this direction at increasing distances
+//$$            for (int dist = 3; dist <= scanRadius; dist += 3) {
+//$$                BlockPos checkPos = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING, 
+//$$                    treePos.offset(dir[0] * dist, 0, dir[1] * dist)).below();
+//$$                BlockState state = level.getBlockState(checkPos);
+//$$                if (state.getBlock() instanceof RotatedPillarBlock || state.getBlock() instanceof LeavesBlock) {
+//$$                    hasForest = true;
+//$$                    break;
 //$$                }
+//$$            }
+//$$            if (hasForest) {
+//$$                forestedDirs++;
+//$$            } else {
+//$$                openDirections.add(dir);
 //$$            }
 //$$        }
-//$$    }
-
-    // ==================== [10] THUNDER DAMAGE ====================
-//$$    private static void applyThunderDamage(ServerLevel level, BlockPos center) {
-//$$        RandomSource random = level.getRandom();
-//$$        int radius = 2 + random.nextInt(2); // 2-3 blocks radius
-//$$        for (BlockPos p : BlockPos.betweenClosed(center.offset(-radius, -1, -radius), center.offset(radius, 5, radius))) {
-//$$            BlockState state = level.getBlockState(p);
-//$$            if (state.getBlock() instanceof LeavesBlock) {
-//$$                if (random.nextFloat() < 0.3f) {
-//$$                    level.setBlock(p, Blocks.AIR.defaultBlockState(), 3);
-//$$                }
-//$$            }
-//$$        }
-//$$    }
-
-    // ==================== HEALTH CHECK AREA SCAN ====================
-//$$    private static boolean isAreaClearForHealthCheck(ServerLevel level, BlockPos pos, int radius) {
-//$$        BlockState currentState = level.getBlockState(pos);
-//$$        Block currentBlock = currentState.getBlock();
-//$$        boolean is2x2Tree = (currentBlock == Blocks.DARK_OAK_SAPLING || currentBlock == Blocks.PALE_OAK_SAPLING);
 //$$
-//$$        for (BlockPos checkPos : BlockPos.betweenClosed(pos.offset(-radius, -1, -radius), pos.offset(radius, 3, radius))) {
-//$$            if (checkPos.equals(pos)) continue;
-//$$            
+//$$        // An edge tree must have at least 2 forested directions AND at least 1 open direction
+//$$        if (forestedDirs < 2 || openDirections.isEmpty()) return;
+//$$
+//$$        // Step 3: Choose an open direction to expand into (with wind influence)
+//$$        int[] chosenDir;
+//$$        if (openDirections.size() > 1 && random.nextFloat() < 0.4f) {
+//$$            // 40% chance: pick the direction closest to wind angle for natural drift
+//$$            chosenDir = openDirections.stream()
+//$$                .min((a, b) -> {
+//$$                    double angleA = Math.atan2(a[1], a[0]);
+//$$                    double angleB = Math.atan2(b[1], b[0]);
+//$$                    return Double.compare(Math.abs(angleA - windAngle), Math.abs(angleB - windAngle));
+//$$                })
+//$$                .orElse(openDirections.get(0));
+//$$        } else {
+//$$            chosenDir = openDirections.get(random.nextInt(openDirections.size()));
+//$$        }
+//$$
+//$$        // Step 4: Calculate target position (just outside the forest edge)
+//$$        int spreadDist = 3 + random.nextInt(5); // 3-7 blocks from the edge tree
+//$$        // Add some randomness perpendicular to the direction for a natural look
+//$$        int perpX = (int) ((random.nextFloat() - 0.5f) * 4);
+//$$        int perpZ = (int) ((random.nextFloat() - 0.5f) * 4);
+//$$        BlockPos targetPos = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING,
+//$$            treePos.offset(chosenDir[0] * spreadDist + perpX, 0, chosenDir[1] * spreadDist + perpZ));
+//$$
+//$$        // Step 5: Apply all smart checks and plant
+//$$        plantAtPosition(level, targetPos, treePos);
+//$$    }
+//$$
+//$$    private static BlockPos findNearbyTree(ServerLevel level, BlockPos center, int maxRadius) {
+//$$        RandomSource random = level.getRandom();
+//$$        // Random sampling method (faster than spiral)
+//$$        for (int attempt = 0; attempt < 15; attempt++) {
+//$$            int ox = random.nextInt(maxRadius * 2) - maxRadius;
+//$$            int oz = random.nextInt(maxRadius * 2) - maxRadius;
+//$$            BlockPos checkPos = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING, center.offset(ox, 0, oz)).below();
 //$$            BlockState state = level.getBlockState(checkPos);
-//$$            Block block = state.getBlock();
-//$$            
-//$$            if (block instanceof RotatedPillarBlock || block instanceof SaplingBlock || block == Blocks.AZALEA) {
-//$$                // Special 2x2 bypass
-//$$                if (is2x2Tree && block == currentBlock) {
-//$$                    int dx = Math.abs(checkPos.getX() - pos.getX());
-//$$                    int dz = Math.abs(checkPos.getZ() - pos.getZ());
-//$$                    if (dx <= 1 && dz <= 1) {
-//$$                        continue;
-//$$                    }
-//$$                }
-//$$                return false;
+//$$            if (state.getBlock() instanceof RotatedPillarBlock) {
+//$$                return checkPos; // Found a log = found a tree
 //$$            }
 //$$        }
-//$$        return true;
+//$$        return null;
 //$$    }
-
-    // ==================== CORE GROWTH LOGIC ====================
-//$$    private static void processGrowth(ServerLevel level, BlockPos pos, boolean checkLoaded) {
-//$$        BlockPos targetPos = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING, pos);
-//$$        if (checkLoaded && !level.isLoaded(targetPos)) return;
 //$$
-//$$        // [4] TERRAIN CHECK: Reject steep slopes
+//$$    private static void plantAtPosition(ServerLevel level, BlockPos targetPos, BlockPos sourceTreePos) {
+//$$        if (!level.isLoaded(targetPos)) return;
+//$$
+//$$        // [4] TERRAIN CHECK
 //$$        if (!isTerrainFlat(level, targetPos)) return;
 //$$
-//$$        // [5] CANOPY DENSITY: Don't plant under heavy canopy
+//$$        // [5] CANOPY DENSITY
 //$$        if (hasHeavyCanopy(level, targetPos)) return;
 //$$
-//$$        // Determine what to plant: Biome-aware first, then nearby tree fallback
-//$$        Optional<Block> saplingOpt = determineSapling(level, targetPos);
-//$$        if (saplingOpt.isEmpty()) return;
+//$$        // Determine sapling type from the source edge tree
+//$$        BlockState sourceState = level.getBlockState(sourceTreePos);
+//$$        Optional<Block> saplingOpt = getRelatedSapling(sourceState.getBlock());
 //$$        
+//$$        // If can't determine from source tree, use biome-aware selection
+//$$        if (saplingOpt.isEmpty()) {
+//$$            saplingOpt = determineSapling(level, targetPos);
+//$$        }
+//$$        if (saplingOpt.isEmpty()) return;
+//$$
 //$$        Block sapling = saplingOpt.get();
+//$$
+//$$        // [1] BIOME CHECK: Verify this tree can grow here
+//$$        if (!isSaplingValidForBiome(level, targetPos, sapling)) {
+//$$            // Check if biome has its own native tree instead
+//$$            saplingOpt = getBiomeNativeSapling(level, targetPos);
+//$$            if (saplingOpt.isEmpty()) return;
+//$$            sapling = saplingOpt.get();
+//$$        }
+//$$
 //$$        int spacing = getRequiredSpacing(sapling);
 //$$        boolean needs2x2 = (sapling == Blocks.DARK_OAK_SAPLING || sapling == Blocks.PALE_OAK_SAPLING);
 //$$        long currentTime = level.getGameTime();
 //$$
-//$$        // [2] LIGHT CHECK: Ensure adequate light
+//$$        // [2] LIGHT CHECK
 //$$        if (!hasAdequateLight(level, targetPos, sapling)) return;
 //$$
-//$$        // [9] SOIL FERTILITY: Better soil = higher success rate
+//$$        // [9] SOIL FERTILITY
 //$$        float fertilityBonus = getSoilFertility(level, targetPos);
-//$$        if (level.getRandom().nextFloat() > fertilityBonus) return; // Skip if soil is poor
-//$$
-//$$        // [3] WATER PROXIMITY: Boost chance near water
-//$$        // Skip this rejection if water is nearby (already passed fertility)
+//$$        if (level.getRandom().nextFloat() > fertilityBonus) return;
 //$$
 //$$        if (needs2x2) {
 //$$            place2x2Saplings(level, targetPos, sapling, spacing, currentTime);
