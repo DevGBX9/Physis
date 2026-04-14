@@ -15,11 +15,10 @@ package org.gbxteam.physis;
 
 //$$ public class ForestGrowthData {
 //$$    private static final Map<ServerLevel, ForestGrowthData> instances = new HashMap<>();
-//$$    private final Set<Long> modPlantedSaplings = new HashSet<>();
+//$$    private final Map<Long, Long> modPlantedSaplings = new HashMap<>();
 //$$    private final File saveFile;
 //$$
 //$$    private ForestGrowthData(ServerLevel level) {
-//$$        // Save data in the world folder to ensure stability across versions
 //$$        this.saveFile = level.getServer().getWorldPath(LevelResource.ROOT).resolve("physis_growth.dat").toFile();
 //$$        load();
 //$$    }
@@ -28,20 +27,28 @@ package org.gbxteam.physis;
 //$$        return instances.computeIfAbsent(level, ForestGrowthData::new);
 //$$    }
 //$$
-//$$    public void addSapling(BlockPos pos) {
-//$$        if (modPlantedSaplings.add(pos.asLong())) {
-//$$            save();
-//$$        }
+//$$    public void addSapling(BlockPos pos, long gameTime) {
+//$$        modPlantedSaplings.put(pos.asLong(), gameTime);
+//$$        save();
 //$$    }
 //$$
 //$$    public boolean isModPlanted(BlockPos pos) {
-//$$        return modPlantedSaplings.contains(pos.asLong());
+//$$        return modPlantedSaplings.containsKey(pos.asLong());
+//$$    }
+//$$
+//$$    public Map<Long, Long> getAllTrackedSaplings() {
+//$$        return new HashMap<>(modPlantedSaplings);
 //$$    }
 //$$
 //$$    public void removeSapling(BlockPos pos) {
-//$$        if (modPlantedSaplings.remove(pos.asLong())) {
+//$$        if (modPlantedSaplings.remove(pos.asLong()) != null) {
 //$$            save();
 //$$        }
+//$$    }
+//$$
+//$$    public void updateSaplingCheckTime(BlockPos pos, long newTime) {
+//$$        modPlantedSaplings.put(pos.asLong(), newTime);
+//$$        save();
 //$$    }
 //$$
 //$$    private void load() {
@@ -49,11 +56,13 @@ package org.gbxteam.physis;
 //$$        try {
 //$$            CompoundTag nbt = NbtIo.read(saveFile.toPath());
 //$$            if (nbt != null) {
-//$$                nbt.getLongArray("saplings").ifPresent(array -> {
-//$$                    for (long l : array) {
-//$$                        modPlantedSaplings.add(l);
-//$$                    }
-//$$                });
+//$$                long[] positions = nbt.getLongArray("saplings").orElse(new long[0]);
+//$$                long[] times = nbt.getLongArray("times").orElse(new long[0]);
+//$$                
+//$$                modPlantedSaplings.clear();
+//$$                for (int i = 0; i < Math.min(positions.length, times.length); i++) {
+//$$                    modPlantedSaplings.put(positions[i], times[i]);
+//$$                }
 //$$            }
 //$$        } catch (IOException e) {
 //$$            e.printStackTrace();
@@ -63,7 +72,18 @@ package org.gbxteam.physis;
 //$$    private void save() {
 //$$        try {
 //$$            CompoundTag nbt = new CompoundTag();
-//$$            nbt.putLongArray("saplings", modPlantedSaplings.stream().mapToLong(Long::longValue).toArray());
+//$$            long[] positions = new long[modPlantedSaplings.size()];
+//$$            long[] times = new long[modPlantedSaplings.size()];
+//$$            
+//$$            int i = 0;
+//$$            for (Map.Entry<Long, Long> entry : modPlantedSaplings.entrySet()) {
+//$$                positions[i] = entry.getKey();
+//$$                times[i] = entry.getValue();
+//$$                i++;
+//$$            }
+//$$            
+//$$            nbt.putLongArray("saplings", positions);
+//$$            nbt.putLongArray("times", times);
 //$$            NbtIo.write(nbt, saveFile.toPath());
 //$$        } catch (IOException e) {
 //$$            e.printStackTrace();

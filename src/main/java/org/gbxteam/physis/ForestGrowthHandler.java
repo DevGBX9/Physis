@@ -43,25 +43,75 @@ public class ForestGrowthHandler {
     //#if MC >= 260100
 //$$    public static void tick(ServerLevel level) {
 //$$        // Balanced growth (Check roughly every 20 seconds)
-//$$        if (level.getGameTime() % 400 != 0) return;
+//$$        if (level.getGameTime() % 400 == 0) {
+//$$            RandomSource random = level.getRandom();
+//$$            level.players().forEach(player -> {
+//$$                BlockPos playerPos = player.blockPosition();
+//$$                // 1. NEARBY (Natural scattering)
+//$$                for (int i = 0; i < 2; i++) {
+//$$                    processGrowth(level, playerPos.offset(random.nextInt(48) - 24, 0, random.nextInt(48) - 24), false);
+//$$                }
+//$$                // 2. GLOBAL (Sparse expansion)
+//$$                for (int i = 0; i < 5; i++) { 
+//$$                    int rx = random.nextInt(1000) - 500;
+//$$                    int rz = random.nextInt(1000) - 500;
+//$$                    processGrowth(level, playerPos.offset(rx, 0, rz), true);
+//$$                }
+//$$            });
+//$$        }
 //$$
-//$$        RandomSource random = level.getRandom();
+//$$        // Dynamic Health Checks (Every second check a batch or every tick check if needed)
+//$$        // Let's run health checks check every 2 seconds (40 ticks)
+//$$        if (level.getGameTime() % 40 == 0) {
+//$$            runHealthChecks(level);
+//$$        }
+//$$    }
+//$$
+//$$    private static void runHealthChecks(ServerLevel level) {
+//$$        long currentTime = level.getGameTime();
+//$$        ForestGrowthData data = ForestGrowthData.get(level);
 //$$        
-//$$        level.players().forEach(player -> {
-//$$            BlockPos playerPos = player.blockPosition();
+//$$        data.getAllTrackedSaplings().forEach((posLong, lastTime) -> {
+//$$            BlockPos pos = BlockPos.of(posLong);
+//$$            if (!level.isLoaded(pos)) return;
 //$$
-//$$            // 1. NEARBY (Natural scattering)
-//$$            for (int i = 0; i < 2; i++) {
-//$$                processGrowth(level, playerPos.offset(random.nextInt(48) - 24, 0, random.nextInt(48) - 24), false);
+//$$            BlockState state = level.getBlockState(pos);
+//$$            if (!(state.getBlock() instanceof SaplingBlock || state.getBlock() == Blocks.AZALEA || state.getBlock() == Blocks.MANGROVE_PROPAGULE)) {
+//$$                // If it's no longer a sapling (grew into tree or removed), stop tracking
+//$$                data.removeSapling(pos);
+//$$                return;
 //$$            }
 //$$
-//$$            // 2. GLOBAL (Sparse expansion)
-//$$            for (int i = 0; i < 5; i++) { 
-//$$                int rx = random.nextInt(1000) - 500;
-//$$                int rz = random.nextInt(1000) - 500;
-//$$                processGrowth(level, playerPos.offset(rx, 0, rz), true);
+//$$            long age = currentTime - lastTime;
+//$$            // First check at 30s (600 ticks), then every 60s (1200 ticks)
+//$$            boolean isFirstCheck = age >= 600 && age < 640; // Small window for 1st check
+//$$            boolean isSubsequentCheck = age >= 1200; // Recurrent
+//$$
+//$$            if (isFirstCheck || isSubsequentCheck) {
+//$$                int spacing = getRequiredSpacing(state.getBlock());
+//$$                if (!isAreaClearForHealthCheck(level, pos, spacing)) {
+//$$                    level.setBlock(pos, Blocks.DEAD_BUSH.defaultBlockState(), 3);
+//$$                    data.removeSapling(pos);
+//$$                } else {
+//$$                    // Passed! Update time for next check
+//$$                    data.updateSaplingCheckTime(pos, currentTime);
+//$$                }
 //$$            }
 //$$        });
+//$$    }
+//$$
+//$$    private static boolean isAreaClearForHealthCheck(ServerLevel level, BlockPos pos, int radius) {
+//$$        // Same logic but we EXCLUDE the current pos
+//$$        for (BlockPos checkPos : BlockPos.betweenClosed(pos.offset(-radius, -1, -radius), pos.offset(radius, 3, radius))) {
+//$$            if (checkPos.equals(pos)) continue; // Don't check yourself
+//$$            
+//$$            BlockState state = level.getBlockState(checkPos);
+//$$            Block block = state.getBlock();
+//$$            if (block instanceof RotatedPillarBlock || block instanceof SaplingBlock || block == Blocks.AZALEA) {
+//$$                return false;
+//$$            }
+//$$        }
+//$$        return true;
 //$$    }
 //$$
 //$$    private static void processGrowth(ServerLevel level, BlockPos pos, boolean checkLoaded) {
@@ -71,9 +121,9 @@ public class ForestGrowthHandler {
 //$$        findNearbyForestType(level, targetPos, 4, 20).ifPresent(sapling -> {
 //$$            int spacing = getRequiredSpacing(sapling);
 //$$            boolean needs2x2 = (sapling == Blocks.DARK_OAK_SAPLING || sapling == Blocks.PALE_OAK_SAPLING);
+//$$            long currentTime = level.getGameTime();
 //$$            
 //$$            if (needs2x2) {
-//$$                // Check 2x2 area
 //$$                boolean clear = true;
 //$$                for (int x = 0; x < 2; x++) {
 //$$                    for (int z = 0; z < 2; z++) {
@@ -91,27 +141,23 @@ public class ForestGrowthHandler {
 //$$                        for (int z = 0; z < 2; z++) {
 //$$                            BlockPos subPos = targetPos.offset(x, 0, z);
 //$$                            level.setBlock(subPos, sapling.defaultBlockState(), 3);
-//$$                            ForestGrowthData.get(level).addSapling(subPos);
+//$$                            ForestGrowthData.get(level).addSapling(subPos, currentTime);
 //$$                        }
 //$$                    }
 //$$                }
 //$$            } else {
-//$$                // Standard 1x1 planting
 //$$                if (isSuitableForSapling(level, targetPos) && isAreaClear(level, targetPos, spacing)) {
 //$$                    level.setBlock(targetPos, sapling.defaultBlockState(), 3);
-//$$                    ForestGrowthData.get(level).addSapling(targetPos);
+//$$                    ForestGrowthData.get(level).addSapling(targetPos, currentTime);
 //$$                }
 //$$            }
 //$$        });
 //$$    }
 //$$
 //$$    private static boolean isAreaClear(ServerLevel level, BlockPos pos, int radius) {
-//$$        // Fast scan for logs or saplings in the required radius
 //$$        for (BlockPos checkPos : BlockPos.betweenClosed(pos.offset(-radius, -1, -radius), pos.offset(radius, 3, radius))) {
 //$$            BlockState state = level.getBlockState(checkPos);
 //$$            Block block = state.getBlock();
-//$$            
-//$$            // If we found a trunk, a sapling, or azalea, then the area is NOT clear
 //$$            if (block instanceof RotatedPillarBlock || block instanceof SaplingBlock || block == Blocks.AZALEA) {
 //$$                return false;
 //$$            }
@@ -120,18 +166,18 @@ public class ForestGrowthHandler {
 //$$    }
 //$$
 //$$    private static int getRequiredSpacing(Block sapling) {
-//$$        if (sapling == Blocks.OAK_SAPLING) return 3;
+//$$        if (sapling == Blocks.OAK_SAPLING) return 4;
 //$$        if (sapling == Blocks.BIRCH_SAPLING) return 3;
-//$$        if (sapling == Blocks.SPRUCE_SAPLING) return 5; // Defaulting to 5 for spruce
-//$$        if (sapling == Blocks.JUNGLE_SAPLING) return 5; // 5 for jungle (balance for giant vs small)
+//$$        if (sapling == Blocks.SPRUCE_SAPLING) return 4;
+//$$        if (sapling == Blocks.JUNGLE_SAPLING) return 4;
 //$$        if (sapling == Blocks.ACACIA_SAPLING) return 5;
-//$$        if (sapling == Blocks.DARK_OAK_SAPLING) return 4;
-//$$        if (sapling == Blocks.MANGROVE_PROPAGULE) return 5;
+//$$        if (sapling == Blocks.DARK_OAK_SAPLING) return 6;
+//$$        if (sapling == Blocks.MANGROVE_PROPAGULE) return 9;
 //$$        if (sapling == Blocks.CHERRY_SAPLING) return 6;
 //$$        if (sapling == Blocks.AZALEA) return 4;
-//$$        if (sapling == Blocks.PALE_OAK_SAPLING) return 5;
-//$$        if (sapling == Blocks.CRIMSON_FUNGUS || sapling == Blocks.WARPED_FUNGUS) return 4;
-//$$        return 3; // Default
+//$$        if (sapling == Blocks.PALE_OAK_SAPLING) return 7;
+//$$        if (sapling == Blocks.CRIMSON_FUNGUS || sapling == Blocks.WARPED_FUNGUS) return 3;
+//$$        return 4; // Default
 //$$    }
 //$$
 //$$    public static void executeFillBiome(ServerLevel level, BlockPos pos, ResourceKey<Biome> biomeKey) {
