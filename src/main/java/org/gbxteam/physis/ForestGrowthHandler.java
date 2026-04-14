@@ -42,21 +42,23 @@ public class ForestGrowthHandler {
     
     //#if MC >= 260100
 //$$    public static void tick(ServerLevel level) {
-//$$        // Extreme slow growth (Check roughly once every minute - 1200 ticks)
-//$$        if (level.getGameTime() % 1200 != 0) return;
+//$$        // Balanced growth (Check roughly every 20 seconds)
+//$$        if (level.getGameTime() % 400 != 0) return;
 //$$
 //$$        RandomSource random = level.getRandom();
 //$$        
 //$$        level.players().forEach(player -> {
 //$$            BlockPos playerPos = player.blockPosition();
 //$$
-//$$            // 1. NEARBY (Very slow seed scattering)
-//$$            processGrowth(level, playerPos.offset(random.nextInt(48) - 24, 0, random.nextInt(48) - 24), false);
+//$$            // 1. NEARBY (Natural scattering)
+//$$            for (int i = 0; i < 2; i++) {
+//$$                processGrowth(level, playerPos.offset(random.nextInt(48) - 24, 0, random.nextInt(48) - 24), false);
+//$$            }
 //$$
 //$$            // 2. GLOBAL (Sparse expansion)
-//$$            for (int i = 0; i < 3; i++) { 
-//$$                int rx = random.nextInt(800) - 400;
-//$$                int rz = random.nextInt(800) - 400;
+//$$            for (int i = 0; i < 5; i++) { 
+//$$                int rx = random.nextInt(1000) - 500;
+//$$                int rz = random.nextInt(1000) - 500;
 //$$                processGrowth(level, playerPos.offset(rx, 0, rz), true);
 //$$            }
 //$$        });
@@ -66,18 +68,41 @@ public class ForestGrowthHandler {
 //$$        BlockPos targetPos = level.getHeightmapPos(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING, pos);
 //$$        if (checkLoaded && !level.isLoaded(targetPos)) return;
 //$$
-//$$        if (isSuitableForSapling(level, targetPos)) {
-//$$            findNearbyForestType(level, targetPos, 4, 20).ifPresent(sapling -> {
-//$$                int spacing = getRequiredSpacing(sapling);
+//$$        findNearbyForestType(level, targetPos, 4, 20).ifPresent(sapling -> {
+//$$            int spacing = getRequiredSpacing(sapling);
+//$$            boolean needs2x2 = (sapling == Blocks.DARK_OAK_SAPLING || sapling == Blocks.PALE_OAK_SAPLING);
+//$$            
+//$$            if (needs2x2) {
+//$$                // Check 2x2 area
+//$$                boolean clear = true;
+//$$                for (int x = 0; x < 2; x++) {
+//$$                    for (int z = 0; z < 2; z++) {
+//$$                        BlockPos subPos = targetPos.offset(x, 0, z);
+//$$                        if (!isSuitableForSapling(level, subPos) || !isAreaClear(level, subPos, spacing)) {
+//$$                            clear = false;
+//$$                            break;
+//$$                        }
+//$$                    }
+//$$                    if (!clear) break;
+//$$                }
 //$$                
-//$$                // Smart Space-Aware Planting
-//$$                if (isAreaClear(level, targetPos, spacing)) {
+//$$                if (clear) {
+//$$                    for (int x = 0; x < 2; x++) {
+//$$                        for (int z = 0; z < 2; z++) {
+//$$                            BlockPos subPos = targetPos.offset(x, 0, z);
+//$$                            level.setBlock(subPos, sapling.defaultBlockState(), 3);
+//$$                            ForestGrowthData.get(level).addSapling(subPos);
+//$$                        }
+//$$                    }
+//$$                }
+//$$            } else {
+//$$                // Standard 1x1 planting
+//$$                if (isSuitableForSapling(level, targetPos) && isAreaClear(level, targetPos, spacing)) {
 //$$                    level.setBlock(targetPos, sapling.defaultBlockState(), 3);
-//$$                    // Register this sapling as mod-planted
 //$$                    ForestGrowthData.get(level).addSapling(targetPos);
 //$$                }
-//$$            });
-//$$        }
+//$$            }
+//$$        });
 //$$    }
 //$$
 //$$    private static boolean isAreaClear(ServerLevel level, BlockPos pos, int radius) {
