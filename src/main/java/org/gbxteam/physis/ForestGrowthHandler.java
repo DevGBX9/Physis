@@ -43,18 +43,18 @@ public class ForestGrowthHandler {
     //#if MC >= 260100
 //$$    public static void tick(ServerLevel level) {
 //$$        long gameTime = level.getGameTime();
-//$$        // Balanced growth (Check roughly every 15 seconds)
-//$$        if (gameTime % 300 == 0) {
+//$$        // INSANE SPEED (Every 1 second)
+//$$        if (gameTime % 20 == 0) {
 //$$            RandomSource random = level.getRandom();
 //$$            level.players().forEach(player -> {
 //$$                BlockPos playerPos = player.blockPosition();
-//$$                // NEARBY (Scattering)
-//$$                for (int i = 0; i < 4; i++) {
-//$$                    processGrowth(level, playerPos.offset(random.nextInt(64) - 32, 0, random.nextInt(64) - 32), false);
+//$$                // MASSIVE SCATTERING
+//$$                for (int i = 0; i < 20; i++) {
+//$$                    processGrowth(level, playerPos.offset(random.nextInt(100) - 50, 0, random.nextInt(100) - 50), false);
 //$$                }
-//$$                // GLOBAL (Expansion)
-//$$                for (int i = 0; i < 10; i++) { 
-//$$                    processGrowth(level, playerPos.offset(random.nextInt(1200) - 600, 0, random.nextInt(1200) - 600), true);
+//$$                // MASSIVE EXPANSION
+//$$                for (int i = 0; i < 50; i++) { 
+//$$                    processGrowth(level, playerPos.offset(random.nextInt(2000) - 1000, 0, random.nextInt(2000) - 1000), true);
 //$$                }
 //$$            });
 //$$        }
