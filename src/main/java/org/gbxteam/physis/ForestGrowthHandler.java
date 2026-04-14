@@ -44,15 +44,18 @@ public class ForestGrowthHandler {
 //$$    public static void tick(ServerLevel level) {
 //$$        RandomSource random = level.getRandom();
 //$$        
-//$$        // Extreme Speed for testing
+//$$        // Extreme Speed and Wide Range for all loaded chunks
 //$$        level.players().forEach(player -> {
-//$$            for (int i = 0; i < 10; i++) { // 10 attempts per tick
+//$$            for (int i = 0; i < 50; i++) { // 50 attempts to cover huge radius
 //$$                BlockPos playerPos = player.blockPosition();
-//$$                int rx = random.nextInt(64) - 32;
-//$$                int rz = random.nextInt(64) - 32;
+//$$                
+//$$                // Wide Search: 400 blocks radius (covers loaded distance)
+//$$                int rx = random.nextInt(800) - 400;
+//$$                int rz = random.nextInt(800) - 400;
 //$$                BlockPos targetPos = level.getHeightmapPos(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING, playerPos.offset(rx, 0, rz));
 //$$
-//$$                if (isSuitableForSapling(level, targetPos) && !isOvercrowded(level, targetPos)) {
+//$$                // Only process if the chunk is actually loaded and ready
+//$$                if (level.hasChunkAt(targetPos) && isSuitableForSapling(level, targetPos) && !isOvercrowded(level, targetPos)) {
 //$$                    findNearbyForestType(level, targetPos, 4, 15).ifPresent(sapling -> {
 //$$                        level.setBlock(targetPos, sapling.defaultBlockState(), 3);
 //$$                        
