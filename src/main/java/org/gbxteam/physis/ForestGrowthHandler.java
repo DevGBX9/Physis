@@ -75,7 +75,8 @@ public class ForestGrowthHandler {
 //$$                // Smart Space-Aware Planting
 //$$                if (isAreaClear(level, targetPos, spacing)) {
 //$$                    level.setBlock(targetPos, sapling.defaultBlockState(), 3);
-//$$                    // Biome transformation removed from here - it will happen in SaplingBlockMixin
+//$$                    // Register this sapling as mod-planted
+//$$                    ForestGrowthData.get(level).addSapling(targetPos);
 //$$                }
 //$$            });
 //$$        }
