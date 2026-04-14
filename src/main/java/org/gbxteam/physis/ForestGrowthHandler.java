@@ -33,6 +33,7 @@ package org.gbxteam.physis;
 //$$ import net.minecraft.world.level.block.Blocks;
 //$$ import net.minecraft.world.level.block.LeavesBlock;
 //$$ import net.minecraft.world.level.block.RotatedPillarBlock;
+//$$ import net.minecraft.world.level.block.SaplingBlock;
 //$$ import net.minecraft.world.level.block.state.BlockState;
 //$$ import java.util.Optional;
 //#endif
@@ -43,24 +44,49 @@ public class ForestGrowthHandler {
 //$$    public static void tick(ServerLevel level) {
 //$$        RandomSource random = level.getRandom();
 //$$        
-//$$        level.players().forEach(player -> {
-//$$            for (int i = 0; i < 5; i++) {
-//$$                BlockPos playerPos = player.blockPosition();
-//$$                int rx = random.nextInt(48) - 24;
-//$$                int rz = random.nextInt(48) - 24;
-//$$                BlockPos targetPos = level.getHeightmapPos(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING, playerPos.offset(rx, 0, rz));
+//$$        // Realistic growth speed: 1 attempt per player roughly every 2 seconds on average
+//$$        if (random.nextInt(40) != 0) return; 
 //$$
-//$$                if (isSuitableForSapling(level, targetPos)) {
-//$$                    findNearbyForestType(level, targetPos, 2, 10).ifPresent(sapling -> {
-//$$                        level.setBlock(targetPos, sapling.defaultBlockState(), 3);
-//$$                        
-//$$                        getRelatedBiomeKey(sapling).ifPresent(biomeKey -> {
-//$$                            executeFillBiome(level, targetPos, biomeKey);
-//$$                        });
+//$$        level.players().forEach(player -> {
+//$$            BlockPos playerPos = player.blockPosition();
+//$$            // Search in a 32x32 area around player
+//$$            int rx = random.nextInt(64) - 32;
+//$$            int rz = random.nextInt(64) - 32;
+//$$            BlockPos targetPos = level.getHeightmapPos(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING, playerPos.offset(rx, 0, rz));
+//$$
+//$$            // Logic Part 1: Check if spot is suitable and NOT overcrowded (Expansion Logic)
+//$$            if (isSuitableForSapling(level, targetPos) && !isOvercrowded(level, targetPos)) {
+//$$                
+//$$                // Logic Part 2: Find a forest tree nearby (min 4, max 12 blocks) to represent an "edge"
+//$$                findNearbyForestType(level, targetPos, 4, 12).ifPresent(sapling -> {
+//$$                    level.setBlock(targetPos, sapling.defaultBlockState(), 3);
+//$$                    
+//$$                    getRelatedBiomeKey(sapling).ifPresent(biomeKey -> {
+//$$                        executeFillBiome(level, targetPos, biomeKey);
 //$$                    });
-//$$                }
+//$$                });
 //$$            }
 //$$        });
+//$$    }
+//$$
+//$$    private static boolean isOvercrowded(ServerLevel level, BlockPos pos) {
+//$$        int treeOrSaplingCount = 0;
+//$$        int radius = 4;
+//$$        
+//$$        // Look around for existing trees or saplings in a 9x9 area
+//$$        for (BlockPos checkPos : BlockPos.betweenClosed(pos.offset(-radius, -1, -radius), pos.offset(radius, 4, radius))) {
+//$$            BlockState state = level.getBlockState(checkPos);
+//$$            if (state.getBlock() instanceof RotatedPillarBlock || 
+//$$                state.getBlock() instanceof LeavesBlock || 
+//$$                state.getBlock() instanceof SaplingBlock ||
+//$$                state.is(Blocks.AZALEA)) {
+//$$                treeOrSaplingCount++;
+//$$            }
+//$$            
+//$$            // If we found more than 2 tree parts, it's already a wooded area, don't plant inside
+//$$            if (treeOrSaplingCount > 2) return true;
+//$$        }
+//$$        return false;
 //$$    }
 //$$
 //$$    private static void executeFillBiome(ServerLevel level, BlockPos pos, ResourceKey<Biome> biomeKey) {
@@ -68,8 +94,7 @@ public class ForestGrowthHandler {
 //$$        BlockPos min = pos.offset(-radius, -2, -radius);
 //$$        BlockPos max = pos.offset(radius, 2, radius);
 //$$        
-//$$        // Final and mapping-independent way to get the biome ID from ResourceKey
-//$$        String keyStr = biomeKey.toString(); // e.g., "ResourceKey[minecraft:worldgen/biome / minecraft:forest]"
+//$$        String keyStr = biomeKey.toString();
 //$$        String biomeName = keyStr.substring(keyStr.lastIndexOf("/") + 1, keyStr.length() - 1).trim();
 //$$        
 //$$        String command = String.format("fillbiome %d %d %d %d %d %d %s", 
@@ -97,7 +122,8 @@ public class ForestGrowthHandler {
 //$$
 //$$    private static Optional<Block> findNearbyForestType(ServerLevel level, BlockPos pos, int minRadius, int maxRadius) {
 //$$        RandomSource random = level.getRandom();
-//$$        for (int i = 0; i < 15; i++) {
+//$$        // Scan 20 random points in the ring range to find a parent tree
+//$$        for (int i = 0; i < 20; i++) {
 //$$            double angle = random.nextDouble() * 2 * Math.PI;
 //$$            int dist = minRadius + random.nextInt(maxRadius - minRadius);
 //$$            int dx = (int) (Math.cos(angle) * dist);
