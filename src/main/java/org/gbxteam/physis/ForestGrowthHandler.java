@@ -146,13 +146,28 @@ public class ForestGrowthHandler {
 //$$    }
 //$$
 //$$    private static boolean isAreaClearForHealthCheck(ServerLevel level, BlockPos pos, int radius) {
-//$$        // Same logic but we EXCLUDE the current pos
+//$$        BlockState currentState = level.getBlockState(pos);
+//$$        Block currentBlock = currentState.getBlock();
+//$$        boolean is2x2Tree = (currentBlock == Blocks.DARK_OAK_SAPLING || currentBlock == Blocks.PALE_OAK_SAPLING);
+//$$
 //$$        for (BlockPos checkPos : BlockPos.betweenClosed(pos.offset(-radius, -1, -radius), pos.offset(radius, 3, radius))) {
-//$$            if (checkPos.equals(pos)) continue; // Don't check yourself
+//$$            if (checkPos.equals(pos)) continue;
 //$$            
 //$$            BlockState state = level.getBlockState(checkPos);
 //$$            Block block = state.getBlock();
+//$$            
 //$$            if (block instanceof RotatedPillarBlock || block instanceof SaplingBlock || block == Blocks.AZALEA) {
+//$$                // Special 2x2 bypass: If this is a Dark/Pale Oak, ignore its 2x2 partners
+//$$                if (is2x2Tree && block == currentBlock) {
+//$$                    int dx = Math.abs(checkPos.getX() - pos.getX());
+//$$                    int dz = Math.abs(checkPos.getZ() - pos.getZ());
+//$$                    if (dx <= 1 && dz <= 1) {
+//$$                        // Check if they are part of a contiguous 2x2 formation
+//$$                        // For simplicity, we allow any 1x1 neighbor of the same type to not count for crowding
+//$$                        // if it's a 2x2 species.
+//$$                        continue;
+//$$                    }
+//$$                }
 //$$                return false;
 //$$            }
 //$$        }
