@@ -65,12 +65,12 @@ public class ForestGrowthHandler {
 //$$        });
 //$$        
 //$$        // Also handle the Spawn Chunks (Absolute even if no players)
-//$$        BlockPos spawnPos = level.getSharedSpawnPos();
+//$$        BlockPos spawnPos = level.getLevelData().getSpawnPos();
 //$$        for (int i = 0; i < 20; i++) {
 //$$            int rx = random.nextInt(512) - 256;
 //$$            int rz = random.nextInt(512) - 256;
 //$$            BlockPos targetPos = level.getHeightmapPos(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING, spawnPos.offset(rx, 0, rz));
-//$$            if (level.hasChunkAt(targetPos) && isSuitableForSapling(level, targetPos) && !isOvercrowded(level, targetPos)) {
+//$$            if (level.isLoaded(targetPos) && isSuitableForSapling(level, targetPos) && !isOvercrowded(level, targetPos)) {
 //$$                findNearbyForestType(level, targetPos, 4, 15).ifPresent(sapling -> {
 //$$                    level.setBlock(targetPos, sapling.defaultBlockState(), 3);
 //$$                    getRelatedBiomeKey(sapling).ifPresent(biomeKey -> executeFillBiome(level, targetPos, biomeKey));
