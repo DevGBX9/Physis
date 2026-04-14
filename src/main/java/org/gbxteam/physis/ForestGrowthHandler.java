@@ -42,28 +42,25 @@ public class ForestGrowthHandler {
     
     //#if MC >= 260100
 //$$    public static void tick(ServerLevel level) {
+//$$        long gameTime = level.getGameTime();
 //$$        // Balanced growth (Check roughly every 20 seconds)
-//$$        if (level.getGameTime() % 400 == 0) {
+//$$        if (gameTime % 400 == 0) {
 //$$            RandomSource random = level.getRandom();
 //$$            level.players().forEach(player -> {
 //$$                BlockPos playerPos = player.blockPosition();
-//$$                // 1. NEARBY (Natural scattering)
 //$$                for (int i = 0; i < 2; i++) {
 //$$                    processGrowth(level, playerPos.offset(random.nextInt(48) - 24, 0, random.nextInt(48) - 24), false);
 //$$                }
-//$$                // 2. GLOBAL (Sparse expansion)
 //$$                for (int i = 0; i < 5; i++) { 
-//$$                    int rx = random.nextInt(1000) - 500;
-//$$                    int rz = random.nextInt(1000) - 500;
-//$$                    processGrowth(level, playerPos.offset(rx, 0, rz), true);
+//$$                    processGrowth(level, playerPos.offset(random.nextInt(1000) - 500, 0, random.nextInt(1000) - 500), true);
 //$$                }
 //$$            });
 //$$        }
 //$$
-//$$        // Dynamic Health Checks (Every second check a batch or every tick check if needed)
-//$$        // Let's run health checks check every 2 seconds (40 ticks)
-//$$        if (level.getGameTime() % 40 == 0) {
+//$$        // Periodic checks (Every 2 seconds)
+//$$        if (gameTime % 40 == 0) {
 //$$            runHealthChecks(level);
+//$$            runCompostChecks(level);
 //$$        }
 //$$    }
 //$$
@@ -77,27 +74,59 @@ public class ForestGrowthHandler {
 //$$
 //$$            BlockState state = level.getBlockState(pos);
 //$$            if (!(state.getBlock() instanceof SaplingBlock || state.getBlock() == Blocks.AZALEA || state.getBlock() == Blocks.MANGROVE_PROPAGULE)) {
-//$$                // If it's no longer a sapling (grew into tree or removed), stop tracking
 //$$                data.removeSapling(pos);
 //$$                return;
 //$$            }
 //$$
 //$$            long age = currentTime - lastTime;
-//$$            // First check at 30s (600 ticks), then every 60s (1200 ticks)
-//$$            boolean isFirstCheck = age >= 600 && age < 640; // Small window for 1st check
-//$$            boolean isSubsequentCheck = age >= 1200; // Recurrent
-//$$
-//$$            if (isFirstCheck || isSubsequentCheck) {
+//$$            if ((age >= 600 && age < 640) || (age >= 1200)) {
 //$$                int spacing = getRequiredSpacing(state.getBlock());
 //$$                if (!isAreaClearForHealthCheck(level, pos, spacing)) {
 //$$                    level.setBlock(pos, Blocks.DEAD_BUSH.defaultBlockState(), 3);
 //$$                    data.removeSapling(pos);
+//$$                    // Mark for composting in 15s
+//$$                    data.addDeadBush(pos, currentTime);
 //$$                } else {
-//$$                    // Passed! Update time for next check
 //$$                    data.updateSaplingCheckTime(pos, currentTime);
 //$$                }
 //$$            }
 //$$        });
+//$$    }
+//$$
+//$$    private static void runCompostChecks(ServerLevel level) {
+//$$        long currentTime = level.getGameTime();
+//$$        ForestGrowthData data = ForestGrowthData.get(level);
+//$$
+//$$        data.getAllDeadBushes().forEach((posLong, deathTime) -> {
+//$$            BlockPos pos = BlockPos.of(posLong);
+//$$            if (!level.isLoaded(pos)) return;
+//$$
+//$$            if (currentTime - deathTime >= 300) { // 15 seconds
+//$$                if (level.getBlockState(pos).is(Blocks.DEAD_BUSH)) {
+//$$                    level.setBlock(pos, Blocks.AIR.defaultBlockState(), 3);
+//$$                    applyCompostEffect(level, pos);
+//$$                }
+//$$                data.removeDeadBush(pos);
+//$$            }
+//$$        });
+//$$    }
+//$$
+//$$    private static void applyCompostEffect(ServerLevel level, BlockPos pos) {
+//$$        // 3x3 Bonemeal effect
+//$$        for (int x = -1; x <= 1; x++) {
+//$$            for (int z = -1; z <= 1; z++) {
+//$$                BlockPos target = pos.offset(x, -1, z);
+//$$                if (level.getBlockState(target).is(Blocks.GRASS_BLOCK)) {
+//$$                    // Visual effect
+//$$                    level.levelEvent(2005, target.above(), 0);
+//$$                    // Basic fertilization (we use a command to avoid mapping issues with BoneMealItem)
+//$$                    // Actually, simple way: grow grass/flowers
+//$$                    level.getServer().getCommands().performPrefixedCommand(
+//$$                        level.getServer().createCommandSourceStack().withLevel(level).withSuppressedOutput(),
+//$$                        String.format("setblock %d %d %d short_grass keep", target.getX(), target.getY() + 1, target.getZ()));
+//$$                }
+//$$            }
+//$$        }
 //$$    }
 //$$
 //$$    private static boolean isAreaClearForHealthCheck(ServerLevel level, BlockPos pos, int radius) {
