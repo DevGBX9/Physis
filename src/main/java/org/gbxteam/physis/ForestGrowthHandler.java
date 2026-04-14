@@ -44,18 +44,16 @@ public class ForestGrowthHandler {
 //$$    public static void tick(ServerLevel level) {
 //$$        RandomSource random = level.getRandom();
 //$$        
-//$$        // Absolute World Growth: Every loaded chunk gets its chance
-//$$        // Note: Using a logic that targets everything the server is currently ticking
+//$$        // Absolute World Growth: Targets everything around players in a massive radius
 //$$        level.players().forEach(player -> {
 //$$            BlockPos playerPos = player.blockPosition();
-//$$            // We still use player centers to find loaded chunks effectively across versions
-//$$            // but we expand the radius to effectively cover the entire loaded world
+//$$            // 100 attempts per tick to cover the entire loaded world (1000 blocks radius)
 //$$            for (int i = 0; i < 100; i++) { 
 //$$                int rx = random.nextInt(2000) - 1000;
 //$$                int rz = random.nextInt(2000) - 1000;
 //$$                BlockPos targetPos = level.getHeightmapPos(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING, playerPos.offset(rx, 0, rz));
 //$$                
-//$$                if (level.hasChunkAt(targetPos) && isSuitableForSapling(level, targetPos) && !isOvercrowded(level, targetPos)) {
+//$$                if (level.isLoaded(targetPos) && isSuitableForSapling(level, targetPos) && !isOvercrowded(level, targetPos)) {
 //$$                    findNearbyForestType(level, targetPos, 4, 15).ifPresent(sapling -> {
 //$$                        level.setBlock(targetPos, sapling.defaultBlockState(), 3);
 //$$                        getRelatedBiomeKey(sapling).ifPresent(biomeKey -> executeFillBiome(level, targetPos, biomeKey));
@@ -63,20 +61,6 @@ public class ForestGrowthHandler {
 //$$                }
 //$$            }
 //$$        });
-//$$        
-//$$        // Also handle the Spawn Chunks (Absolute even if no players)
-//$$        BlockPos spawnPos = level.getLevelData().getSpawnPos();
-//$$        for (int i = 0; i < 20; i++) {
-//$$            int rx = random.nextInt(512) - 256;
-//$$            int rz = random.nextInt(512) - 256;
-//$$            BlockPos targetPos = level.getHeightmapPos(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING, spawnPos.offset(rx, 0, rz));
-//$$            if (level.isLoaded(targetPos) && isSuitableForSapling(level, targetPos) && !isOvercrowded(level, targetPos)) {
-//$$                findNearbyForestType(level, targetPos, 4, 15).ifPresent(sapling -> {
-//$$                    level.setBlock(targetPos, sapling.defaultBlockState(), 3);
-//$$                    getRelatedBiomeKey(sapling).ifPresent(biomeKey -> executeFillBiome(level, targetPos, biomeKey));
-//$$                });
-//$$            }
-//$$        }
 //$$    }
 //$$
 //$$    private static boolean isOvercrowded(ServerLevel level, BlockPos pos) {
