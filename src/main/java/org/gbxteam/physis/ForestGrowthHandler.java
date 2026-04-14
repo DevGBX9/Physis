@@ -88,7 +88,7 @@ public class ForestGrowthHandler {
 //$$            Block block = state.getBlock();
 //$$            
 //$$            // If we found a trunk, a sapling, or azalea, then the area is NOT clear
-//$$            if (block instanceof RotatedPillarBlock || block instanceof SaplingBlock || block.is(Blocks.AZALEA)) {
+//$$            if (block instanceof RotatedPillarBlock || block instanceof SaplingBlock || block == Blocks.AZALEA) {
 //$$                return false;
 //$$            }
 //$$        }
