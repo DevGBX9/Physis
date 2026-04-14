@@ -43,16 +43,18 @@ public class ForestGrowthHandler {
     //#if MC >= 260100
 //$$    public static void tick(ServerLevel level) {
 //$$        long gameTime = level.getGameTime();
-//$$        // Balanced growth (Check roughly every 20 seconds)
-//$$        if (gameTime % 400 == 0) {
+//$$        // Balanced growth (Check roughly every 15 seconds)
+//$$        if (gameTime % 300 == 0) {
 //$$            RandomSource random = level.getRandom();
 //$$            level.players().forEach(player -> {
 //$$                BlockPos playerPos = player.blockPosition();
-//$$                for (int i = 0; i < 2; i++) {
-//$$                    processGrowth(level, playerPos.offset(random.nextInt(48) - 24, 0, random.nextInt(48) - 24), false);
+//$$                // NEARBY (Scattering)
+//$$                for (int i = 0; i < 4; i++) {
+//$$                    processGrowth(level, playerPos.offset(random.nextInt(64) - 32, 0, random.nextInt(64) - 32), false);
 //$$                }
-//$$                for (int i = 0; i < 5; i++) { 
-//$$                    processGrowth(level, playerPos.offset(random.nextInt(1000) - 500, 0, random.nextInt(1000) - 500), true);
+//$$                // GLOBAL (Expansion)
+//$$                for (int i = 0; i < 10; i++) { 
+//$$                    processGrowth(level, playerPos.offset(random.nextInt(1200) - 600, 0, random.nextInt(1200) - 600), true);
 //$$                }
 //$$            });
 //$$        }
@@ -79,12 +81,12 @@ public class ForestGrowthHandler {
 //$$            }
 //$$
 //$$            long age = currentTime - lastTime;
+//$$            // Checks: first at 30s, then recurring every 60s
 //$$            if ((age >= 600 && age < 640) || (age >= 1200)) {
 //$$                int spacing = getRequiredSpacing(state.getBlock());
 //$$                if (!isAreaClearForHealthCheck(level, pos, spacing)) {
 //$$                    level.setBlock(pos, Blocks.DEAD_BUSH.defaultBlockState(), 3);
 //$$                    data.removeSapling(pos);
-//$$                    // Mark for composting in 15s
 //$$                    data.addDeadBush(pos, currentTime);
 //$$                } else {
 //$$                    data.updateSaplingCheckTime(pos, currentTime);
@@ -112,18 +114,17 @@ public class ForestGrowthHandler {
 //$$    }
 //$$
 //$$    private static void applyCompostEffect(ServerLevel level, BlockPos pos) {
-//$$        // 3x3 Bonemeal effect
-//$$        for (int x = -1; x <= 1; x++) {
-//$$            for (int z = -1; z <= 1; z++) {
+//$$        // 5x5 Bonemeal area
+//$$        for (int x = -2; x <= 2; x++) {
+//$$            for (int z = -2; z <= 2; z++) {
 //$$                BlockPos target = pos.offset(x, -1, z);
 //$$                if (level.getBlockState(target).is(Blocks.GRASS_BLOCK)) {
-//$$                    // Visual effect
-//$$                    level.levelEvent(2005, target.above(), 0);
-//$$                    // Basic fertilization (we use a command to avoid mapping issues with BoneMealItem)
-//$$                    // Actually, simple way: grow grass/flowers
-//$$                    level.getServer().getCommands().performPrefixedCommand(
-//$$                        level.getServer().createCommandSourceStack().withLevel(level).withSuppressedOutput(),
-//$$                        String.format("setblock %d %d %d short_grass keep", target.getX(), target.getY() + 1, target.getZ()));
+//$$                    if (level.getRandom().nextFloat() < 0.7f) { // 70% chance per block
+//$$                        level.levelEvent(2005, target.above(), 0);
+//$$                        level.getServer().getCommands().performPrefixedCommand(
+//$$                            level.getServer().createCommandSourceStack().withLevel(level).withSuppressedOutput(),
+//$$                            String.format("setblock %d %d %d short_grass keep", target.getX(), target.getY() + 1, target.getZ()));
+//$$                    }
 //$$                }
 //$$            }
 //$$        }
