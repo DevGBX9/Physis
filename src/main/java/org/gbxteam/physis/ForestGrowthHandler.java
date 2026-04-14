@@ -44,17 +44,32 @@ public class ForestGrowthHandler {
 //$$    public static void tick(ServerLevel level) {
 //$$        RandomSource random = level.getRandom();
 //$$        
-//$$        // Absolute World Growth: Targets everything around players in a massive radius
+//$$        // Extreme Mixed Strategy: Fast nearby + Global expansion
 //$$        level.players().forEach(player -> {
 //$$            BlockPos playerPos = player.blockPosition();
-//$$            // 100 attempts per tick to cover the entire loaded world (1000 blocks radius)
-//$$            for (int i = 0; i < 100; i++) { 
+//$$
+//$$            // 1. NEARBY EXPLOSION (30 attempts in 32 blocks radius)
+//$$            // Visible impact right under player's feet
+//$$            for (int i = 0; i < 30; i++) { 
+//$$                int rx = random.nextInt(64) - 32;
+//$$                int rz = random.nextInt(64) - 32;
+//$$                BlockPos targetPos = level.getHeightmapPos(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING, playerPos.offset(rx, 0, rz));
+//$$                if (isSuitableForSapling(level, targetPos) && !isOvercrowded(level, targetPos)) {
+//$$                    findNearbyForestType(level, targetPos, 4, 15).ifPresent(sapling -> {
+//$$                        level.setBlock(targetPos, sapling.defaultBlockState(), 3);
+//$$                        getRelatedBiomeKey(sapling).ifPresent(biomeKey -> executeFillBiome(level, targetPos, biomeKey));
+//$$                    });
+//$$                }
+//$$            }
+//$$
+//$$            // 2. GLOBAL EXPANSION (150 attempts in 1000 blocks radius)
+//$$            // Covers all loaded chunks in the horizon
+//$$            for (int i = 0; i < 150; i++) { 
 //$$                int rx = random.nextInt(2000) - 1000;
 //$$                int rz = random.nextInt(2000) - 1000;
 //$$                BlockPos targetPos = level.getHeightmapPos(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING, playerPos.offset(rx, 0, rz));
-//$$                
 //$$                if (level.isLoaded(targetPos) && isSuitableForSapling(level, targetPos) && !isOvercrowded(level, targetPos)) {
-//$$                    findNearbyForestType(level, targetPos, 4, 15).ifPresent(sapling -> {
+//$$                    findNearbyForestType(level, targetPos, 4, 20).ifPresent(sapling -> {
 //$$                        level.setBlock(targetPos, sapling.defaultBlockState(), 3);
 //$$                        getRelatedBiomeKey(sapling).ifPresent(biomeKey -> executeFillBiome(level, targetPos, biomeKey));
 //$$                    });
