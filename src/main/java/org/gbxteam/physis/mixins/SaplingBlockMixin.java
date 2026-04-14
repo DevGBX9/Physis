@@ -14,12 +14,14 @@ package org.gbxteam.physis.mixins;
 
 //$$ @Mixin(SaplingBlock.class)
 //$$ public class SaplingBlockMixin {
-//$$    @Inject(method = "advanceTree", at = @At("HEAD"))
+//$$    @Inject(method = "advanceTree", at = @At("TAIL"))
 //$$    private void onAdvanceTree(ServerLevel level, BlockPos pos, BlockState state, RandomSource random, CallbackInfo ci) {
-//$$        // When a tree grows, change the biome around it
-//$$        ForestGrowthHandler.getRelatedBiomeKey(state.getBlock()).ifPresent(biomeKey -> {
-//$$            ForestGrowthHandler.executeFillBiome(level, pos, biomeKey);
-//$$        });
+//$$        // Only change biome if the sapling actually turned into a tree (is no longer a sapling)
+//$$        if (!(level.getBlockState(pos).getBlock() instanceof SaplingBlock)) {
+//$$            ForestGrowthHandler.getRelatedBiomeKey(state.getBlock()).ifPresent(biomeKey -> {
+//$$                ForestGrowthHandler.executeFillBiome(level, pos, biomeKey);
+//$$            });
+//$$        }
 //$$    }
 //$$ }
 //#endif
