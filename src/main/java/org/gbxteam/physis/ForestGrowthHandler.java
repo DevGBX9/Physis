@@ -250,9 +250,12 @@ public class ForestGrowthHandler {
 //$$        BlockPos bestTarget = null;
 //$$        int bestScore = -1;
 //$$        
-//$$        for (int i = 0; i < ((isGrass || isBush) ? 6 : 4); i++) {
-//$$            int ox = random.nextInt(9) - 4;
-//$$            int oz = random.nextInt(9) - 4;
+//$$        // Grass/bush search wider area for natural spread, others stay close
+//$$        int searchSpread = (isGrass || isBush) ? 6 : 4;
+//$$        for (int i = 0; i < ((isGrass || isBush) ? 8 : 4); i++) {
+//$$            int ox = random.nextInt(searchSpread * 2 + 1) - searchSpread;
+//$$            int oz = random.nextInt(searchSpread * 2 + 1) - searchSpread;
+//$$            if (ox == 0 && oz == 0) continue; // Skip source position
 //$$            
 //$$            BlockPos target;
 //$$            if (isWaterPlant) {
@@ -279,9 +282,11 @@ public class ForestGrowthHandler {
 //$$            if (isFireflyBush && !isNearWater(level, target, 2)) continue;
 //$$            
 //$$            // Minimum spacing: reject if same plant is too close (prevent clustering)
+//$$            // IMPORTANT: exclude the source position itself from this check!
 //$$            boolean tooClose = false;
 //$$            int minSpacing = isGrass ? 2 : (isFireflyBush ? 4 : 2);
 //$$            for (BlockPos sp : BlockPos.betweenClosed(target.offset(-minSpacing, -1, -minSpacing), target.offset(minSpacing, 1, minSpacing))) {
+//$$                if (sp.equals(sourcePos)) continue; // Don't count the source plant
 //$$                if (level.getBlockState(sp).getBlock() == block) {
 //$$                    tooClose = true;
 //$$                    break;
