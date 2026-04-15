@@ -78,14 +78,14 @@ public class ForestGrowthHandler {
 //$$        // Multiplier based on /tick rate. Standard is 20.
 //$$        int speedMultiplier = Math.max(1, (int)(tps / 20.0f)); 
 //$$        
-//$$        // INSANE TEST MODE: Fast interval (~1 second normally, ~0.5 seconds in rain)
-//$$        int growthInterval = isRaining ? (10 / speedMultiplier) : (20 / speedMultiplier);
+//$$        // Natural growth interval: ~10 seconds normally, ~5 seconds in rain
+//$$        int growthInterval = isRaining ? (100 / speedMultiplier) : (200 / speedMultiplier);
 //$$        growthInterval = Math.max(1, growthInterval);
 //$$
 //$$        if (gameTime % growthInterval == 0) {
 //$$            RandomSource random = level.getRandom();
-//$$            int edgeAttempts = isRaining ? 120 : 60;
-//$$            int globalAttempts = isRaining ? 60 : 30;
+//$$            int edgeAttempts = isRaining ? 12 : 6;
+//$$            int globalAttempts = isRaining ? 6 : 3;
 //$$
 //$$            level.players().forEach(player -> {
 //$$                BlockPos playerPos = player.blockPosition();
@@ -107,7 +107,7 @@ public class ForestGrowthHandler {
 //$$                }
 //$$
 //$$                // [NEW] VEGETATION EXPANSION: Grass & Flowers spread organically
-//$$                for (int i = 0; i < edgeAttempts * 5; i++) {
+//$$                for (int i = 0; i < edgeAttempts * 3; i++) {
 //$$                    int ox = random.nextInt(100) - 50;
 //$$                    int oz = random.nextInt(100) - 50;
 //$$                    processVegetationExpansion(level, playerPos.offset(ox, 0, oz));
@@ -219,14 +219,12 @@ public class ForestGrowthHandler {
 //$$        float waterBoost = nearWaterSource ? 1.4f : 1.0f;
 //$$        
 //$$        // Spread rates (with water boost): Grass/Fern (100%), Bush (60-84%), Petal (35-49%), Flowers (15-21%)
-//$$        /* INSANE TEST MODE: Uncomment later
 //$$        if (!isGrass) {
 //$$            if (isFireflyBush && random.nextFloat() > 0.30f * waterBoost) return;
 //$$            else if (isBush && random.nextFloat() > 0.25f * waterBoost) return;
 //$$            else if (isPetal && random.nextFloat() > 0.35f * waterBoost) return;
 //$$            else if (!isBush && !isFireflyBush && !isPetal && random.nextFloat() > 0.15f * waterBoost) return;
 //$$        }
-//$$        */
 //$$        
 //$$        // Smart Level Spreading for Pink Petals
 //$$        if (isPetal) {
