@@ -69,7 +69,11 @@ public class ForestGrowthHandler {
 //$$        // [10] WEATHER IMPACT
 //$$        boolean isRaining = level.isRaining();
 //$$        boolean isThundering = level.isThundering();
-//$$        int growthInterval = isRaining ? 3000 : 6000;
+//$$        int randomTickSpeed = level.getGameRules().getInt(net.minecraft.world.level.GameRules.RULE_RANDOMTICKING);
+//$$        // Default randomTickSpeed is 3. If someone sets it higher, our forest grows proportionally faster!
+//$$        int speedMultiplier = Math.max(1, randomTickSpeed / 3);
+//$$        int growthInterval = isRaining ? (3000 / speedMultiplier) : (6000 / speedMultiplier);
+//$$        growthInterval = Math.max(1, growthInterval);
 //$$
 //$$        if (gameTime % growthInterval == 0) {
 //$$            RandomSource random = level.getRandom();
