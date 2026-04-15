@@ -192,11 +192,12 @@ public class ForestGrowthHandler {
 //$$        }
 //$$        
 //$$        // Spread rates: Grass/Fern (100%), Bush (40%), Petal (20%), everything else (2%)
-//$$        if (!isGrass) {
-//$$            if (isBush && random.nextFloat() > 0.40f) return;
-//$$            if (isPetal && random.nextFloat() > 0.20f) return;
-//$$            if (!isBush && !isPetal && random.nextFloat() > 0.02f) return;
-//$$        }
+//$$        // INSANE TEST MODE: ALL GROW FAST
+//$$        //if (!isGrass) {
+//$$        //    if (isBush && random.nextFloat() > 0.40f) return;
+//$$        //    if (isPetal && random.nextFloat() > 0.20f) return;
+//$$        //    if (!isBush && !isPetal && random.nextFloat() > 0.02f) return;
+//$$        //}
 //$$        
 //$$        // Smart Level Spreading for Pink Petals
 //$$        if (isPetal) {
