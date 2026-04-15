@@ -107,7 +107,7 @@ public class ForestGrowthHandler {
 //$$                }
 //$$
 //$$                // [NEW] VEGETATION EXPANSION: Grass & Flowers spread organically
-//$$                for (int i = 0; i < edgeAttempts * 2; i++) {
+//$$                for (int i = 0; i < edgeAttempts * 3; i++) {
 //$$                    int ox = random.nextInt(100) - 50;
 //$$                    int oz = random.nextInt(100) - 50;
 //$$                    processVegetationExpansion(level, playerPos.offset(ox, 0, oz));
@@ -239,7 +239,7 @@ public class ForestGrowthHandler {
 //$$        BlockPos bestTarget = null;
 //$$        int bestScore = -1;
 //$$        
-//$$        for (int i = 0; i < 4; i++) {
+//$$        for (int i = 0; i < ((isGrass || isBush) ? 6 : 4); i++) {
 //$$            int ox = random.nextInt(9) - 4;
 //$$            int oz = random.nextInt(9) - 4;
 //$$            
@@ -265,8 +265,12 @@ public class ForestGrowthHandler {
 //$$            if (!isWaterPlant && !tState.isAir()) continue;
 //$$            
 //$$            int score = 0;
-//$$            if (!isWaterPlant && isNearWater(level, target, 4)) score += 5;
-//$$            if (hasHeavyCanopy(level, target)) score += isFungus ? 8 : 2; 
+//$$            // Water attraction: grass & bush love water - check wider radius
+//$$            if (!isWaterPlant && isNearWater(level, target, (isGrass || isBush) ? 8 : 4)) score += (isGrass || isBush) ? 10 : 5;
+//$$            // Forest/tree attraction: grass & bush prefer growing near trees
+//$$            if ((isGrass || isBush) && hasHeavyCanopy(level, target)) score += 6;
+//$$            if (!(isGrass || isBush) && hasHeavyCanopy(level, target)) score += isFungus ? 8 : 2;
+//$$            // Randomness for natural variation
 //$$            score += random.nextInt(4);
 //$$            
 //$$            if (score > bestScore) {
@@ -275,7 +279,7 @@ public class ForestGrowthHandler {
 //$$            }
 //$$        }
 //$$        
-//$$        if (bestTarget != null && bestScore >= 1) {
+//$$        if (bestTarget != null && ((isGrass || isBush) ? bestScore >= 0 : bestScore >= 1)) {
 //$$            level.setBlock(bestTarget, state, 3);
 //$$        }
 //$$    }
