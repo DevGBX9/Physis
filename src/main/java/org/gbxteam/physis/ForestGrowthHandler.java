@@ -213,7 +213,7 @@ public class ForestGrowthHandler {
 //$$        // Spread rates (with water boost): Grass/Fern (100%), Bush (60-84%), Petal (35-49%), Flowers (15-21%)
 //$$        if (!isGrass) {
 //$$            if (isFireflyBush && random.nextFloat() > 0.30f * waterBoost) return;
-//$$            else if (isBush && random.nextFloat() > 0.60f * waterBoost) return;
+//$$            else if (isBush && random.nextFloat() > 0.25f * waterBoost) return;
 //$$            else if (isPetal && random.nextFloat() > 0.35f * waterBoost) return;
 //$$            else if (!isBush && !isFireflyBush && !isPetal && random.nextFloat() > 0.15f * waterBoost) return;
 //$$        }
@@ -235,24 +235,24 @@ public class ForestGrowthHandler {
 //$$            }
 //$$        }
 //$$        
-//$$        // Wider density check area (7x7 for grass, 5x5 for others) to create natural gaps
-//$$        int checkRadius = isGrass ? 3 : 2;
+//$$        // Density check area: Grass 5x5 (vanilla-like), Bush 7x7 (rare), others 5x5
+//$$        int checkRadius = (isBush || isFireflyBush) ? 3 : 2;
 //$$        for (BlockPos p : BlockPos.betweenClosed(sourcePos.offset(-checkRadius, -2, -checkRadius), sourcePos.offset(checkRadius, 2, checkRadius))) {
 //$$            if (level.getBlockState(p).getBlock() == block) {
 //$$                density++;
 //$$            }
 //$$        }
 //$$        
-//$$        // Max plants: Grass 3 (in 7x7), Bush 2, Firefly 1, Petal 3, Others 2
-//$$        int maxDensity = isGrass ? 3 : (isFireflyBush ? 1 : (isBush ? 2 : (isPetal ? 3 : 2)));
+//$$        // Max plants: Grass 6 (in 5x5, vanilla-like density), Bush 1 (rare in 7x7), Firefly 1, Petal 3, Others 2
+//$$        int maxDensity = isGrass ? 6 : (isFireflyBush ? 1 : (isBush ? 1 : (isPetal ? 3 : 2)));
 //$$        if (density >= maxDensity) return;
 //$$        
 //$$        BlockPos bestTarget = null;
 //$$        int bestScore = -1;
 //$$        
-//$$        // Grass/bush search wider area for natural spread, others stay close
-//$$        int searchSpread = (isGrass || isBush) ? 6 : 4;
-//$$        for (int i = 0; i < ((isGrass || isBush) ? 8 : 4); i++) {
+//$$        // Bush searches much wider (rare spread), grass stays moderate
+//$$        int searchSpread = isBush ? 10 : ((isGrass) ? 5 : 4);
+//$$        for (int i = 0; i < (isGrass ? 8 : (isBush ? 4 : 4)); i++) {
 //$$            int ox = random.nextInt(searchSpread * 2 + 1) - searchSpread;
 //$$            int oz = random.nextInt(searchSpread * 2 + 1) - searchSpread;
 //$$            if (ox == 0 && oz == 0) continue; // Skip source position
@@ -281,15 +281,17 @@ public class ForestGrowthHandler {
 //$$            // Firefly bush: target must be directly adjacent to water (within 2 blocks)
 //$$            if (isFireflyBush && !isNearWater(level, target, 2)) continue;
 //$$            
-//$$            // Minimum spacing: reject if same plant is too close (prevent clustering)
+//$$            // Minimum spacing: prevent clustering (grass allowed to touch like vanilla, bush stays far apart)
 //$$            // IMPORTANT: exclude the source position itself from this check!
 //$$            boolean tooClose = false;
-//$$            int minSpacing = isGrass ? 2 : (isFireflyBush ? 4 : 2);
-//$$            for (BlockPos sp : BlockPos.betweenClosed(target.offset(-minSpacing, -1, -minSpacing), target.offset(minSpacing, 1, minSpacing))) {
-//$$                if (sp.equals(sourcePos)) continue; // Don't count the source plant
-//$$                if (level.getBlockState(sp).getBlock() == block) {
-//$$                    tooClose = true;
-//$$                    break;
+//$$            int minSpacing = isBush ? 5 : (isFireflyBush ? 4 : 0);
+//$$            if (minSpacing > 0) {
+//$$                for (BlockPos sp : BlockPos.betweenClosed(target.offset(-minSpacing, -1, -minSpacing), target.offset(minSpacing, 1, minSpacing))) {
+//$$                    if (sp.equals(sourcePos)) continue; // Don't count the source plant
+//$$                    if (level.getBlockState(sp).getBlock() == block) {
+//$$                        tooClose = true;
+//$$                        break;
+//$$                    }
 //$$                }
 //$$            }
 //$$            if (tooClose) continue;
