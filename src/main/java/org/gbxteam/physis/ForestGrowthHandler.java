@@ -165,13 +165,7 @@ public class ForestGrowthHandler {
 //$$        if (!isVegetation || state == null) return;
 //$$        
 //$$        // Safe fallback: exclude double plants for simplicity to avoid breaking half-states 
-//$$        if (name.equals("tall_grass")) {
-//$$            block = Blocks.GRASS;
-//$$            state = block.defaultBlockState();
-//$$        } else if (name.equals("large_fern")) {
-//$$            block = Blocks.FERN;
-//$$            state = block.defaultBlockState();
-//$$        } else if (name.contains("sunflower") || name.contains("lilac") || name.contains("rose_bush") || name.contains("peony") || name.contains("tall") || name.contains("large") || name.contains("pitcher")) {
+//$$        if (name.contains("sunflower") || name.contains("lilac") || name.contains("rose_bush") || name.contains("peony") || name.contains("tall") || name.contains("large") || name.contains("pitcher")) {
 //$$            return; // Skip double plants
 //$$        }
 //$$        
