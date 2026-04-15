@@ -147,7 +147,7 @@ public class ForestGrowthHandler {
 //$$                           name.contains("dandelion") || name.contains("poppy") || name.contains("orchid") || 
 //$$                           name.contains("allium") || name.contains("tulip") || name.contains("daisy") || 
 //$$                           name.contains("peony") || name.contains("lilac") || name.contains("rose") || 
-//$$                           name.contains("sunflower") || name.contains("pickle");
+//$$                           name.contains("sunflower") || name.contains("pickle") || name.contains("petal");
 //$$            
 //$$            // Exclude base terrain blocks
 //$$            if (b == Blocks.GRASS_BLOCK || b == Blocks.MOSS_BLOCK || b == Blocks.DIRT || name.contains("leaves") || name.contains("log") || name.contains("wood")) {
@@ -175,13 +175,44 @@ public class ForestGrowthHandler {
 //$$        int density = 0;
 //$$        boolean isGrass = name.equals("grass") || name.equals("short_grass") || name.equals("fern");
 //$$        boolean isBush = name.equals("bush");
+//$$        boolean isPetal = name.contains("petal");
 //$$        boolean isFungus = name.contains("mushroom") || name.contains("fungus");
 //$$        boolean isWaterPlant = name.contains("kelp") || name.contains("seagrass") || name.contains("pickle");
 //$$        
-//$$        // Spread rates: Grass/Fern (100%), Bush (60%), everything else (2%)
+//$$        // Petals strictly restricted to Cherry biome areas (version-safe check by finding cherry trees nearby)
+//$$        if (isPetal) {
+//$$            boolean hasCherryTree = false;
+//$$            for (BlockPos cp : BlockPos.betweenClosed(sourcePos.offset(-8, 0, -8), sourcePos.offset(8, 15, 8))) {
+//$$                if (net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(level.getBlockState(cp).getBlock()).getPath().contains("cherry_leaves")) {
+//$$                    hasCherryTree = true;
+//$$                    break;
+//$$                }
+//$$            }
+//$$            if (!hasCherryTree) return; // Cannot spread outside its natural biome
+//$$        }
+//$$        
+//$$        // Spread rates: Grass/Fern (100%), Bush (40%), Petal (20%), everything else (2%)
 //$$        if (!isGrass) {
-//$$            if (isBush && random.nextFloat() > 0.60f) return;
-//$$            if (!isBush && random.nextFloat() > 0.02f) return;
+//$$            if (isBush && random.nextFloat() > 0.40f) return;
+//$$            if (isPetal && random.nextFloat() > 0.20f) return;
+//$$            if (!isBush && !isPetal && random.nextFloat() > 0.02f) return;
+//$$        }
+//$$        
+//$$        // Smart Level Spreading for Pink Petals
+//$$        if (isPetal) {
+//$$            for (net.minecraft.world.level.block.state.properties.Property<?> prop : state.getProperties()) {
+//$$                if (prop.getName().equals("amount") && prop instanceof net.minecraft.world.level.block.state.properties.IntegerProperty) {
+//$$                    net.minecraft.world.level.block.state.properties.IntegerProperty intProp = (net.minecraft.world.level.block.state.properties.IntegerProperty) prop;
+//$$                    int currentAmount = state.getValue(intProp);
+//$$                    // 50% chance to grow in place instead of spreading to a new block
+//$$                    if (currentAmount < 4 && random.nextBoolean()) {
+//$$                        level.setBlock(sourcePos, state.setValue(intProp, currentAmount + 1), 3);
+//$$                        return; // Successfully grew in place!
+//$$                    }
+//$$                    // If we spread, the new block should start fresh with 1 petal
+//$$                    state = state.setValue(intProp, 1);
+//$$                }
+//$$            }
 //$$        }
 //$$        
 //$$        for (BlockPos p : BlockPos.betweenClosed(sourcePos.offset(-2, -2, -2), sourcePos.offset(2, 2, 2))) {
@@ -190,8 +221,8 @@ public class ForestGrowthHandler {
 //$$            }
 //$$        }
 //$$        
-//$$        // Max plants in a 5x5 area: Grass 4, Bush 3, Others 2
-//$$        int maxDensity = isGrass ? 4 : (isBush ? 3 : 2);
+//$$        // Max plants in a 5x5 area: Grass 4, Bush/Petal 3, Others 2
+//$$        int maxDensity = isGrass ? 4 : (isBush || isPetal ? 3 : 2);
 //$$        if (density >= maxDensity) return;
 //$$        
 //$$        BlockPos bestTarget = null;
