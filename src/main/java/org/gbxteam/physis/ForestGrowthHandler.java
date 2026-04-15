@@ -76,16 +76,16 @@ public class ForestGrowthHandler {
 //$$        //#endif
 //$$
 //$$        // Multiplier based on /tick rate. Standard is 20.
-//$$        int speedMultiplier = Math.max(1, (int)(tps / 5.0f)); 
-//$$        // Note: we use tps/5 instead of tps/20 to give a more noticeable boost when testing.
+//$$        int speedMultiplier = Math.max(1, (int)(tps / 20.0f)); 
 //$$        
-//$$        int growthInterval = isRaining ? (3000 / speedMultiplier) : (6000 / speedMultiplier);
+//$$        // Natural growth interval: ~30 seconds normally, ~15 seconds in rain
+//$$        int growthInterval = isRaining ? (300 / speedMultiplier) : (600 / speedMultiplier);
 //$$        growthInterval = Math.max(1, growthInterval);
 //$$
 //$$        if (gameTime % growthInterval == 0) {
 //$$            RandomSource random = level.getRandom();
-//$$            int edgeAttempts = isRaining ? 8 : 4;
-//$$            int globalAttempts = isRaining ? 4 : 2;
+//$$            int edgeAttempts = isRaining ? 12 : 6;
+//$$            int globalAttempts = isRaining ? 6 : 3;
 //$$
 //$$            level.players().forEach(player -> {
 //$$                BlockPos playerPos = player.blockPosition();
@@ -202,11 +202,11 @@ public class ForestGrowthHandler {
 //$$            if (!hasCherryTree) return; // Cannot spread outside its natural biome
 //$$        }
 //$$        
-//$$        // Spread rates: Grass/Fern (100%), Bush (40%), Petal (20%), everything else (2%)
+//$$        // Spread rates: Grass/Fern (100%), Bush (60%), Petal (35%), Flowers (15%)
 //$$        if (!isGrass) {
-//$$            if (isBush && random.nextFloat() > 0.40f) return;
-//$$            if (isPetal && random.nextFloat() > 0.20f) return;
-//$$            if (!isBush && !isPetal && random.nextFloat() > 0.02f) return;
+//$$            if (isBush && random.nextFloat() > 0.60f) return;
+//$$            if (isPetal && random.nextFloat() > 0.35f) return;
+//$$            if (!isBush && !isPetal && random.nextFloat() > 0.15f) return;
 //$$        }
 //$$        
 //$$        // Smart Level Spreading for Pink Petals
@@ -275,7 +275,7 @@ public class ForestGrowthHandler {
 //$$            }
 //$$        }
 //$$        
-//$$        if (bestTarget != null && bestScore > 1) {
+//$$        if (bestTarget != null && bestScore >= 1) {
 //$$            level.setBlock(bestTarget, state, 3);
 //$$        }
 //$$    }
