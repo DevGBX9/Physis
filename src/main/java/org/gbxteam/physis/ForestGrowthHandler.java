@@ -157,7 +157,7 @@ public class ForestGrowthHandler {
 //$$                int dist = 2 + random.nextInt(4); // 2-5 blocks close range
 //$$                int ox = (int) (Math.cos(angle) * dist);
 //$$                int oz = (int) (Math.sin(angle) * dist);
-//$$                BlockPos targetPos = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING,
+//$$                BlockPos targetPos = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
 //$$                    treePos.offset(ox, 0, oz));
 //$$                plantAtPosition(level, targetPos, treePos);
 //$$            }
@@ -187,7 +187,7 @@ public class ForestGrowthHandler {
 //$$        // Add some randomness perpendicular to the direction for a natural look
 //$$        int perpX = (int) ((random.nextFloat() - 0.5f) * 4);
 //$$        int perpZ = (int) ((random.nextFloat() - 0.5f) * 4);
-//$$        BlockPos targetPos = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING,
+//$$        BlockPos targetPos = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
 //$$            treePos.offset(chosenDir[0] * spreadDist + perpX, 0, chosenDir[1] * spreadDist + perpZ));
 //$$
 //$$        // Step 5: Apply all smart checks and plant
@@ -202,8 +202,8 @@ public class ForestGrowthHandler {
 //$$            int oz = random.nextInt(maxRadius * 2) - maxRadius;
 //$$            BlockPos checkPos = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING, center.offset(ox, 0, oz)).below();
 //$$            BlockState state = level.getBlockState(checkPos);
-//$$            if (state.getBlock() instanceof RotatedPillarBlock) {
-//$$                return checkPos; // Found a log = found a tree
+//$$            if (state.getBlock() instanceof RotatedPillarBlock || state.getBlock() instanceof LeavesBlock) {
+//$$                return checkPos; // Found a log or leaves = found a tree
 //$$            }
 //$$        }
 //$$        return null;
@@ -532,7 +532,7 @@ public class ForestGrowthHandler {
 //$$        int maxDiff = 0;
 //$$        for (int x = -1; x <= 1; x++) {
 //$$            for (int z = -1; z <= 1; z++) {
-//$$                int y = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING, pos.offset(x, 0, z)).getY();
+//$$                int y = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, pos.offset(x, 0, z)).getY();
 //$$                maxDiff = Math.max(maxDiff, Math.abs(y - centerY));
 //$$            }
 //$$        }
