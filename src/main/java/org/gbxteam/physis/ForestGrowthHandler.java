@@ -37,6 +37,7 @@ package org.gbxteam.physis;
 //$$ import net.minecraft.world.level.block.SaplingBlock;
 //$$ import net.minecraft.world.level.block.state.BlockState;
 //$$ import net.minecraft.world.level.levelgen.Heightmap;
+//$$ import net.minecraft.world.level.GameRules;
 //$$ import java.util.Optional;
 //$$ import java.util.List;
 //$$ import java.util.ArrayList;
@@ -69,7 +70,7 @@ public class ForestGrowthHandler {
 //$$        // [10] WEATHER IMPACT
 //$$        boolean isRaining = level.isRaining();
 //$$        boolean isThundering = level.isThundering();
-//$$        int randomTickSpeed = level.getGameRules().getInt(net.minecraft.world.level.GameRules.RULE_RANDOMTICKING);
+//$$        int randomTickSpeed = level.getGameRules().getInt(GameRules.RULE_RANDOMTICKING);
 //$$        // Default randomTickSpeed is 3. If someone sets it higher, our forest grows proportionally faster!
 //$$        int speedMultiplier = Math.max(1, randomTickSpeed / 3);
 //$$        int growthInterval = isRaining ? (3000 / speedMultiplier) : (6000 / speedMultiplier);
