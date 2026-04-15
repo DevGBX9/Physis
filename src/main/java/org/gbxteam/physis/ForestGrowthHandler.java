@@ -94,6 +94,13 @@ public class ForestGrowthHandler {
 //$$                    int oz = random.nextInt(1200) - 600 + windBiasZ;
 //$$                    processEdgeExpansion(level, playerPos.offset(ox, 0, oz));
 //$$                }
+//$$
+//$$                // [NEW] VEGETATION EXPANSION: Grass & Flowers spread organically
+//$$                for (int i = 0; i < edgeAttempts * 2; i++) {
+//$$                    int ox = random.nextInt(100) - 50;
+//$$                    int oz = random.nextInt(100) - 50;
+//$$                    processVegetationExpansion(level, playerPos.offset(ox, 0, oz));
+//$$                }
 //$$            });
 //$$        }
 //$$
@@ -112,6 +119,63 @@ public class ForestGrowthHandler {
 //$$                    strikePos = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING, strikePos);
 //$$                    applyThunderDamage(level, strikePos);
 //$$                });
+//$$            }
+//$$        }
+//$$    }
+
+    // ==================== VEGETATION EXPANSION (GRASS & FLOWERS) ====================
+//$$    private static void processVegetationExpansion(ServerLevel level, BlockPos searchPos) {
+//$$        if (!level.isLoaded(searchPos)) return;
+//$$        BlockPos surface = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, searchPos);
+//$$        BlockState state = level.getBlockState(surface);
+//$$        Block block = state.getBlock();
+//$$        
+//$$        String name = net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(block).getPath();
+//$$        boolean isVegetation = block instanceof FlowerBlock || block instanceof TallGrassBlock || name.contains("grass") || name.contains("fern") || name.contains("flower") || name.contains("lily");
+//$$        
+//$$        // Exclude double plants to avoid breaking half-states, and exclude full grass blocks
+//$$        if (!isVegetation || block instanceof DoublePlantBlock || block == Blocks.GRASS_BLOCK || block == Blocks.SEAGRASS || block == Blocks.TALL_SEAGRASS) return;
+//$$        if (name.contains("large") || name.contains("tall")) return; // Safe fallback
+//$$        
+//$$        RandomSource random = level.getRandom();
+//$$        BlockPos bestTarget = null;
+//$$        int bestScore = -1;
+//$$        
+//$$        // Search 3 random adjacent spots to see the best place to spread
+//$$        for (int i = 0; i < 3; i++) {
+//$$            int ox = random.nextInt(9) - 4; // -4 to +4
+//$$            int oz = random.nextInt(9) - 4;
+//$$            BlockPos target = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, surface.offset(ox, 0, oz));
+//$$            
+//$$            BlockState tState = level.getBlockState(target);
+//$$            BlockState tGround = level.getBlockState(target.below());
+//$$            
+//$$            // Needs to be air on top of valid grass/dirt
+//$$            if (tState.isAir() && (tGround.is(Blocks.GRASS_BLOCK) || tGround.is(Blocks.MOSS_BLOCK) || tGround.is(Blocks.DIRT) || tGround.is(Blocks.PODZOL))) {
+//$$                // Make sure the block can actually survive here
+//$$                if (!state.canSurvive(level, target)) continue;
+//$$                
+//$$                int score = 0;
+//$$                // Highly prefer spreading towards water
+//$$                if (isNearWater(level, target, 4)) score += 6;
+//$$                // Prefer spreading under/near forest canopies
+//$$                if (hasHeavyCanopy(level, target)) score += 3;
+//$$                
+//$$                score += random.nextInt(4); // Small random variance
+//$$                
+//$$                if (score > bestScore) {
+//$$                    bestScore = score;
+//$$                    bestTarget = target;
+//$$                }
+//$$            }
+//$$        }
+//$$        
+//$$        // Spread if we found a good enough spot (score > 2 means it must either be near water, near forest, or lucky)
+//$$        if (bestTarget != null && bestScore > 2) {
+//$$            level.setBlock(bestTarget, state, 3);
+//$$            // Optional: small chance to compost the original plant (simulating short lifespan of wild grass)
+//$$            if (random.nextFloat() < 0.1f) {
+//$$                level.setBlock(surface, Blocks.AIR.defaultBlockState(), 3);
 //$$            }
 //$$        }
 //$$    }
