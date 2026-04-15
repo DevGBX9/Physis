@@ -93,17 +93,7 @@ public class ForestGrowthHandler {
 //$$            runCompostChecks(level);
 //$$        }
 //$$
-//$$        // [10] THUNDER DAMAGE
-//$$        if (isThundering && gameTime % 600 == 0) {
-//$$            RandomSource random = level.getRandom();
-//$$            if (random.nextFloat() < 0.15f) {
-//$$                level.players().forEach(player -> {
-//$$                    BlockPos strikePos = player.blockPosition().offset(random.nextInt(200) - 100, 0, random.nextInt(200) - 100);
-//$$                    strikePos = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING, strikePos);
-//$$                    applyThunderDamage(level, strikePos);
-//$$                });
-//$$            }
-//$$        }
+//$$        // Thunder damage is now handled globally in tickChunk()
 //$$    }
 //$$
 //$$    // ==================== GLOBAL CHUNK TICKING ====================
@@ -116,6 +106,13 @@ public class ForestGrowthHandler {
 //$$        tps = level.getServer().tickRateManager().tickrate();
 //$$        //#endif
 //$$        int speedMultiplier = Math.max(1, (int)(tps / 20.0f)); 
+//$$        
+//$$        // Thunder strikes randomly globally per chunk (very rare, approx 1 strike per 5 seconds per 1000 chunks)
+//$$        if (level.isThundering() && level.getRandom().nextInt(100000 / speedMultiplier) == 0) {
+//$$            BlockPos strikePos = chunk.getPos().getMiddleBlockPosition(0).offset(level.getRandom().nextInt(16) - 8, 0, level.getRandom().nextInt(16) - 8);
+//$$            strikePos = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING, strikePos);
+//$$            applyThunderDamage(level, strikePos);
+//$$        }
 //$$        
 //$$        // 1/200 chance per tick means a chunk runs every 10 seconds on average (1/100 in rain = 5 seconds)
 //$$        int runChance = isRaining ? 100 : 200;
