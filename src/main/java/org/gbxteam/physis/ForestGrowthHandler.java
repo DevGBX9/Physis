@@ -72,7 +72,7 @@ public class ForestGrowthHandler {
 //$$        boolean isThundering = level.isThundering();
 //$$        float tps = 20.0f;
 //$$        //#if MC >= 1_20_04
-//$$        tps = level.getServer().tickRateManager().getTickRate();
+//$$        tps = level.getServer().tickRateManager().tickrate();
 //$$        //#endif
 //$$
 //$$        // Multiplier based on /tick rate. Standard is 20.
