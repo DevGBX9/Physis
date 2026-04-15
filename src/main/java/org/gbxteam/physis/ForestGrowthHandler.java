@@ -230,14 +230,8 @@ public class ForestGrowthHandler {
 //$$
 //$$        Block sapling = saplingOpt.get();
 //$$
-//$$        // [1] BIOME CHECK: Verify this tree can grow here
-//$$        if (!isSaplingValidForBiome(level, targetPos, sapling)) {
-//$$            // Check if biome has its own native tree instead
-//$$            saplingOpt = getBiomeNativeSapling(level, targetPos);
-//$$            if (saplingOpt.isEmpty()) return;
-//$$            sapling = saplingOpt.get();
-//$$        }
-//$$
+//$$        // [1] DYNAMIC BIOME INVASION: Trees are now allowed to invade any biome.
+//$$        // The strict biome check has been removed.
 //$$        int spacing = getRequiredSpacing(sapling);
 //$$        boolean needs2x2 = (sapling == Blocks.DARK_OAK_SAPLING || sapling == Blocks.PALE_OAK_SAPLING);
 //$$        long currentTime = level.getGameTime();
