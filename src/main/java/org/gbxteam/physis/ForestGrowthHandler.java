@@ -27,6 +27,7 @@ package org.gbxteam.physis;
 //$$ import net.minecraft.core.registries.BuiltInRegistries;
 //$$ import net.minecraft.resources.ResourceKey;
 //$$ import net.minecraft.server.level.ServerLevel;
+//$$ import net.minecraft.server.MinecraftServer;
 //$$ import net.minecraft.util.RandomSource;
 //$$ import net.minecraft.world.level.biome.Biome;
 //$$ import net.minecraft.world.level.biome.Biomes;
@@ -37,7 +38,6 @@ package org.gbxteam.physis;
 //$$ import net.minecraft.world.level.block.SaplingBlock;
 //$$ import net.minecraft.world.level.block.state.BlockState;
 //$$ import net.minecraft.world.level.levelgen.Heightmap;
-//$$ import net.minecraft.world.level.GameRules;
 //$$ import java.util.Optional;
 //$$ import java.util.List;
 //$$ import java.util.ArrayList;
@@ -70,9 +70,15 @@ public class ForestGrowthHandler {
 //$$        // [10] WEATHER IMPACT
 //$$        boolean isRaining = level.isRaining();
 //$$        boolean isThundering = level.isThundering();
-//$$        int randomTickSpeed = level.getGameRules().getInt(GameRules.RULE_RANDOMTICKING);
-//$$        // Default randomTickSpeed is 3. If someone sets it higher, our forest grows proportionally faster!
-//$$        int speedMultiplier = Math.max(1, randomTickSpeed / 3);
+//$$        float tps = 20.0f;
+//$$        //#if MC >= 1_20_04
+//$$        tps = level.getServer().tickRateManager().getTickRate();
+//$$        //#endif
+//$$
+//$$        // Multiplier based on /tick rate. Standard is 20.
+//$$        int speedMultiplier = Math.max(1, (int)(tps / 5.0f)); 
+//$$        // Note: we use tps/5 instead of tps/20 to give a more noticeable boost when testing.
+//$$        
 //$$        int growthInterval = isRaining ? (3000 / speedMultiplier) : (6000 / speedMultiplier);
 //$$        growthInterval = Math.max(1, growthInterval);
 //$$
