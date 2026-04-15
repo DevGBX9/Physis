@@ -35,9 +35,6 @@ package org.gbxteam.physis;
 //$$ import net.minecraft.world.level.block.LeavesBlock;
 //$$ import net.minecraft.world.level.block.RotatedPillarBlock;
 //$$ import net.minecraft.world.level.block.SaplingBlock;
-//$$ import net.minecraft.world.level.block.FlowerBlock;
-//$$ import net.minecraft.world.level.block.TallGrassBlock;
-//$$ import net.minecraft.world.level.block.DoublePlantBlock;
 //$$ import net.minecraft.world.level.block.state.BlockState;
 //$$ import net.minecraft.world.level.levelgen.Heightmap;
 //$$ import java.util.Optional;
@@ -129,57 +126,112 @@ public class ForestGrowthHandler {
     // ==================== VEGETATION EXPANSION (GRASS & FLOWERS) ====================
 //$$    private static void processVegetationExpansion(ServerLevel level, BlockPos searchPos) {
 //$$        if (!level.isLoaded(searchPos)) return;
-//$$        BlockPos surface = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, searchPos);
-//$$        BlockState state = level.getBlockState(surface);
-//$$        Block block = state.getBlock();
-//$$        
-//$$        String name = net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(block).getPath();
-//$$        boolean isVegetation = block instanceof FlowerBlock || block instanceof TallGrassBlock || name.contains("grass") || name.contains("fern") || name.contains("flower") || name.contains("lily");
-//$$        
-//$$        // Exclude double plants to avoid breaking half-states, and exclude full grass blocks
-//$$        if (!isVegetation || block instanceof DoublePlantBlock || block == Blocks.GRASS_BLOCK || block == Blocks.SEAGRASS || block == Blocks.TALL_SEAGRASS) return;
-//$$        if (name.contains("large") || name.contains("tall")) return; // Safe fallback
-//$$        
 //$$        RandomSource random = level.getRandom();
-//$$        BlockPos bestTarget = null;
-//$$        int bestScore = -1;
 //$$        
-//$$        // Search 3 random adjacent spots to see the best place to spread
-//$$        for (int i = 0; i < 3; i++) {
-//$$            int ox = random.nextInt(9) - 4; // -4 to +4
-//$$            int oz = random.nextInt(9) - 4;
-//$$            BlockPos target = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, surface.offset(ox, 0, oz));
+//$$        // Find a valid vegetation block by scanning downwards from surface
+//$$        BlockPos.MutableBlockPos mut = new BlockPos.MutableBlockPos(searchPos.getX(), level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, searchPos).getY() + 2, searchPos.getZ());
+//$$        BlockState state = null;
+//$$        Block block = null;
+//$$        String name = "";
+//$$        boolean isVegetation = false;
+//$$        
+//$$        for (int y = 0; y < 15; y++) {
+//$$            BlockState s = level.getBlockState(mut);
+//$$            Block b = s.getBlock();
+//$$            name = net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(b).getPath();
 //$$            
-//$$            BlockState tState = level.getBlockState(target);
-//$$            BlockState tGround = level.getBlockState(target.below());
+//$$            isVegetation = name.contains("grass") || name.contains("fern") || name.contains("flower") || name.contains("lily") || 
+//$$                           name.contains("mushroom") || name.contains("fungus") || name.contains("kelp") || 
+//$$                           name.contains("sugar_cane") || name.contains("bush") || name.contains("moss") || 
+//$$                           name.contains("azalea") || name.contains("spore") || name.contains("bluet") || 
+//$$                           name.contains("dandelion") || name.contains("poppy") || name.contains("orchid") || 
+//$$                           name.contains("allium") || name.contains("tulip") || name.contains("daisy") || 
+//$$                           name.contains("peony") || name.contains("lilac") || name.contains("rose") || 
+//$$                           name.contains("sunflower") || name.contains("pickle");
 //$$            
-//$$            // Needs to be air on top of valid grass/dirt
-//$$            if (tState.isAir() && (tGround.is(Blocks.GRASS_BLOCK) || tGround.is(Blocks.MOSS_BLOCK) || tGround.is(Blocks.DIRT) || tGround.is(Blocks.PODZOL))) {
-//$$                // Make sure the block can actually survive here
-//$$                if (!state.canSurvive(level, target)) continue;
-//$$                
-//$$                int score = 0;
-//$$                // Highly prefer spreading towards water
-//$$                if (isNearWater(level, target, 4)) score += 6;
-//$$                // Prefer spreading under/near forest canopies
-//$$                if (hasHeavyCanopy(level, target)) score += 3;
-//$$                
-//$$                score += random.nextInt(4); // Small random variance
-//$$                
-//$$                if (score > bestScore) {
-//$$                    bestScore = score;
-//$$                    bestTarget = target;
-//$$                }
+//$$            // Exclude base terrain blocks
+//$$            if (b == Blocks.GRASS_BLOCK || b == Blocks.MOSS_BLOCK || b == Blocks.DIRT || name.contains("leaves") || name.contains("log") || name.contains("wood")) {
+//$$                isVegetation = false;
+//$$            }
+//$$            
+//$$            if (isVegetation) {
+//$$                state = s;
+//$$                block = b;
+//$$                break;
+//$$            }
+//$$            mut.move(0, -1, 0);
+//$$        }
+//$$        
+//$$        if (!isVegetation || state == null) return;
+//$$        
+//$$        // Safe fallback: exclude double plants for simplicity to avoid breaking half-states 
+//$$        if (name.equals("tall_grass")) {
+//$$            block = Blocks.GRASS;
+//$$            state = block.defaultBlockState();
+//$$        } else if (name.equals("large_fern")) {
+//$$            block = Blocks.FERN;
+//$$            state = block.defaultBlockState();
+//$$        } else if (name.contains("sunflower") || name.contains("lilac") || name.contains("rose_bush") || name.contains("peony") || name.contains("tall") || name.contains("large") || name.contains("pitcher")) {
+//$$            return; // Skip double plants
+//$$        }
+//$$        
+//$$        BlockPos sourcePos = mut.immutable();
+//$$        
+//$$        // Density check: limit density in a 5x5 area to look beautiful and not fully cover the ground
+//$$        int density = 0;
+//$$        boolean isFungus = name.contains("mushroom") || name.contains("fungus");
+//$$        boolean isWaterPlant = name.contains("kelp") || name.contains("seagrass") || name.contains("pickle");
+//$$        
+//$$        for (BlockPos p : BlockPos.betweenClosed(sourcePos.offset(-2, -2, -2), sourcePos.offset(2, 2, 2))) {
+//$$            if (level.getBlockState(p).getBlock() == block) {
+//$$                density++;
 //$$            }
 //$$        }
 //$$        
-//$$        // Spread if we found a good enough spot (score > 2 means it must either be near water, near forest, or lucky)
-//$$        if (bestTarget != null && bestScore > 2) {
-//$$            level.setBlock(bestTarget, state, 3);
-//$$            // Optional: small chance to compost the original plant (simulating short lifespan of wild grass)
-//$$            if (random.nextFloat() < 0.1f) {
-//$$                level.setBlock(surface, Blocks.AIR.defaultBlockState(), 3);
+//$$        // Max 3 identical plants in a 5x5 area to keep gaps and look natural
+//$$        if (density >= 4) return;
+//$$        
+//$$        BlockPos bestTarget = null;
+//$$        int bestScore = -1;
+//$$        
+//$$        for (int i = 0; i < 4; i++) {
+//$$            int ox = random.nextInt(9) - 4;
+//$$            int oz = random.nextInt(9) - 4;
+//$$            
+//$$            BlockPos target;
+//$$            if (isWaterPlant) {
+//$$                target = level.getHeightmapPos(Heightmap.Types.OCEAN_FLOOR, sourcePos.offset(ox, 0, oz));
+//$$            } else {
+//$$                target = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, sourcePos.offset(ox, 0, oz));
 //$$            }
+//$$            
+//$$            if (!state.canSurvive(level, target)) {
+//$$                if (state.canSurvive(level, target.below())) {
+//$$                    target = target.below();
+//$$                } else if (state.canSurvive(level, target.above())) {
+//$$                    target = target.above();
+//$$                } else {
+//$$                    continue;
+//$$                }
+//$$            }
+//$$            
+//$$            BlockState tState = level.getBlockState(target);
+//$$            if (isWaterPlant && !tState.is(Blocks.WATER)) continue;
+//$$            if (!isWaterPlant && !tState.isAir()) continue;
+//$$            
+//$$            int score = 0;
+//$$            if (!isWaterPlant && isNearWater(level, target, 4)) score += 5;
+//$$            if (hasHeavyCanopy(level, target)) score += isFungus ? 8 : 2; 
+//$$            score += random.nextInt(4);
+//$$            
+//$$            if (score > bestScore) {
+//$$                bestScore = score;
+//$$                bestTarget = target;
+//$$            }
+//$$        }
+//$$        
+//$$        if (bestTarget != null && bestScore > 1) {
+//$$            level.setBlock(bestTarget, state, 3);
 //$$        }
 //$$    }
 
