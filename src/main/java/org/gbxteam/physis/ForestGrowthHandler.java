@@ -139,38 +139,46 @@ public class ForestGrowthHandler {
 //$$        if (!level.isLoaded(searchPos)) return;
 //$$        RandomSource random = level.getRandom();
 //$$        
-//$$        // Find a valid vegetation block by scanning downwards from surface
-//$$        BlockPos.MutableBlockPos mut = new BlockPos.MutableBlockPos(searchPos.getX(), level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, searchPos).getY() + 2, searchPos.getZ());
+//$$        // Find a valid vegetation block by scanning a 5x5 area around the random point
+//$$        // This prevents the mod from "missing" sparse plants and makes growth beautifully consistent
+//$$        BlockPos surfaceStart = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, searchPos);
+//$$        BlockPos.MutableBlockPos mut = new BlockPos.MutableBlockPos();
 //$$        BlockState state = null;
 //$$        Block block = null;
 //$$        String name = "";
 //$$        boolean isVegetation = false;
 //$$        
-//$$        for (int y = 0; y < 15; y++) {
-//$$            BlockState s = level.getBlockState(mut);
-//$$            Block b = s.getBlock();
-//$$            name = net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(b).getPath();
-//$$            
-//$$            isVegetation = name.contains("grass") || name.contains("fern") || name.contains("flower") || name.contains("lily") || 
-//$$                           name.contains("mushroom") || name.contains("fungus") || name.contains("kelp") || 
-//$$                           name.contains("sugar_cane") || name.contains("bush") || name.contains("moss") || 
-//$$                           name.contains("azalea") || name.contains("spore") || name.contains("bluet") || 
-//$$                           name.contains("dandelion") || name.contains("poppy") || name.contains("orchid") || 
-//$$                           name.contains("allium") || name.contains("tulip") || name.contains("daisy") || 
-//$$                           name.contains("peony") || name.contains("lilac") || name.contains("rose") || 
-//$$                           name.contains("sunflower") || name.contains("pickle") || name.contains("petal");
-//$$            
-//$$            // Exclude base terrain blocks
-//$$            if (b == Blocks.GRASS_BLOCK || b == Blocks.MOSS_BLOCK || b == Blocks.DIRT || name.contains("leaves") || name.contains("log") || name.contains("wood")) {
-//$$                isVegetation = false;
+//$$        searchLoop:
+//$$        for (int ox = -2; ox <= 2; ox++) {
+//$$            for (int oz = -2; oz <= 2; oz++) {
+//$$                mut.setWithOffset(surfaceStart, ox, 2, oz);
+//$$                for (int y = 0; y < 8; y++) {
+//$$                    BlockState s = level.getBlockState(mut);
+//$$                    Block b = s.getBlock();
+//$$                    if (b == Blocks.AIR || b == Blocks.WATER) { mut.move(0, -1, 0); continue; }
+//$$                    
+//$$                    name = net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(b).getPath();
+//$$                    if (b == Blocks.GRASS_BLOCK || b == Blocks.MOSS_BLOCK || b == Blocks.DIRT || b == Blocks.SAND || name.contains("leaves") || name.contains("log") || name.contains("wood")) {
+//$$                        break; // Hit terrain floor, skip to next column
+//$$                    }
+//$$                    
+//$$                    isVegetation = name.contains("grass") || name.contains("fern") || name.contains("flower") || name.contains("lily") || 
+//$$                                   name.contains("mushroom") || name.contains("fungus") || name.contains("kelp") || 
+//$$                                   name.contains("sugar_cane") || name.contains("bush") || name.contains("moss") || 
+//$$                                   name.contains("azalea") || name.contains("spore") || name.contains("bluet") || 
+//$$                                   name.contains("dandelion") || name.contains("poppy") || name.contains("orchid") || 
+//$$                                   name.contains("allium") || name.contains("tulip") || name.contains("daisy") || 
+//$$                                   name.contains("peony") || name.contains("lilac") || name.contains("rose") || 
+//$$                                   name.contains("sunflower") || name.contains("pickle") || name.contains("petal");
+//$$                    
+//$$                    if (isVegetation) {
+//$$                        state = s;
+//$$                        block = b;
+//$$                        break searchLoop;
+//$$                    }
+//$$                    mut.move(0, -1, 0);
+//$$                }
 //$$            }
-//$$            
-//$$            if (isVegetation) {
-//$$                state = s;
-//$$                block = b;
-//$$                break;
-//$$            }
-//$$            mut.move(0, -1, 0);
 //$$        }
 //$$        
 //$$        if (!isVegetation || state == null) return;
