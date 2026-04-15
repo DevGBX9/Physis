@@ -83,36 +83,8 @@ public class ForestGrowthHandler {
 //$$        growthInterval = Math.max(1, growthInterval);
 //$$
 //$$        if (gameTime % growthInterval == 0) {
-//$$            RandomSource random = level.getRandom();
-//$$            int edgeAttempts = isRaining ? 12 : 6;
-//$$            int globalAttempts = isRaining ? 6 : 3;
-//$$
-//$$            level.players().forEach(player -> {
-//$$                BlockPos playerPos = player.blockPosition();
-//$$
-//$$                // PRIMARY: EDGE-BASED EXPANSION (find edge trees and expand outward)
-//$$                for (int i = 0; i < edgeAttempts; i++) {
-//$$                    int ox = random.nextInt(80) - 40;
-//$$                    int oz = random.nextInt(80) - 40;
-//$$                    processEdgeExpansion(level, playerPos.offset(ox, 0, oz));
-//$$                }
-//$$
-//$$                // SECONDARY: GLOBAL (long-range edge scanning with wind bias)
-//$$                for (int i = 0; i < globalAttempts; i++) {
-//$$                    int windBiasX = (int) (Math.cos(windAngle) * 30);
-//$$                    int windBiasZ = (int) (Math.sin(windAngle) * 30);
-//$$                    int ox = random.nextInt(1200) - 600 + windBiasX;
-//$$                    int oz = random.nextInt(1200) - 600 + windBiasZ;
-//$$                    processEdgeExpansion(level, playerPos.offset(ox, 0, oz));
-//$$                }
-//$$
-//$$                // [NEW] VEGETATION EXPANSION: Grass & Flowers spread organically
-//$$                for (int i = 0; i < edgeAttempts * 3; i++) {
-//$$                    int ox = random.nextInt(100) - 50;
-//$$                    int oz = random.nextInt(100) - 50;
-//$$                    processVegetationExpansion(level, playerPos.offset(ox, 0, oz));
-//$$                }
-//$$            });
+//$$            // Player-centric loop has been removed!
+//$$            // Growth is now globally managed by tickChunk() for every loaded chunk.
 //$$        }
 //$$
 //$$        // Periodic checks (Every 1 minute)
@@ -130,6 +102,44 @@ public class ForestGrowthHandler {
 //$$                    strikePos = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING, strikePos);
 //$$                    applyThunderDamage(level, strikePos);
 //$$                });
+//$$            }
+//$$        }
+//$$    }
+//$$
+//$$    // ==================== GLOBAL CHUNK TICKING ====================
+//$$    public static void tickChunk(net.minecraft.world.level.chunk.LevelChunk chunk, ServerLevel level) {
+//$$        if (!level.isLoaded(chunk.getPos().getMiddleBlockPosition(0))) return;
+//$$        
+//$$        boolean isRaining = level.isRaining();
+//$$        float tps = 20.0f;
+//$$        //#if MC >= 1_20_04
+//$$        tps = level.getServer().tickRateManager().tickrate();
+//$$        //#endif
+//$$        int speedMultiplier = Math.max(1, (int)(tps / 20.0f)); 
+//$$        
+//$$        // 1/200 chance per tick means a chunk runs every 10 seconds on average (1/100 in rain = 5 seconds)
+//$$        int runChance = isRaining ? 100 : 200;
+//$$        runChance = Math.max(1, runChance / speedMultiplier);
+//$$        
+//$$        if (level.getRandom().nextInt(runChance) == 0) {
+//$$            net.minecraft.world.level.ChunkPos pos = chunk.getPos();
+//$$            BlockPos center = pos.getMiddleBlockPosition(0);
+//$$            
+//$$            // We run few attempts per chunk, because this fires for EVERY chunk globally.
+//$$            int attempts = isRaining ? 2 : 1;
+//$$            
+//$$            // Trees
+//$$            for (int i = 0; i < attempts; i++) {
+//$$                int ox = level.getRandom().nextInt(16) - 8;
+//$$                int oz = level.getRandom().nextInt(16) - 8;
+//$$                processEdgeExpansion(level, center.offset(ox, 0, oz));
+//$$            }
+//$$            
+//$$            // Vegetation
+//$$            for (int i = 0; i < attempts * 3; i++) {
+//$$                int ox = level.getRandom().nextInt(16) - 8;
+//$$                int oz = level.getRandom().nextInt(16) - 8;
+//$$                processVegetationExpansion(level, center.offset(ox, 0, oz));
 //$$            }
 //$$        }
 //$$    }

@@ -26,18 +26,24 @@ package org.gbxteam.physis.mixins;
 
 //#if MC >= 260100
 //$$ import net.minecraft.server.level.ServerLevel;
+//$$ import net.minecraft.world.level.chunk.LevelChunk;
 //$$ import org.gbxteam.physis.ForestGrowthHandler;
 //$$ import org.spongepowered.asm.mixin.Mixin;
 //$$ import org.spongepowered.asm.mixin.injection.At;
 //$$ import org.spongepowered.asm.mixin.injection.Inject;
 //$$ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 //$$ import java.util.function.BooleanSupplier;
-
+//$$ 
 //$$ @Mixin(ServerLevel.class)
 //$$ public abstract class ServerLevelMixin {
 //$$     @Inject(method = "tick", at = @At("TAIL"))
 //$$     private void onTick(BooleanSupplier shouldKeepTicking, CallbackInfo ci) {
 //$$         ForestGrowthHandler.tick((ServerLevel)(Object)this);
+//$$     }
+//$$ 
+//$$     @Inject(method = "tickChunk", at = @At("TAIL"))
+//$$     private void onTickChunk(LevelChunk chunk, int randomTickSpeed, CallbackInfo ci) {
+//$$         ForestGrowthHandler.tickChunk(chunk, (ServerLevel)(Object)this);
 //$$     }
 //$$ }
 //#endif
