@@ -173,8 +173,14 @@ public class ForestGrowthHandler {
 //$$        
 //$$        // Density check: limit density in a 5x5 area to look beautiful and not fully cover the ground
 //$$        int density = 0;
+//$$        boolean isGrass = name.equals("grass") || name.equals("short_grass") || name.equals("fern");
 //$$        boolean isFungus = name.contains("mushroom") || name.contains("fungus");
 //$$        boolean isWaterPlant = name.contains("kelp") || name.contains("seagrass") || name.contains("pickle");
+//$$        
+//$$        // Drastically reduce the spread speed of everything except basic grass and fern
+//$$        if (!isGrass && random.nextFloat() > 0.02f) {
+//$$            return;
+//$$        }
 //$$        
 //$$        for (BlockPos p : BlockPos.betweenClosed(sourcePos.offset(-2, -2, -2), sourcePos.offset(2, 2, 2))) {
 //$$            if (level.getBlockState(p).getBlock() == block) {
@@ -182,8 +188,9 @@ public class ForestGrowthHandler {
 //$$            }
 //$$        }
 //$$        
-//$$        // Max 3 identical plants in a 5x5 area to keep gaps and look natural
-//$$        if (density >= 4) return;
+//$$        // Max 4 plants in a 5x5 area for grass, but only 2 for flowers and other plants
+//$$        int maxDensity = isGrass ? 4 : 2;
+//$$        if (density >= maxDensity) return;
 //$$        
 //$$        BlockPos bestTarget = null;
 //$$        int bestScore = -1;
