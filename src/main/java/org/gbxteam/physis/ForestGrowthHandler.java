@@ -69,12 +69,12 @@ public class ForestGrowthHandler {
 //$$        // [10] WEATHER IMPACT
 //$$        boolean isRaining = level.isRaining();
 //$$        boolean isThundering = level.isThundering();
-//$$        int growthInterval = isRaining ? 2 : 2; // INSANE TEST MODE
+//$$        int growthInterval = isRaining ? 3000 : 6000;
 //$$
 //$$        if (gameTime % growthInterval == 0) {
 //$$            RandomSource random = level.getRandom();
-//$$            int edgeAttempts = isRaining ? 50 : 50; // INSANE TEST MODE
-//$$            int globalAttempts = isRaining ? 80 : 80; // INSANE TEST MODE
+//$$            int edgeAttempts = isRaining ? 8 : 4;
+//$$            int globalAttempts = isRaining ? 4 : 2;
 //$$
 //$$            level.players().forEach(player -> {
 //$$                BlockPos playerPos = player.blockPosition();
@@ -104,8 +104,8 @@ public class ForestGrowthHandler {
 //$$            });
 //$$        }
 //$$
-//$$        // Periodic checks (Every 2 seconds)
-//$$        if (gameTime % 2 == 0) { // INSANE TEST MODE
+//$$        // Periodic checks (Every 1 minute)
+//$$        if (gameTime % 1200 == 0) {
 //$$            runHealthChecks(level);
 //$$            runCompostChecks(level);
 //$$        }
@@ -192,12 +192,11 @@ public class ForestGrowthHandler {
 //$$        }
 //$$        
 //$$        // Spread rates: Grass/Fern (100%), Bush (40%), Petal (20%), everything else (2%)
-//$$        // INSANE TEST MODE: ALL GROW FAST
-//$$        //if (!isGrass) {
-//$$        //    if (isBush && random.nextFloat() > 0.40f) return;
-//$$        //    if (isPetal && random.nextFloat() > 0.20f) return;
-//$$        //    if (!isBush && !isPetal && random.nextFloat() > 0.02f) return;
-//$$        //}
+//$$        if (!isGrass) {
+//$$            if (isBush && random.nextFloat() > 0.40f) return;
+//$$            if (isPetal && random.nextFloat() > 0.20f) return;
+//$$            if (!isBush && !isPetal && random.nextFloat() > 0.02f) return;
+//$$        }
 //$$        
 //$$        // Smart Level Spreading for Pink Petals
 //$$        if (isPetal) {
@@ -306,7 +305,7 @@ public class ForestGrowthHandler {
 //$$        // PIONEER TREE: Isolated trees (0-1 forested neighbors) spread slowly nearby
 //$$        if (forestedDirs <= 1) {
 //$$            // Pioneer growth is rare (25% chance) to simulate slow natural seeding
-//$$            if (random.nextFloat() < 0.95f) { // INSANE TEST MODE (was 0.25f)
+//$$            if (random.nextFloat() < 0.25f) {
 //$$                double angle = random.nextDouble() * 2 * Math.PI;
 //$$                int dist = 2 + random.nextInt(4); // 2-5 blocks close range
 //$$                int ox = (int) (Math.cos(angle) * dist);
