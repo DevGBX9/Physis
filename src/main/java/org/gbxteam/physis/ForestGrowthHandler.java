@@ -78,8 +78,8 @@ public class ForestGrowthHandler {
 //$$        // Multiplier based on /tick rate. Standard is 20.
 //$$        int speedMultiplier = Math.max(1, (int)(tps / 20.0f)); 
 //$$        
-//$$        // Natural growth interval: ~30 seconds normally, ~15 seconds in rain
-//$$        int growthInterval = isRaining ? (300 / speedMultiplier) : (600 / speedMultiplier);
+//$$        // Natural growth interval: ~10 seconds normally, ~5 seconds in rain
+//$$        int growthInterval = isRaining ? (100 / speedMultiplier) : (200 / speedMultiplier);
 //$$        growthInterval = Math.max(1, growthInterval);
 //$$
 //$$        if (gameTime % growthInterval == 0) {
@@ -238,13 +238,14 @@ public class ForestGrowthHandler {
 //$$        // Density check area: Grass 5x5 (vanilla-like), Bush 7x7 (rare), others 5x5
 //$$        int checkRadius = (isBush || isFireflyBush) ? 3 : 2;
 //$$        for (BlockPos p : BlockPos.betweenClosed(sourcePos.offset(-checkRadius, -2, -checkRadius), sourcePos.offset(checkRadius, 2, checkRadius))) {
+//$$            if (p.equals(sourcePos)) continue; // Don't count the source plant itself!
 //$$            if (level.getBlockState(p).getBlock() == block) {
 //$$                density++;
 //$$            }
 //$$        }
 //$$        
-//$$        // Max plants: Grass 6 (in 5x5, vanilla-like density), Bush 1 (rare in 7x7), Firefly 1, Petal 3, Others 2
-//$$        int maxDensity = isGrass ? 6 : (isFireflyBush ? 1 : (isBush ? 1 : (isPetal ? 3 : 2)));
+//$$        // Max plants (excluding source): Grass 6, Bush 2 (rare in 7x7), Firefly 1, Petal 3, Others 2
+//$$        int maxDensity = isGrass ? 6 : (isFireflyBush ? 1 : (isBush ? 2 : (isPetal ? 3 : 2)));
 //$$        if (density >= maxDensity) return;
 //$$        
 //$$        BlockPos bestTarget = null;
