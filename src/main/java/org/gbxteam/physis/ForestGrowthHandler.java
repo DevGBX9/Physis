@@ -186,9 +186,13 @@ public class ForestGrowthHandler {
 //$$        int density = 0;
 //$$        boolean isGrass = name.equals("grass") || name.equals("short_grass") || name.equals("fern");
 //$$        boolean isBush = name.equals("bush");
+//$$        boolean isFireflyBush = name.contains("firefly_bush");
 //$$        boolean isPetal = name.contains("petal");
 //$$        boolean isFungus = name.contains("mushroom") || name.contains("fungus");
 //$$        boolean isWaterPlant = name.contains("kelp") || name.contains("seagrass") || name.contains("pickle");
+//$$        
+//$$        // Firefly bush can ONLY spread from water edges
+//$$        if (isFireflyBush && !isNearWater(level, sourcePos, 2)) return;
 //$$        
 //$$        // Petals strictly restricted to Cherry biome areas (version-safe check by finding cherry trees nearby)
 //$$        if (isPetal) {
@@ -202,11 +206,16 @@ public class ForestGrowthHandler {
 //$$            if (!hasCherryTree) return; // Cannot spread outside its natural biome
 //$$        }
 //$$        
-//$$        // Spread rates: Grass/Fern (100%), Bush (60%), Petal (35%), Flowers (15%)
+//$$        // Water proximity boost: plants near water spread faster
+//$$        boolean nearWaterSource = isNearWater(level, sourcePos, 6);
+//$$        float waterBoost = nearWaterSource ? 1.4f : 1.0f;
+//$$        
+//$$        // Spread rates (with water boost): Grass/Fern (100%), Bush (60-84%), Petal (35-49%), Flowers (15-21%)
 //$$        if (!isGrass) {
-//$$            if (isBush && random.nextFloat() > 0.60f) return;
-//$$            if (isPetal && random.nextFloat() > 0.35f) return;
-//$$            if (!isBush && !isPetal && random.nextFloat() > 0.15f) return;
+//$$            if (isFireflyBush && random.nextFloat() > 0.30f * waterBoost) return;
+//$$            else if (isBush && random.nextFloat() > 0.60f * waterBoost) return;
+//$$            else if (isPetal && random.nextFloat() > 0.35f * waterBoost) return;
+//$$            else if (!isBush && !isFireflyBush && !isPetal && random.nextFloat() > 0.15f * waterBoost) return;
 //$$        }
 //$$        
 //$$        // Smart Level Spreading for Pink Petals
@@ -226,14 +235,16 @@ public class ForestGrowthHandler {
 //$$            }
 //$$        }
 //$$        
-//$$        for (BlockPos p : BlockPos.betweenClosed(sourcePos.offset(-2, -2, -2), sourcePos.offset(2, 2, 2))) {
+//$$        // Wider density check area (7x7 for grass, 5x5 for others) to create natural gaps
+//$$        int checkRadius = isGrass ? 3 : 2;
+//$$        for (BlockPos p : BlockPos.betweenClosed(sourcePos.offset(-checkRadius, -2, -checkRadius), sourcePos.offset(checkRadius, 2, checkRadius))) {
 //$$            if (level.getBlockState(p).getBlock() == block) {
 //$$                density++;
 //$$            }
 //$$        }
 //$$        
-//$$        // Max plants in a 5x5 area: Grass 4, Bush/Petal 3, Others 2
-//$$        int maxDensity = isGrass ? 4 : (isBush || isPetal ? 3 : 2);
+//$$        // Max plants: Grass 3 (in 7x7), Bush 2, Firefly 1, Petal 3, Others 2
+//$$        int maxDensity = isGrass ? 3 : (isFireflyBush ? 1 : (isBush ? 2 : (isPetal ? 3 : 2)));
 //$$        if (density >= maxDensity) return;
 //$$        
 //$$        BlockPos bestTarget = null;
@@ -264,12 +275,28 @@ public class ForestGrowthHandler {
 //$$            if (isWaterPlant && !tState.is(Blocks.WATER)) continue;
 //$$            if (!isWaterPlant && !tState.isAir()) continue;
 //$$            
+//$$            // Firefly bush: target must be directly adjacent to water (within 2 blocks)
+//$$            if (isFireflyBush && !isNearWater(level, target, 2)) continue;
+//$$            
+//$$            // Minimum spacing: reject if same plant is too close (prevent clustering)
+//$$            boolean tooClose = false;
+//$$            int minSpacing = isGrass ? 2 : (isFireflyBush ? 4 : 2);
+//$$            for (BlockPos sp : BlockPos.betweenClosed(target.offset(-minSpacing, -1, -minSpacing), target.offset(minSpacing, 1, minSpacing))) {
+//$$                if (level.getBlockState(sp).getBlock() == block) {
+//$$                    tooClose = true;
+//$$                    break;
+//$$                }
+//$$            }
+//$$            if (tooClose) continue;
+//$$            
 //$$            int score = 0;
 //$$            // Water attraction: grass & bush love water - check wider radius
 //$$            if (!isWaterPlant && isNearWater(level, target, (isGrass || isBush) ? 8 : 4)) score += (isGrass || isBush) ? 10 : 5;
 //$$            // Forest/tree attraction: grass & bush prefer growing near trees
 //$$            if ((isGrass || isBush) && hasHeavyCanopy(level, target)) score += 6;
 //$$            if (!(isGrass || isBush) && hasHeavyCanopy(level, target)) score += isFungus ? 8 : 2;
+//$$            // Firefly bush gets massive bonus for being right next to water
+//$$            if (isFireflyBush && isNearWater(level, target, 1)) score += 15;
 //$$            // Randomness for natural variation
 //$$            score += random.nextInt(4);
 //$$            
