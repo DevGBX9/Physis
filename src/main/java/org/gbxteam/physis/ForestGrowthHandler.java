@@ -327,7 +327,7 @@ public class ForestGrowthHandler {
 //$$            // نظام المستكشف: نسمح للنبتة بالقفز لمكان بعيد لبدء مجموعة جديدة متباعدة
 //$$            float pioneerChance = isPlainBush ? 0.30f : 0.05f;
 //$$            if (random.nextFloat() < pioneerChance) {
-//$$                searchSpread = isPlainBush ? 12 : 8; // قفزة بعيدة!
+//$$                searchSpread = isPlainBush ? 18 : 8; // قفزة أبعد بكثير للشجيرات لخلق تنويع!
 //$$            } else {
 //$$                return;
 //$$            }
@@ -374,9 +374,9 @@ public class ForestGrowthHandler {
 //$$            boolean tooClose = false;
 //$$            int minSpacing = isFireflyBush ? 4 : 0;  // الشجيرة الزخرفية والعشب = ٠ (تلاصق حر)
 //$$            
-//$$            // الشجيرة المستكشفة (المجموعة الجديدة) يجب أن تبدأ بعيدة بـ 6 بلوكات على الأقل عن أي مجموعة شجيرات أخرى
+//$$            // الشجيرة المستكشفة (المجموعة الجديدة) يجب أن تبدأ بعيدة بـ 10 بلوكات على الأقل عن أي مجموعة شجيرات أخرى لمنظر مماثل للفانيلا
 //$$            if (isPlainBush && density >= maxDensity) {
-//$$                minSpacing = 6; 
+//$$                minSpacing = 10; 
 //$$            }
 //$$            
 //$$            if (minSpacing > 0) {
