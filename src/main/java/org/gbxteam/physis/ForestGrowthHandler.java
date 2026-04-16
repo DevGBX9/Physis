@@ -201,7 +201,7 @@ public class ForestGrowthHandler {
 //$$                    
 //$$                    isVegetation = name.contains("grass") || name.contains("fern") || name.contains("flower") || name.contains("lily") || 
 //$$                                   name.contains("mushroom") || name.contains("fungus") || name.contains("kelp") || 
-//$$                                   name.contains("sugar_cane") || name.contains("bush") || name.contains("moss") || 
+//$$                                   name.contains("sugar_cane") || name.contains("bush") || name.equals("moss_carpet") || name.equals("moss_block") || 
 //$$                                   name.contains("azalea") || name.contains("spore") || name.contains("bluet") || 
 //$$                                   name.contains("dandelion") || name.contains("poppy") || name.contains("orchid") || 
 //$$                                   name.contains("allium") || name.contains("tulip") || name.contains("daisy") || 
@@ -273,7 +273,7 @@ public class ForestGrowthHandler {
 //$$        } else if (isPetal) {
 //$$            if (random.nextFloat() > 0.35f * waterBoost) return;
 //$$        } else {
-//$$            if (random.nextFloat() > 0.20f * waterBoost) return;  // أزهار عادية
+//$$            if (random.nextFloat() > 0.10f * waterBoost) return;  // أزهار عادية (تم إبطاؤها لتناسب المنظر الفني)
 //$$        }
 //$$        
 //$$        // Smart Level Spreading for Pink Petals
@@ -311,14 +311,14 @@ public class ForestGrowthHandler {
 //$$        }
 //$$        
 //$$        // الحد الأقصى للكثافة في المنطقة:
-//$$        //   عشب: ٦  |  شجيرة: ٣ (تكوّن مجموعات من ١-٤)  |  يراعات: ١  |  بتلات: ٣  |  أزهار: ٢
-//$$        int maxDensity = isGrass ? 6 : (isFireflyBush ? 1 : (isPlainBush ? 3 : (isPetal ? 3 : 2)));
+//$$        //   عشب: ٦  |  شجيرة: ٤ (تكوّن مجموعات)  |  يراعات: ١  |  بتلات: ٣  |  أزهار: ٢
+//$$        int maxDensity = isGrass ? 6 : (isFireflyBush ? 1 : (isPlainBush ? 4 : (isPetal ? 3 : 2)));
 //$$        int searchSpread = isGrass ? 5 : 4;
 //$$        
 //$$        if (density >= maxDensity) {
 //$$            // الكثافة المحلية وصلت للحد الأقصى!
-//$$            // نظام المستكشف: نسمح للنبتة بالقفز لمكان بعيد لبدء مجموعة جديدة
-//$$            float pioneerChance = isPlainBush ? 0.30f : 0.05f;
+//$$            // نظام المستكشف: الشجيرات تقفز دائمًا لمكان بعيد إذا كانت المنطقة مزدحمة (100% فرصة)
+//$$            float pioneerChance = isPlainBush ? 1.00f : 0.05f;
 //$$            if (random.nextFloat() < pioneerChance) {
 //$$                searchSpread = isPlainBush ? 12 : 8; // قفزة بعيدة!
 //$$            } else {
@@ -333,7 +333,7 @@ public class ForestGrowthHandler {
 //$$        
 //$$        BlockPos bestTarget = null;
 //$$        int bestScore = -1;
-//$$        for (int i = 0; i < (isGrass ? 8 : (isPlainBush ? 4 : 4)); i++) {
+//$$        for (int i = 0; i < (isGrass ? 8 : (isPlainBush ? 8 : 4)); i++) { // العشب والشجيرات تفحص 8 محاولات
 //$$            int ox = random.nextInt(searchSpread * 2 + 1) - searchSpread;
 //$$            int oz = random.nextInt(searchSpread * 2 + 1) - searchSpread;
 //$$            if (ox == 0 && oz == 0) continue; // Skip source position
