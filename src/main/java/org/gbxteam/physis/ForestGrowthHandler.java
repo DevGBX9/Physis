@@ -333,7 +333,7 @@ public class ForestGrowthHandler {
 //$$        
 //$$        BlockPos bestTarget = null;
 //$$        int bestScore = -1;
-//$$        for (int i = 0; i < (isGrass ? 8 : (isBush ? 4 : 4)); i++) {
+//$$        for (int i = 0; i < (isGrass ? 8 : (isPlainBush ? 4 : 4)); i++) {
 //$$            int ox = random.nextInt(searchSpread * 2 + 1) - searchSpread;
 //$$            int oz = random.nextInt(searchSpread * 2 + 1) - searchSpread;
 //$$            if (ox == 0 && oz == 0) continue; // Skip source position
