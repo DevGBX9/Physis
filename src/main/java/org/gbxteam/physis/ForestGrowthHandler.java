@@ -225,14 +225,14 @@ public class ForestGrowthHandler {
 //$$        boolean nearWaterSource = isNearWater(level, sourcePos, 6);
 //$$        float waterBoost = nearWaterSource ? 2.5f : 1.0f;
 //$$        
-//$$        // Spread rates (with water boost): Grass/Fern (15-37%), Bush (10-25%), Petal (35-87%), Flowers (25-62%)
+//$$        // Spread rates (with water boost): Grass/Fern (30-75%), Bush (10-25%), Petal (35-87%), Flowers (20-50%)
 //$$        if (isGrass) {
-//$$            if (random.nextFloat() > 0.15f * waterBoost) return;
+//$$            if (random.nextFloat() > 0.30f * waterBoost) return;
 //$$        } else {
 //$$            if (isFireflyBush && random.nextFloat() > 0.20f * waterBoost) return;
 //$$            else if (isBush && random.nextFloat() > 0.10f * waterBoost) return;
 //$$            else if (isPetal && random.nextFloat() > 0.35f * waterBoost) return;
-//$$            else if (!isBush && !isFireflyBush && !isPetal && random.nextFloat() > 0.25f * waterBoost) return;
+//$$            else if (!isBush && !isFireflyBush && !isPetal && random.nextFloat() > 0.20f * waterBoost) return;
 //$$        }
 //$$        
 //$$        // Smart Level Spreading for Pink Petals
