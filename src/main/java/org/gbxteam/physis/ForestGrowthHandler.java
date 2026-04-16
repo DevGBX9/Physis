@@ -26,7 +26,6 @@ package org.gbxteam.physis;
 //$$ import net.minecraft.core.Holder;
 //$$ import net.minecraft.core.registries.BuiltInRegistries;
 //$$ import net.minecraft.resources.ResourceKey;
-//$$ import net.minecraft.resources.ResourceLocation;
 //$$ import net.minecraft.server.level.ServerLevel;
 //$$ import net.minecraft.server.MinecraftServer;
 //$$ import net.minecraft.util.RandomSource;
@@ -185,8 +184,10 @@ public class ForestGrowthHandler {
 //$$            int clearRadius       // نصف قطر المنطقة الخالية للمكان الجديد
 //$$    ) {
 //$$        RandomSource random = level.getRandom();
-//$$        Block targetBlock = net.minecraft.core.registries.BuiltInRegistries.BLOCK
-//$$            .get(ResourceLocation.parse(blockId));
+//$$        Block targetBlock = net.minecraft.core.registries.BuiltInRegistries.BLOCK.stream()
+//$$            .filter(b -> net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(b).toString().equals(blockId))
+//$$            .findFirst()
+//$$            .orElse(null);
 //$$        if (targetBlock == null || targetBlock == net.minecraft.world.level.block.Blocks.AIR) return;
 //$$        
 //$$        BlockPos surfaceStart = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, searchPos);
