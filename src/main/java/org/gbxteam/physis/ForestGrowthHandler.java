@@ -150,6 +150,121 @@ public class ForestGrowthHandler {
 //$$                int oz = level.getRandom().nextInt(16) - 8;
 //$$                processVegetationExpansion(level, center.offset(ox, 0, oz));
 //$$            }
+//$$            
+//$$            // نظام مراقبة الشجيرات: يعمل مرة واحدة كل دورة للتحقق من التوزيع
+//$$            if (level.getRandom().nextInt(3) == 0) {
+//$$                int ox = level.getRandom().nextInt(16) - 8;
+//$$                int oz = level.getRandom().nextInt(16) - 8;
+//$$                monitorBushDistribution(level, center.offset(ox, 0, oz));
+//$$            }
+//$$        }
+//$$    }
+
+    // ╔══════════════════════════════════════════════════════════════════╗
+    // ║   القسم ٤أ: نظام مراقبة الشجيرات الخاص (bush distribution)     ║
+    // ║   القوانين الثلاثة:                                              ║
+    // ║    1. أكثر من 3 متلاصقين → احذف الزائد مباشرة                   ║
+    // ║    2. مجموعة قريبة من أخرى < 6 بلوكات → احذف الأقرب            ║
+    // ║    3. bush منفرد → انقله عشوائياً 10-30 بلوكة بعيداً            ║
+    // ╚══════════════════════════════════════════════════════════════════╝
+//$$    private static void monitorBushDistribution(ServerLevel level, BlockPos searchPos) {
+//$$        RandomSource random = level.getRandom();
+//$$        Block bushBlock = net.minecraft.core.registries.BuiltInRegistries.BLOCK
+//$$            .get(net.minecraft.resources.ResourceLocation.parse("minecraft:bush"));
+//$$        if (bushBlock == null || bushBlock == net.minecraft.world.level.block.Blocks.AIR) return;
+//$$        
+//$$        // ابحث عن أي bush في المنطقة للفحص
+//$$        BlockPos surfaceStart = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, searchPos);
+//$$        
+//$$        for (int ox = -4; ox <= 4; ox++) {
+//$$            for (int oz = -4; oz <= 4; oz++) {
+//$$                BlockPos checkPos = surfaceStart.offset(ox, 0, oz);
+//$$                // فحص عدة ارتفاعات
+//$$                for (int dy = -2; dy <= 2; dy++) {
+//$$                    BlockPos bushPos = checkPos.offset(0, dy, 0);
+//$$                    if (level.getBlockState(bushPos).getBlock() != bushBlock) continue;
+//$$                    
+//$$                    // وجدنا bush! الآن نطبق القوانين الثلاثة:
+//$$                    
+//$$                    // ═══ حساب الجيران المباشرين (في نصف قطر 1 بلوكة) ═══
+//$$                    int directNeighbors = 0;
+//$$                    for (BlockPos nb : BlockPos.betweenClosed(bushPos.offset(-1, -1, -1), bushPos.offset(1, 1, 1))) {
+//$$                        if (nb.equals(bushPos)) continue;
+//$$                        if (level.getBlockState(nb).getBlock() == bushBlock) directNeighbors++;
+//$$                    }
+//$$                    
+//$$                    // ═══ حساب الشجيرات في النطاق الكامل (3 بلوكات) ═══
+//$$                    int clusterSize = 0;
+//$$                    for (BlockPos cp : BlockPos.betweenClosed(bushPos.offset(-3, -2, -3), bushPos.offset(3, 2, 3))) {
+//$$                        if (cp.equals(bushPos)) continue;
+//$$                        if (level.getBlockState(cp).getBlock() == bushBlock) clusterSize++;
+//$$                    }
+//$$                    
+//$$                    // === القانون ١: أكثر من 3 متلاصقين → احذف هذه الشجيرة ===
+//$$                    if (clusterSize >= 3) {
+//$$                        level.setBlock(bushPos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 3);
+//$$                        return;
+//$$                    }
+//$$                    
+//$$                    // === القانون ٢: فحص قرب مجموعة أخرى (6-10 بلوكات) ===
+//$$                    if (clusterSize >= 1) { // هذه في مجموعة (2 أو 3)
+//$$                        boolean tooCloseToOtherGroup = false;
+//$$                        // نفحص في نطاق 6-10 بلوكات هل يوجد bush من مجموعة أخرى
+//$$                        for (BlockPos fp : BlockPos.betweenClosed(bushPos.offset(-10, -2, -10), bushPos.offset(10, 2, 10))) {
+//$$                            if (fp.equals(bushPos)) continue;
+//$$                            double dist = Math.sqrt(fp.distSqr(bushPos));
+//$$                            if (dist < 6.0 || dist > 10.0) continue; // فقط في نطاق 6-10
+//$$                            if (level.getBlockState(fp).getBlock() != bushBlock) continue;
+//$$                            
+//$$                            // هل هذه الشجيرة البعيدة من مجموعة مختلفة؟
+//$$                            // نتحقق بأن منطقتها المباشرة ليست جزء من مجموعتنا
+//$$                            boolean fromSameCluster = false;
+//$$                            for (BlockPos sc : BlockPos.betweenClosed(bushPos.offset(-3, -2, -3), bushPos.offset(3, 2, 3))) {
+//$$                                if (sc.equals(fp)) { fromSameCluster = true; break; }
+//$$                            }
+//$$                            if (!fromSameCluster) {
+//$$                                tooCloseToOtherGroup = true;
+//$$                                break;
+//$$                            }
+//$$                        }
+//$$                        if (tooCloseToOtherGroup && random.nextFloat() < 0.7f) {
+//$$                            level.setBlock(bushPos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 3);
+//$$                            return;
+//$$                        }
+//$$                    }
+//$$                    
+//$$                    // === القانون ٣: bush منفرد (لا جيران) → انقله بعيداً 10-30 بلوكة ===
+//$$                    if (clusterSize == 0 && directNeighbors == 0) {
+//$$                        // احتمال 20% فقط لتجنب الحذف المستمر
+//$$                        if (random.nextFloat() < 0.20f) {
+//$$                            BlockState bushState = level.getBlockState(bushPos);
+//$$                            // اختر اتجاهاً عشوائياً ومسافة 10-30 بلوكة
+//$$                            int dist = 10 + random.nextInt(21); // 10 to 30
+//$$                            double angle = random.nextDouble() * Math.PI * 2;
+//$$                            int newOx = (int)(Math.cos(angle) * dist);
+//$$                            int newOz = (int)(Math.sin(angle) * dist);
+//$$                            BlockPos newPos = level.getHeightmapPos(
+//$$                                Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+//$$                                bushPos.offset(newOx, 0, newOz)
+//$$                            );
+//$$                            if (bushState.canSurvive(level, newPos) && level.getBlockState(newPos).isAir()) {
+//$$                                // تأكد أن المكان الجديد بعيد عن bush آخر بـ 6+ بلوكات
+//$$                                boolean clearArea = true;
+//$$                                for (BlockPos np : BlockPos.betweenClosed(newPos.offset(-6, -2, -6), newPos.offset(6, 2, 6))) {
+//$$                                    if (level.getBlockState(np).getBlock() == bushBlock) { clearArea = false; break; }
+//$$                                }
+//$$                                if (clearArea) {
+//$$                                    level.setBlock(bushPos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 3);
+//$$                                    level.setBlock(newPos, bushState, 3);
+//$$                                }
+//$$                            }
+//$$                        }
+//$$                        return;
+//$$                    }
+//$$                    
+//$$                    return; // فحصنا bush واحد يكفي في هذه الدورة
+//$$                }
+//$$            }
 //$$        }
 //$$    }
 
