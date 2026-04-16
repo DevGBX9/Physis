@@ -47,17 +47,25 @@ public class ForestGrowthHandler {
     
     //#if MC >= 260100
     
-    // ==================== [1] WIND SYSTEM ====================
+    // ╔══════════════════════════════════════════════════════════════════╗
+    // ║                    القسم ١: الثوابت والمتغيرات                   ║
+    // ║  هنا نخزن المتغيرات العامة مثل اتجاه الرياح والاتجاهات الثمانية  ║
+    // ╚══════════════════════════════════════════════════════════════════╝
+    
+    // --- نظام الرياح: يتغير اتجاه الرياح كل ٥ دقائق لعبة ---
 //$$    private static double windAngle = 0;
 //$$    private static long lastWindUpdate = 0;
 
-    // ==================== 8 CARDINAL + DIAGONAL DIRECTIONS ====================
+    // --- الاتجاهات الثمانية: شمال، جنوب، غرب، شرق + الأقطار ---
 //$$    private static final int[][] DIRECTIONS = {
 //$$        {0, -1}, {0, 1}, {-1, 0}, {1, 0},  // N, S, W, E
 //$$        {-1, -1}, {1, -1}, {-1, 1}, {1, 1}  // NW, NE, SW, SE
 //$$    };
 
-    // ==================== MAIN TICK ====================
+    // ╔══════════════════════════════════════════════════════════════════╗
+    // ║              القسم ٢: نقطة الدخول الرئيسية (tick)               ║
+    // ║   تُستدعى كل تيك من السيرفر. تدير الساعة الداخلية للمود        ║
+    // ╚══════════════════════════════════════════════════════════════════╝
 //$$    public static void tick(ServerLevel level) {
 //$$        long gameTime = level.getGameTime();
 //$$
@@ -96,7 +104,11 @@ public class ForestGrowthHandler {
 //$$        // Thunder damage is now handled globally in tickChunk()
 //$$    }
 //$$
-//$$    // ==================== GLOBAL CHUNK TICKING ====================
+    // ╔══════════════════════════════════════════════════════════════════╗
+    // ║         القسم ٣: التحديث العالمي للتشونكات (tickChunk)          ║
+    // ║   يعمل على كل تشونك محمّل في العالم بشكل مستقل عن اللاعبين    ║
+    // ║   المهام: رعد عشوائي + نمو أشجار + انتشار نباتات               ║
+    // ╚══════════════════════════════════════════════════════════════════╝
 //$$    public static void tickChunk(net.minecraft.world.level.chunk.LevelChunk chunk, ServerLevel level) {
 //$$        if (!level.isLoaded(chunk.getPos().getMiddleBlockPosition(0))) return;
 //$$        
@@ -141,18 +153,25 @@ public class ForestGrowthHandler {
 //$$        }
 //$$    }
 
-    // ==================== SYSTEM: VEGETATION MAINTENANCE ====================
-//$$    // نظام المراقبة: ضبط التنظيم العشبي والحفاظ على تكسترات متوازنة لمنع التكدس العشوائي
+    // ╔══════════════════════════════════════════════════════════════════╗
+    // ║       القسم ٤: نظام ضبط التنظيم العشبي (المراقبة والتشذيب)      ║
+    // ║   يفحص كثافة الأعشاب ويزيل الزائد منها للحفاظ على منظر طبيعي   ║
+    // ║   يُستدعى عندما تصل الكثافة للحد الأقصى في منطقة معينة         ║
+    // ╚══════════════════════════════════════════════════════════════════╝
 //$$    private static boolean manageVegetationBalance(ServerLevel level, BlockPos pos, int density, boolean isGrass, RandomSource random) {
-//$$        // Over-Density Pruning System: If vegetation gets too crowded, natural decay occurs to restore aesthetic texture!
+//$$        // إذا كانت الأعشاب مكتظة جداً (أكثر من ٨ في مساحة ٥×٥)، نزيل بعضها عشوائياً
 //$$        if (isGrass && density > 8 && random.nextBoolean()) {
 //$$            level.setBlock(pos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 3);
-//$$            return true;
+//$$            return true; // تم التشذيب
 //$$        }
-//$$        return false;
+//$$        return false; // لا حاجة للتشذيب
 //$$    }
 
-    // ==================== VEGETATION EXPANSION (GRASS & FLOWERS) ====================
+    // ╔══════════════════════════════════════════════════════════════════╗
+    // ║        القسم ٥: نظام انتشار الأعشاب والنباتات الأرضية          ║
+    // ║   يبحث عن نبتة موجودة ثم يحاول نشرها للأماكن القريبة           ║
+    // ║   يشمل: عشب، سراخس، أزهار، شجيرات، بتلات، فطريات              ║
+    // ╚══════════════════════════════════════════════════════════════════╝
 //$$    private static void processVegetationExpansion(ServerLevel level, BlockPos searchPos) {
 //$$        if (!level.isLoaded(searchPos)) return;
 //$$        RandomSource random = level.getRandom();
@@ -201,26 +220,31 @@ public class ForestGrowthHandler {
 //$$        
 //$$        if (!isVegetation || state == null) return;
 //$$        
-//$$        // Safe fallback: exclude double plants for simplicity to avoid breaking half-states 
-//$$        if (name.contains("sunflower") || name.contains("lilac") || name.contains("rose_bush") || name.contains("peony") || name.contains("tall") || name.contains("large") || name.contains("pitcher")) {
-//$$            return; // Skip double plants
+//$$        // --- استثناء النباتات المزدوجة (طويلة) والشجيرات الميتة ---
+//$$        // هذه النباتات لا ينبغي أن تتكاثر لأنها إما مكونة من جزئين أو ميتة
+//$$        if (name.contains("sunflower") || name.contains("lilac") || name.contains("rose_bush") || 
+//$$            name.contains("peony") || name.contains("tall") || name.contains("large") || 
+//$$            name.contains("pitcher") || name.equals("dead_bush") || name.contains("berry_bush")) {
+//$$            return;
 //$$        }
 //$$        
 //$$        BlockPos sourcePos = mut.immutable();
 //$$        
-//$$        // Density check: limit density in a 5x5 area to look beautiful and not fully cover the ground
+//$$        // ═══════ تصنيف النبات ═══════
+//$$        // كل نبتة لها قواعد انتشار مختلفة، لذلك نصنفها هنا
 //$$        int density = 0;
-//$$        boolean isGrass = name.equals("grass") || name.equals("short_grass") || name.equals("fern");
-//$$        boolean isBush = name.contains("bush");
-//$$        boolean isFireflyBush = name.contains("firefly_bush");
-//$$        boolean isPetal = name.contains("petal");
-//$$        boolean isFungus = name.contains("mushroom") || name.contains("fungus");
-//$$        boolean isWaterPlant = name.contains("kelp") || name.contains("seagrass") || name.contains("pickle");
+//$$        boolean isGrass = name.equals("grass") || name.equals("short_grass") || name.equals("fern");  // أعشاب قصيرة
+//$$        boolean isPlainBush = name.equals("bush");              // شجيرة minecraft:bush الزخرفية فقط
+//$$        boolean isFireflyBush = name.contains("firefly_bush");  // شجيرة اليراعات (قرب الماء فقط)
+//$$        boolean isPetal = name.contains("petal");               // بتلات الكرز الوردية
+//$$        boolean isFungus = name.contains("mushroom") || name.contains("fungus");  // فطريات
+//$$        boolean isWaterPlant = name.contains("kelp") || name.contains("seagrass") || name.contains("pickle"); // نباتات مائية
 //$$        
-//$$        // Firefly bush can ONLY spread from water edges
+//$$        // --- شروط خاصة لبعض النباتات ---
+//$$        // شجيرة اليراعات لا تنتشر إلا بجوار الماء مباشرة
 //$$        if (isFireflyBush && !isNearWater(level, sourcePos, 2)) return;
 //$$        
-//$$        // Petals strictly restricted to Cherry biome areas (version-safe check by finding cherry trees nearby)
+//$$        // البتلات الوردية لا تنتشر إلا بالقرب من أشجار الكرز
 //$$        if (isPetal) {
 //$$            boolean hasCherryTree = false;
 //$$            for (BlockPos cp : BlockPos.betweenClosed(sourcePos.offset(-8, 0, -8), sourcePos.offset(8, 15, 8))) {
@@ -229,21 +253,27 @@ public class ForestGrowthHandler {
 //$$                    break;
 //$$                }
 //$$            }
-//$$            if (!hasCherryTree) return; // Cannot spread outside its natural biome
+//$$            if (!hasCherryTree) return;
 //$$        }
 //$$        
-//$$        // Water proximity boost: plants near water spread MUCH faster
+//$$        // ═══════ سرعات الانتشار ═══════
+//$$        // النباتات قرب الماء تنمو أسرع بـ ٢.٥ مرة
 //$$        boolean nearWaterSource = isNearWater(level, sourcePos, 6);
 //$$        float waterBoost = nearWaterSource ? 2.5f : 1.0f;
 //$$        
-//$$        // Spread rates (with water boost): Grass/Fern (30-75%), Bush (10-25%), Petal (35-87%), Flowers (20-50%)
+//$$        // نسب الانتشار (جاف → رطب):
+//$$        //   عشب: ٣٠٪ → ٧٥٪  |  شجيرة: ٢٥٪ → ٦٢٪  |  بتلات: ٣٥٪ → ٨٧٪
+//$$        //   يراعات: ٢٠٪ → ٥٠٪  |  أزهار: ٢٠٪ → ٥٠٪
 //$$        if (isGrass) {
 //$$            if (random.nextFloat() > 0.30f * waterBoost) return;
+//$$        } else if (isPlainBush) {
+//$$            if (random.nextFloat() > 0.25f * waterBoost) return;
+//$$        } else if (isFireflyBush) {
+//$$            if (random.nextFloat() > 0.20f * waterBoost) return;
+//$$        } else if (isPetal) {
+//$$            if (random.nextFloat() > 0.35f * waterBoost) return;
 //$$        } else {
-//$$            if (isFireflyBush && random.nextFloat() > 0.20f * waterBoost) return;
-//$$            else if (isBush && random.nextFloat() > 0.10f * waterBoost) return;
-//$$            else if (isPetal && random.nextFloat() > 0.35f * waterBoost) return;
-//$$            else if (!isBush && !isFireflyBush && !isPetal && random.nextFloat() > 0.20f * waterBoost) return;
+//$$            if (random.nextFloat() > 0.20f * waterBoost) return;  // أزهار عادية
 //$$        }
 //$$        
 //$$        // Smart Level Spreading for Pink Petals
@@ -269,33 +299,36 @@ public class ForestGrowthHandler {
 //$$            }
 //$$        }
 //$$        
-//$$        // Density check area: General 5x5. Firefly bush uses 7x7 to stay isolated.
+//$$        // ═══════ نظام الكثافة والتوزيع ═══════
+//$$        // نحسب عدد النباتات المشابهة في المنطقة المحيطة
+//$$        // شجيرة اليراعات تفحص مساحة أكبر (٧×٧) لأنها تحتاج عزل أكثر
 //$$        int checkRadius = (isFireflyBush) ? 3 : 2;
 //$$        for (BlockPos p : BlockPos.betweenClosed(sourcePos.offset(-checkRadius, -2, -checkRadius), sourcePos.offset(checkRadius, 2, checkRadius))) {
-//$$            if (p.equals(sourcePos)) continue; // Don't count the source plant itself!
+//$$            if (p.equals(sourcePos)) continue;
 //$$            if (level.getBlockState(p).getBlock() == block) {
 //$$                density++;
 //$$            }
 //$$        }
 //$$        
-//$$        // Max plants (excluding source): Grass 6, Firefly 1, Bush 3 (creates clusters of max 4), Petal 3, Others 2
-//$$        int maxDensity = isGrass ? 6 : (isFireflyBush ? 1 : (isBush ? 3 : (isPetal ? 3 : 2)));
+//$$        // الحد الأقصى للكثافة في المنطقة:
+//$$        //   عشب: ٦  |  شجيرة: ٣ (تكوّن مجموعات من ١-٤)  |  يراعات: ١  |  بتلات: ٣  |  أزهار: ٢
+//$$        int maxDensity = isGrass ? 6 : (isFireflyBush ? 1 : (isPlainBush ? 3 : (isPetal ? 3 : 2)));
 //$$        int searchSpread = isGrass ? 5 : 4;
 //$$        
 //$$        if (density >= maxDensity) {
-//$$            // If local density is reached, the plant stops expanding locally.
-//$$            // However, to ensure patches can still jump to new empty areas, we use a Pioneer system!
-//$$            float pioneerChance = isBush ? 0.30f : 0.05f; // Bushes pioneer frequently (30%) to create new clumps, others rarely (5%)
+//$$            // الكثافة المحلية وصلت للحد الأقصى!
+//$$            // نظام المستكشف: نسمح للنبتة بالقفز لمكان بعيد لبدء مجموعة جديدة
+//$$            float pioneerChance = isPlainBush ? 0.30f : 0.05f;
 //$$            if (random.nextFloat() < pioneerChance) {
-//$$                searchSpread = isBush ? 12 : 8; // Pioneers jump far away!
+//$$                searchSpread = isPlainBush ? 12 : 8; // قفزة بعيدة!
 //$$            } else {
-//$$                // Call the vegetation maintenance system to resolve over-density before aborting
+//$$                // نظام التشذيب: يزيل الزائد لو الكثافة عالية جداً
 //$$                manageVegetationBalance(level, sourcePos, density, isGrass, random);
-//$$                return; // Abort spread due to high density
+//$$                return;
 //$$            }
 //$$        } else {
-//$$            // Normal cluster growth
-//$$            searchSpread = isBush ? 2 : (isGrass ? 5 : 4); // Bushes use tight radius 2 to clump up
+//$$            // النمو العادي: الشجيرات تنمو قريبة (نصف قطر ٢) لتشكيل مجموعات متلاصقة
+//$$            searchSpread = isPlainBush ? 2 : (isGrass ? 5 : 4);
 //$$        }
 //$$        
 //$$        BlockPos bestTarget = null;
@@ -329,13 +362,15 @@ public class ForestGrowthHandler {
 //$$            // Firefly bush: target must be directly adjacent to water (within 2 blocks)
 //$$            if (isFireflyBush && !isNearWater(level, target, 2)) continue;
 //$$            
-//$$            // Minimum spacing: prevent clustering (grass allowed to touch like vanilla, bush stays far apart)
-//$$            // IMPORTANT: exclude the source position itself from this check!
+//$$            // --- فحص المسافة الدنيا بين النباتات ---
+//$$            // الشجيرة الزخرفية (bush): مسافة ٠ = تلاصق مسموح (مثل العشب) لتكوين مجموعات
+//$$            // شجيرة اليراعات: مسافة ٤ بلوكات = متباعدة
+//$$            // العشب والأزهار: مسافة ٠ = تلاصق مسموح
 //$$            boolean tooClose = false;
-//$$            int minSpacing = isBush ? 5 : (isFireflyBush ? 4 : 0);
+//$$            int minSpacing = isFireflyBush ? 4 : 0;  // الشجيرة الزخرفية والعشب = ٠ (تلاصق حر)
 //$$            if (minSpacing > 0) {
 //$$                for (BlockPos sp : BlockPos.betweenClosed(target.offset(-minSpacing, -1, -minSpacing), target.offset(minSpacing, 1, minSpacing))) {
-//$$                    if (sp.equals(sourcePos)) continue; // Don't count the source plant
+//$$                    if (sp.equals(sourcePos)) continue;
 //$$                    if (level.getBlockState(sp).getBlock() == block) {
 //$$                        tooClose = true;
 //$$                        break;
@@ -344,15 +379,16 @@ public class ForestGrowthHandler {
 //$$            }
 //$$            if (tooClose) continue;
 //$$            
+//$$            // ═══════ نظام التقييم: أفضل مكان للنمو ═══════
 //$$            int score = 0;
-//$$            // Water attraction: grass & bush love water - check wider radius
-//$$            if (!isWaterPlant && isNearWater(level, target, (isGrass || isBush) ? 8 : 4)) score += (isGrass || isBush) ? 10 : 5;
-//$$            // Forest/tree attraction: grass & bush prefer growing near trees
-//$$            if ((isGrass || isBush) && hasHeavyCanopy(level, target)) score += 6;
-//$$            if (!(isGrass || isBush) && hasHeavyCanopy(level, target)) score += isFungus ? 8 : 2;
-//$$            // Firefly bush gets massive bonus for being right next to water
+//$$            // العشب والشجيرات تحب الماء - نبحث في نطاق أوسع
+//$$            if (!isWaterPlant && isNearWater(level, target, (isGrass || isPlainBush) ? 8 : 4)) score += (isGrass || isPlainBush) ? 10 : 5;
+//$$            // العشب والشجيرات تفضل النمو تحت الأشجار
+//$$            if ((isGrass || isPlainBush) && hasHeavyCanopy(level, target)) score += 6;
+//$$            if (!(isGrass || isPlainBush) && hasHeavyCanopy(level, target)) score += isFungus ? 8 : 2;
+//$$            // شجيرة اليراعات تحصل على أفضلية كبيرة بجوار الماء مباشرة
 //$$            if (isFireflyBush && isNearWater(level, target, 1)) score += 15;
-//$$            // Randomness for natural variation
+//$$            // عشوائية بسيطة لتنويع المنظر
 //$$            score += random.nextInt(4);
 //$$            
 //$$            if (score > bestScore) {
@@ -361,11 +397,17 @@ public class ForestGrowthHandler {
 //$$            }
 //$$        }
 //$$        
-//$$        if (bestTarget != null && ((isGrass || isBush) ? bestScore >= 0 : bestScore >= 1)) {
+//$$        // --- وضع النبتة في المكان الأفضل ---
+//$$        if (bestTarget != null && ((isGrass || isPlainBush) ? bestScore >= 0 : bestScore >= 1)) {
 //$$            level.setBlock(bestTarget, state, 3);
 //$$        }
 //$$    }
 
+    // ╔══════════════════════════════════════════════════════════════════╗
+    // ║           القسم ٦: نظام بتلات الكرز (Cherry Petals)            ║
+    // ║   يفحص أشجار الكرز ويضع بتلات وردية على الأرض تحتها           ║
+    // ║   إذا لم توجد أي بتلة، يرمي ٣-٦ مجموعات بكميات عشوائية       ║
+    // ╚══════════════════════════════════════════════════════════════════╝
 //$$    private static void tryCherryPetalDrop(ServerLevel level, BlockPos treePos) {
 //$$        BlockState state = level.getBlockState(treePos);
 //$$        String name = net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(state.getBlock()).getPath();
@@ -420,7 +462,11 @@ public class ForestGrowthHandler {
 //$$        }
 //$$    }
 //$$
-//$$    // ==================== CORE: EDGE-BASED EXPANSION ====================
+    // ╔══════════════════════════════════════════════════════════════════╗
+    // ║             القسم ٧: نظام انتشار الأشجار (الشتلات)             ║
+    // ║   يبحث عن أشجار على حواف الغابات وينشر شتلات جديدة            ║
+    // ║   معدل: ١-٢ شتلة كل نصف يوم ماينكرافت (بطيء جداً)            ║
+    // ╚══════════════════════════════════════════════════════════════════╝
 //$$    private static void processEdgeExpansion(ServerLevel level, BlockPos searchPos) {
 //$$        if (!level.isLoaded(searchPos)) return;
 //$$        RandomSource random = level.getRandom();
@@ -563,7 +609,10 @@ public class ForestGrowthHandler {
 //$$        }
 //$$    }
 
-    // ==================== HEALTH CHECKS ====================
+    // ╔══════════════════════════════════════════════════════════════════╗
+    // ║         القسم ٨: فحوصات الصحة والتسميد (صيانة الشتلات)         ║
+    // ║   يفحص الشتلات المزروعة: هل نمت؟ هل ماتت؟ هل تحتاج تنظيف؟    ║
+    // ╚══════════════════════════════════════════════════════════════════╝
 //$$    private static void runHealthChecks(ServerLevel level) {
 //$$        long currentTime = level.getGameTime();
 //$$        ForestGrowthData data = ForestGrowthData.get(level);
@@ -641,7 +690,10 @@ public class ForestGrowthHandler {
 //$$        }
 //$$    }
 
-    // ==================== [10] THUNDER DAMAGE ====================
+    // ╔══════════════════════════════════════════════════════════════════╗
+    // ║            القسم ٩: نظام أضرار الرعد (Thunder Damage)          ║
+    // ║   أثناء العواصف الرعدية: البرق يدمر بعض أوراق الأشجار          ║
+    // ╚══════════════════════════════════════════════════════════════════╝
 //$$    private static void applyThunderDamage(ServerLevel level, BlockPos center) {
 //$$        RandomSource random = level.getRandom();
 //$$        int radius = 2 + random.nextInt(2);
@@ -681,7 +733,11 @@ public class ForestGrowthHandler {
 //$$        return true;
 //$$    }
 
-    // ==================== [1] BIOME-AWARE TREE SELECTION ====================
+    // ╔══════════════════════════════════════════════════════════════════╗
+    // ║     القسم ١٠: أنظمة البيئة الحيوية (Biome Systems)             ║
+    // ║   تحديد نوع الشتلة المناسبة لكل بيئة حيوية                    ║
+    // ║   التحقق من صلاحية الشتلة للبيئة + المنافسة بين الأنواع        ║
+    // ╚══════════════════════════════════════════════════════════════════╝
 //$$    private static Optional<Block> determineSapling(ServerLevel level, BlockPos pos) {
 //$$        // [7] SPECIES COMPETITION: First check what's dominant nearby
 //$$        Optional<Block> nearby = findNearbyForestType(level, pos, 4, 20);
@@ -805,7 +861,12 @@ public class ForestGrowthHandler {
 //$$        return Optional.empty(); // Desert, ocean, etc. - no growth
 //$$    }
 
-    // ==================== [2] LIGHT CHECK ====================
+    // ╔══════════════════════════════════════════════════════════════════╗
+    // ║          القسم ١١: أدوات مساعدة (Utility Functions)            ║
+    // ║   دوال صغيرة تُستخدم في أماكن متعددة من الكود                  ║
+    // ║   فحص الإضاءة، قرب الماء، استواء الأرض، كثافة الأوراق، الخ     ║
+    // ╚══════════════════════════════════════════════════════════════════╝
+    // --- فحص الإضاءة: هل المكان مضاء كفاية لنمو الشتلة؟ ---
 //$$    private static boolean hasAdequateLight(ServerLevel level, BlockPos pos, Block sapling) {
 //$$        int light = level.getMaxLocalRawBrightness(pos);
 //$$        // Shade-tolerant species need less light
