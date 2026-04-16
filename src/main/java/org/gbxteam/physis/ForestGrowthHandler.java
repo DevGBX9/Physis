@@ -269,13 +269,28 @@ public class ForestGrowthHandler {
 //$$        
 //$$        // Max plants (excluding source): Grass 6, Firefly 1, Bush 3 (creates clusters of max 4), Petal 3, Others 2
 //$$        int maxDensity = isGrass ? 6 : (isFireflyBush ? 1 : (isBush ? 3 : (isPetal ? 3 : 2)));
-//$$        if (density >= maxDensity) return;
+//$$        int searchSpread = isGrass ? 5 : 4;
+//$$        
+//$$        if (density >= maxDensity) {
+//$$            // If local density is reached, the plant stops expanding locally.
+//$$            // However, to ensure patches can still jump to new empty areas, we use a Pioneer system!
+//$$            float pioneerChance = isBush ? 0.30f : 0.05f; // Bushes pioneer frequently (30%) to create new clumps, others rarely (5%)
+//$$            if (random.nextFloat() < pioneerChance) {
+//$$                searchSpread = isBush ? 12 : 8; // Pioneers jump far away!
+//$$            } else {
+//$$                // Over-Density Pruning System: If grass gets too crowded (e.g. 9 or more in a 5x5 area), natural decay occurs to restore texture!
+//$$                if (isGrass && density > 8 && random.nextBoolean()) {
+//$$                    level.setBlock(sourcePos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 3);
+//$$                }
+//$$                return; // Abort spread due to high density
+//$$            }
+//$$        } else {
+//$$            // Normal cluster growth
+//$$            searchSpread = isBush ? 2 : (isGrass ? 5 : 4); // Bushes use tight radius 2 to clump up
+//$$        }
 //$$        
 //$$        BlockPos bestTarget = null;
 //$$        int bestScore = -1;
-//$$        
-//$$        // Bush searches have two modes to create vanilla-like textures: Cluster mode (tight 2-block radius) and Pioneer mode (far 12-block jump)
-//$$        int searchSpread = isBush ? (random.nextFloat() < 0.7f ? 2 : 12) : ((isGrass) ? 5 : 4);
 //$$        for (int i = 0; i < (isGrass ? 8 : (isBush ? 4 : 4)); i++) {
 //$$            int ox = random.nextInt(searchSpread * 2 + 1) - searchSpread;
 //$$            int oz = random.nextInt(searchSpread * 2 + 1) - searchSpread;
