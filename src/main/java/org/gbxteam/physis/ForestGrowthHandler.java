@@ -278,7 +278,7 @@ public class ForestGrowthHandler {
 //$$        } else if (isPetal) {
 //$$            if (random.nextFloat() > 0.35f * waterBoost) return;
 //$$        } else {
-//$$            if (random.nextFloat() > 0.10f * waterBoost) return;  // أزهار عادية (تم إبطاؤها لتناسب المنظر الفني)
+//$$            if (random.nextFloat() > 0.015f * waterBoost) return;  // أزهار عادية (مبطأة جدا لتصبح أبطأ من انتشار الأشجار)
 //$$        }
 //$$        
 //$$        // Smart Level Spreading for Pink Petals
