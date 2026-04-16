@@ -141,6 +141,17 @@ public class ForestGrowthHandler {
 //$$        }
 //$$    }
 
+    // ==================== SYSTEM: VEGETATION MAINTENANCE ====================
+//$$    // نظام المراقبة: ضبط التنظيم العشبي والحفاظ على تكسترات متوازنة لمنع التكدس العشوائي
+//$$    private static boolean manageVegetationBalance(ServerLevel level, BlockPos pos, int density, boolean isGrass, RandomSource random) {
+//$$        // Over-Density Pruning System: If vegetation gets too crowded, natural decay occurs to restore aesthetic texture!
+//$$        if (isGrass && density > 8 && random.nextBoolean()) {
+//$$            level.setBlock(pos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 3);
+//$$            return true;
+//$$        }
+//$$        return false;
+//$$    }
+
     // ==================== VEGETATION EXPANSION (GRASS & FLOWERS) ====================
 //$$    private static void processVegetationExpansion(ServerLevel level, BlockPos searchPos) {
 //$$        if (!level.isLoaded(searchPos)) return;
@@ -200,7 +211,7 @@ public class ForestGrowthHandler {
 //$$        // Density check: limit density in a 5x5 area to look beautiful and not fully cover the ground
 //$$        int density = 0;
 //$$        boolean isGrass = name.equals("grass") || name.equals("short_grass") || name.equals("fern");
-//$$        boolean isBush = name.equals("bush");
+//$$        boolean isBush = name.contains("bush");
 //$$        boolean isFireflyBush = name.contains("firefly_bush");
 //$$        boolean isPetal = name.contains("petal");
 //$$        boolean isFungus = name.contains("mushroom") || name.contains("fungus");
@@ -278,10 +289,8 @@ public class ForestGrowthHandler {
 //$$            if (random.nextFloat() < pioneerChance) {
 //$$                searchSpread = isBush ? 12 : 8; // Pioneers jump far away!
 //$$            } else {
-//$$                // Over-Density Pruning System: If grass gets too crowded (e.g. 9 or more in a 5x5 area), natural decay occurs to restore texture!
-//$$                if (isGrass && density > 8 && random.nextBoolean()) {
-//$$                    level.setBlock(sourcePos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 3);
-//$$                }
+//$$                // Call the vegetation maintenance system to resolve over-density before aborting
+//$$                manageVegetationBalance(level, sourcePos, density, isGrass, random);
 //$$                return; // Abort spread due to high density
 //$$            }
 //$$        } else {
