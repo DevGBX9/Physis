@@ -163,8 +163,6 @@ public class ForestGrowthHandler {
 //$$                monitorPlantDistribution(level, monitorPos, "minecraft:fern",        4, 5.0,  8,  20, 5);
 //$$                // عشب قصير (tall grass legacy): حد 4, فصل 4, نقل 6-15
 //$$                monitorPlantDistribution(level, monitorPos, "minecraft:grass",       4, 4.0,  6,  15, 4);
-//$$                // عشب بري: حد 4, فصل 4, نقل 6-15
-//$$                monitorPlantDistribution(level, monitorPos, "minecraft:dead_bush",   2, 8.0,  10, 25, 6);
 //$$            }
 //$$        }
 //$$    }
