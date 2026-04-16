@@ -221,18 +221,18 @@ public class ForestGrowthHandler {
 //$$            if (!hasCherryTree) return; // Cannot spread outside its natural biome
 //$$        }
 //$$        
-//$$        // Water proximity boost: plants near water spread faster
+//$$        // Water proximity boost: plants near water spread MUCH faster
 //$$        boolean nearWaterSource = isNearWater(level, sourcePos, 6);
-//$$        float waterBoost = nearWaterSource ? 1.4f : 1.0f;
+//$$        float waterBoost = nearWaterSource ? 2.5f : 1.0f;
 //$$        
-//$$        // Spread rates (with water boost): Grass/Fern (40-56%), Bush (25-35%), Petal (35-49%), Flowers (15-21%)
+//$$        // Spread rates (with water boost): Grass/Fern (15-37%), Bush (10-25%), Petal (35-87%), Flowers (25-62%)
 //$$        if (isGrass) {
-//$$            if (random.nextFloat() > 0.40f * waterBoost) return;
+//$$            if (random.nextFloat() > 0.15f * waterBoost) return;
 //$$        } else {
-//$$            if (isFireflyBush && random.nextFloat() > 0.30f * waterBoost) return;
-//$$            else if (isBush && random.nextFloat() > 0.25f * waterBoost) return;
+//$$            if (isFireflyBush && random.nextFloat() > 0.20f * waterBoost) return;
+//$$            else if (isBush && random.nextFloat() > 0.10f * waterBoost) return;
 //$$            else if (isPetal && random.nextFloat() > 0.35f * waterBoost) return;
-//$$            else if (!isBush && !isFireflyBush && !isPetal && random.nextFloat() > 0.15f * waterBoost) return;
+//$$            else if (!isBush && !isFireflyBush && !isPetal && random.nextFloat() > 0.25f * waterBoost) return;
 //$$        }
 //$$        
 //$$        // Smart Level Spreading for Pink Petals
@@ -401,8 +401,8 @@ public class ForestGrowthHandler {
 //$$        if (!level.isLoaded(searchPos)) return;
 //$$        RandomSource random = level.getRandom();
 //$$        
-//$$        // [Nerf] Slow down global tree spreading by 60% inherently to make forest growth feel much slower and more majestic
-//$$        if (random.nextFloat() < 0.60f) return;
+//$$        // [Nerf] Extremely slow global tree spreading: roughly 1 to 2 saplings per half Minecraft day (5% base chance to even attempt check)
+//$$        if (random.nextFloat() > 0.05f) return;
 //$$
 //$$        // Step 1: Find a tree near this position (search a spiral)
 //$$        BlockPos treePos = findNearbyTree(level, searchPos, 12);
