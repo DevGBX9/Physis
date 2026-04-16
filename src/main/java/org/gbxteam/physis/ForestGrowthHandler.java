@@ -366,13 +366,19 @@ public class ForestGrowthHandler {
 //$$                if (targetState.canBeReplaced() || targetState.isAir()) {
 //$$                    BlockState soil = level.getBlockState(target.below());
 //$$                    if (soil.is(net.minecraft.world.level.block.Blocks.GRASS_BLOCK) || soil.is(net.minecraft.world.level.block.Blocks.DIRT) || soil.is(net.minecraft.world.level.block.Blocks.PODZOL)) {
-//$$                        int amount = 1 + random.nextInt(4); // Levels 1 to 4
+//$$                        int amount = 2 + random.nextInt(3); // Levels 2 to 4 (guaranteed to not be level 1)
 //$$                        BlockState petalState = net.minecraft.world.level.block.Blocks.PINK_PETALS.defaultBlockState();
-//$$                        if (petalState.hasProperty(net.minecraft.world.level.block.PinkPetalsBlock.AMOUNT)) {
-//$$                            petalState = petalState.setValue(net.minecraft.world.level.block.PinkPetalsBlock.AMOUNT, amount);
-//$$                        }
-//$$                        if (petalState.hasProperty(net.minecraft.world.level.block.PinkPetalsBlock.FACING)) {
-//$$                            petalState = petalState.setValue(net.minecraft.world.level.block.PinkPetalsBlock.FACING, net.minecraft.core.Direction.Plane.HORIZONTAL.getRandomDirection(random));
+//$$                        for (net.minecraft.world.level.block.state.properties.Property<?> prop : petalState.getProperties()) {
+//$$                            if (prop.getName().equals("amount")) {
+//$$                                // Suppress generic warnings and forcefully set it
+//$$                                @SuppressWarnings("unchecked")
+//$$                                net.minecraft.world.level.block.state.properties.Property<Integer> intProp = (net.minecraft.world.level.block.state.properties.Property<Integer>) prop;
+//$$                                petalState = petalState.setValue(intProp, amount);
+//$$                            } else if (prop.getName().equals("facing")) {
+//$$                                @SuppressWarnings("unchecked")
+//$$                                net.minecraft.world.level.block.state.properties.Property<net.minecraft.core.Direction> dirProp = (net.minecraft.world.level.block.state.properties.Property<net.minecraft.core.Direction>) prop;
+//$$                                petalState = petalState.setValue(dirProp, net.minecraft.core.Direction.Plane.HORIZONTAL.getRandomDirection(random));
+//$$                            }
 //$$                        }
 //$$                        level.setBlock(target, petalState, 3);
 //$$                    }
