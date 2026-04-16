@@ -258,8 +258,8 @@ public class ForestGrowthHandler {
 //$$            }
 //$$        }
 //$$        
-//$$        // Density check area: Grass 5x5 (vanilla-like), Bush 7x7 (rare), others 5x5
-//$$        int checkRadius = (isBush || isFireflyBush) ? 3 : 2;
+//$$        // Density check area: General 5x5. Firefly bush uses 7x7 to stay isolated.
+//$$        int checkRadius = (isFireflyBush) ? 3 : 2;
 //$$        for (BlockPos p : BlockPos.betweenClosed(sourcePos.offset(-checkRadius, -2, -checkRadius), sourcePos.offset(checkRadius, 2, checkRadius))) {
 //$$            if (p.equals(sourcePos)) continue; // Don't count the source plant itself!
 //$$            if (level.getBlockState(p).getBlock() == block) {
@@ -267,15 +267,15 @@ public class ForestGrowthHandler {
 //$$            }
 //$$        }
 //$$        
-//$$        // Max plants (excluding source): Grass 6, Bush 2 (rare in 7x7), Firefly 1, Petal 3, Others 2
-//$$        int maxDensity = isGrass ? 6 : (isFireflyBush ? 1 : (isBush ? 2 : (isPetal ? 3 : 2)));
+//$$        // Max plants (excluding source): Grass 6, Firefly 1, Bush 3 (creates clusters of max 4), Petal 3, Others 2
+//$$        int maxDensity = isGrass ? 6 : (isFireflyBush ? 1 : (isBush ? 3 : (isPetal ? 3 : 2)));
 //$$        if (density >= maxDensity) return;
 //$$        
 //$$        BlockPos bestTarget = null;
 //$$        int bestScore = -1;
 //$$        
-//$$        // Bush searches much wider (rare spread), grass stays moderate
-//$$        int searchSpread = isBush ? 10 : ((isGrass) ? 5 : 4);
+//$$        // Bush searches have two modes to create vanilla-like textures: Cluster mode (tight 2-block radius) and Pioneer mode (far 12-block jump)
+//$$        int searchSpread = isBush ? (random.nextFloat() < 0.7f ? 2 : 12) : ((isGrass) ? 5 : 4);
 //$$        for (int i = 0; i < (isGrass ? 8 : (isBush ? 4 : 4)); i++) {
 //$$            int ox = random.nextInt(searchSpread * 2 + 1) - searchSpread;
 //$$            int oz = random.nextInt(searchSpread * 2 + 1) - searchSpread;
