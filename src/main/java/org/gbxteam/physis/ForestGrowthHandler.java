@@ -158,14 +158,14 @@ public class ForestGrowthHandler {
     // ║   يفحص كثافة الأعشاب ويزيل الزائد منها للحفاظ على منظر طبيعي   ║
     // ║   يُستدعى عندما تصل الكثافة للحد الأقصى في منطقة معينة         ║
     // ╚══════════════════════════════════════════════════════════════════╝
-//$$    private static boolean manageVegetationBalance(ServerLevel level, BlockPos pos, int density, boolean isGrass, boolean isPlainBush, RandomSource random) {
+//$$    private static boolean manageVegetationBalance(ServerLevel level, BlockPos pos, int density, boolean isGrass, boolean isPlainBush, boolean isFlower, RandomSource random) {
 //$$        // إذا كانت الأعشاب مكتظة جداً (أكثر من ٨ في مساحة ٥×٥)، نزيل بعضها عشوائياً
 //$$        if (isGrass && density > 8 && random.nextBoolean()) {
 //$$            level.setBlock(pos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 3);
 //$$            return true; // تم التشذيب
 //$$        }
-//$$        // نظام التشذيب للشجيرات أيضاً: منع تشكيل مجموعات تتجاوز ٤ شجيرات
-//$$        if (isPlainBush && density >= 4 && random.nextBoolean()) {
+//$$        // نظام التشذيب للشجيرات والأزهار أيضاً: منع تشكيل مجموعات تتجاوز الحد (٤ للشجيرات و ٣ للأزهار)
+//$$        if ((isPlainBush && density >= 4 && random.nextBoolean()) || (isFlower && density >= 3 && random.nextBoolean())) {
 //$$            level.setBlock(pos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 3);
 //$$            return true;
 //$$        }
@@ -244,6 +244,7 @@ public class ForestGrowthHandler {
 //$$        boolean isPetal = name.contains("petal");               // بتلات الكرز الوردية
 //$$        boolean isFungus = name.contains("mushroom") || name.contains("fungus");  // فطريات
 //$$        boolean isWaterPlant = name.contains("kelp") || name.contains("seagrass") || name.contains("pickle"); // نباتات مائية
+//$$        boolean isFlower = !isGrass && !isPlainBush && !isFireflyBush && !isPetal && !isFungus && !isWaterPlant; // أي نبتة أخرى تعتبر من الأزهار
 //$$        
 //$$        // --- شروط خاصة لبعض النباتات ---
 //$$        // شجيرة اليراعات لا تنتشر إلا بجوار الماء مباشرة
@@ -316,29 +317,29 @@ public class ForestGrowthHandler {
 //$$        }
 //$$        
 //$$        // الحد الأقصى للكثافة في المنطقة:
-//$$        //   عشب: ٦  |  شجيرة: ٤ (تكوّن مجموعات)  |  يراعات: ١  |  بتلات: ٣  |  أزهار: ٢
-//$$        int maxDensity = isGrass ? 6 : (isFireflyBush ? 1 : (isPlainBush ? 4 : (isPetal ? 3 : 2)));
+//$$        //   عشب: ٦  |  شجيرة: ٤  |  يراعات: ١  |  بتلات: ٣  |  أزهار: ٣ (تكوّن مجموعات)
+//$$        int maxDensity = isGrass ? 6 : (isFireflyBush ? 1 : (isPlainBush ? 4 : (isPetal ? 3 : (isFlower ? 3 : 2))));
 //$$        int searchSpread = isGrass ? 5 : 4;
 //$$        
 //$$        if (density >= maxDensity) {
 //$$            // الكثافة المحلية وصلت للحد الأقصى! نقوم بالتشذيب أولاً للتحكم في الحجم
-//$$            manageVegetationBalance(level, sourcePos, density, isGrass, isPlainBush, random);
+//$$            manageVegetationBalance(level, sourcePos, density, isGrass, isPlainBush, isFlower, random);
 //$$            
 //$$            // نظام المستكشف: نسمح للنبتة بالقفز لمكان بعيد لبدء مجموعة جديدة متباعدة
-//$$            float pioneerChance = isPlainBush ? 0.30f : 0.05f;
+//$$            float pioneerChance = isPlainBush ? 0.30f : (isFlower ? 0.15f : 0.05f);
 //$$            if (random.nextFloat() < pioneerChance) {
-//$$                searchSpread = isPlainBush ? 18 : 8; // قفزة أبعد بكثير للشجيرات لخلق تنويع!
+//$$                searchSpread = isPlainBush ? 18 : (isFlower ? 24 : 8); // قفزة أبعد بكثير للشجيرات والأزهار لخلق تنويع!
 //$$            } else {
 //$$                return;
 //$$            }
 //$$        } else {
 //$$            // النمو العادي: الشجيرات تنمو قريبة (نصف قطر ٢) لتشكيل مجموعات متلاصقة
-//$$            searchSpread = isPlainBush ? 2 : (isGrass ? 5 : 4);
+//$$            searchSpread = (isPlainBush || isFlower) ? 2 : (isGrass ? 5 : 4);
 //$$        }
 //$$        
 //$$        BlockPos bestTarget = null;
 //$$        int bestScore = -1;
-//$$        for (int i = 0; i < (isGrass ? 8 : (isPlainBush ? 8 : 4)); i++) { // العشب والشجيرات تفحص 8 محاولات
+//$$        for (int i = 0; i < (isGrass ? 8 : ((isPlainBush || isFlower) ? 8 : 4)); i++) { // العشب والشجيرات والأزهار تفحص 8 محاولات
 //$$            int ox = random.nextInt(searchSpread * 2 + 1) - searchSpread;
 //$$            int oz = random.nextInt(searchSpread * 2 + 1) - searchSpread;
 //$$            if (ox == 0 && oz == 0) continue; // Skip source position
@@ -368,15 +369,15 @@ public class ForestGrowthHandler {
 //$$            if (isFireflyBush && !isNearWater(level, target, 2)) continue;
 //$$            
 //$$            // --- فحص المسافة الدنيا بين النباتات ---
-//$$            // الشجيرة الزخرفية (bush): مسافة ٠ = تلاصق مسموح (مثل العشب) لتكوين مجموعات
+//$$            // الشجيرة الزخرفية (bush) والأزهار: مسافة ٠ = تلاصق مسموح لتكوين مجموعات
 //$$            // شجيرة اليراعات: مسافة ٤ بلوكات = متباعدة
-//$$            // العشب والأزهار: مسافة ٠ = تلاصق مسموح
+//$$            // العشب: مسافة ٠ = تلاصق مسموح
 //$$            boolean tooClose = false;
-//$$            int minSpacing = isFireflyBush ? 4 : 0;  // الشجيرة الزخرفية والعشب = ٠ (تلاصق حر)
+//$$            int minSpacing = isFireflyBush ? 4 : 0;  // الشجيرة الزخرفية والعشب والأزهار = ٠
 //$$            
-//$$            // الشجيرة المستكشفة (المجموعة الجديدة) يجب أن تبدأ بعيدة بـ 10 بلوكات على الأقل عن أي مجموعة شجيرات أخرى لمنظر مماثل للفانيلا
-//$$            if (isPlainBush && density >= maxDensity) {
-//$$                minSpacing = 10; 
+//$$            // الشجيرة والأزهار المستكشفة (المجموعة الجديدة) يجب أن تبدأ بعيدة عن أي مجموعة مساوية
+//$$            if ((isPlainBush || isFlower) && density >= maxDensity) {
+//$$                minSpacing = isFlower ? (10 + random.nextInt(11)) : 10; // الشجيرة 10, والأزهار 10-20 блоكات متباعدة
 //$$            }
 //$$            
 //$$            if (minSpacing > 0) {
