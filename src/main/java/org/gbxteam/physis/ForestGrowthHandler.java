@@ -225,8 +225,10 @@ public class ForestGrowthHandler {
 //$$        boolean nearWaterSource = isNearWater(level, sourcePos, 6);
 //$$        float waterBoost = nearWaterSource ? 1.4f : 1.0f;
 //$$        
-//$$        // Spread rates (with water boost): Grass/Fern (100%), Bush (60-84%), Petal (35-49%), Flowers (15-21%)
-//$$        if (!isGrass) {
+//$$        // Spread rates (with water boost): Grass/Fern (40-56%), Bush (25-35%), Petal (35-49%), Flowers (15-21%)
+//$$        if (isGrass) {
+//$$            if (random.nextFloat() > 0.40f * waterBoost) return;
+//$$        } else {
 //$$            if (isFireflyBush && random.nextFloat() > 0.30f * waterBoost) return;
 //$$            else if (isBush && random.nextFloat() > 0.25f * waterBoost) return;
 //$$            else if (isPetal && random.nextFloat() > 0.35f * waterBoost) return;
@@ -398,6 +400,9 @@ public class ForestGrowthHandler {
 //$$    private static void processEdgeExpansion(ServerLevel level, BlockPos searchPos) {
 //$$        if (!level.isLoaded(searchPos)) return;
 //$$        RandomSource random = level.getRandom();
+//$$        
+//$$        // [Nerf] Slow down global tree spreading by 60% inherently to make forest growth feel much slower and more majestic
+//$$        if (random.nextFloat() < 0.60f) return;
 //$$
 //$$        // Step 1: Find a tree near this position (search a spiral)
 //$$        BlockPos treePos = findNearbyTree(level, searchPos, 12);
