@@ -334,7 +334,54 @@ public class ForestGrowthHandler {
 //$$        }
 //$$    }
 
-    // ==================== CORE: EDGE-BASED EXPANSION ====================
+//$$    private static void tryCherryPetalDrop(ServerLevel level, BlockPos treePos) {
+//$$        BlockState state = level.getBlockState(treePos);
+//$$        String name = net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(state.getBlock()).getPath();
+//$$        if (!name.contains("cherry_leaves") && !name.contains("cherry_log") && !name.contains("cherry_wood")) return;
+//$$        
+//$$        // It's a cherry tree!
+//$$        BlockPos surfaceCenter = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, treePos);
+//$$        int petalCount = 0;
+//$$        
+//$$        // Scan a 5x5 area under the tree
+//$$        for (BlockPos p : BlockPos.betweenClosed(surfaceCenter.offset(-2, -2, -2), surfaceCenter.offset(2, 2, 2))) {
+//$$            if (level.getBlockState(p).is(net.minecraft.world.level.block.Blocks.PINK_PETALS)) {
+//$$                petalCount++;
+//$$            }
+//$$        }
+//$$        
+//$$        // If exactly 0 petals exist, we drop some gracefully.
+//$$        if (petalCount == 0) {
+//$$            RandomSource random = level.getRandom();
+//$$            if (random.nextFloat() < 0.3f) return; // Add a small delay/chance so it doesn't happen instantly 100% of the time.
+//$$            
+//$$            int drops = 3 + random.nextInt(4); // 3 to 6 petal clusters
+//$$            for (int i = 0; i < drops; i++) {
+//$$                int ox = random.nextInt(7) - 3; // -3 to 3
+//$$                int oz = random.nextInt(7) - 3;
+//$$                
+//$$                BlockPos target = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, surfaceCenter.offset(ox, 0, oz));
+//$$                BlockState targetState = level.getBlockState(target);
+//$$                
+//$$                if (targetState.canBeReplaced() || targetState.isAir()) {
+//$$                    BlockState soil = level.getBlockState(target.below());
+//$$                    if (soil.is(net.minecraft.world.level.block.Blocks.GRASS_BLOCK) || soil.is(net.minecraft.world.level.block.Blocks.DIRT) || soil.is(net.minecraft.world.level.block.Blocks.PODZOL)) {
+//$$                        int amount = 1 + random.nextInt(4); // Levels 1 to 4
+//$$                        BlockState petalState = net.minecraft.world.level.block.Blocks.PINK_PETALS.defaultBlockState();
+//$$                        for (net.minecraft.world.level.block.state.properties.Property<?> prop : petalState.getProperties()) {
+//$$                            if (prop.getName().equals("amount") && prop instanceof net.minecraft.world.level.block.state.properties.IntegerProperty) {
+//$$                                net.minecraft.world.level.block.state.properties.IntegerProperty intProp = (net.minecraft.world.level.block.state.properties.IntegerProperty) prop;
+//$$                                petalState = petalState.setValue(intProp, amount);
+//$$                            }
+//$$                        }
+//$$                        level.setBlock(target, petalState, 3);
+//$$                    }
+//$$                }
+//$$            }
+//$$        }
+//$$    }
+//$$
+//$$    // ==================== CORE: EDGE-BASED EXPANSION ====================
 //$$    private static void processEdgeExpansion(ServerLevel level, BlockPos searchPos) {
 //$$        if (!level.isLoaded(searchPos)) return;
 //$$        RandomSource random = level.getRandom();
@@ -342,6 +389,9 @@ public class ForestGrowthHandler {
 //$$        // Step 1: Find a tree near this position (search a spiral)
 //$$        BlockPos treePos = findNearbyTree(level, searchPos, 12);
 //$$        if (treePos == null) return;
+//$$        
+//$$        // [NEW] Feature: Check for Cherry Blossom petal dropping
+//$$        tryCherryPetalDrop(level, treePos);
 //$$
 //$$        // Step 2: Check if this tree is on the forest EDGE
 //$$        int scanRadius = 8; // How far to look for forest density in each direction
