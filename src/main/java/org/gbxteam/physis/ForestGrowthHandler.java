@@ -236,16 +236,22 @@ public class ForestGrowthHandler {
 //$$        // Smart Level Spreading for Pink Petals
 //$$        if (isPetal) {
 //$$            for (net.minecraft.world.level.block.state.properties.Property<?> prop : state.getProperties()) {
-//$$                if (prop.getName().equals("amount") && prop instanceof net.minecraft.world.level.block.state.properties.IntegerProperty) {
-//$$                    net.minecraft.world.level.block.state.properties.IntegerProperty intProp = (net.minecraft.world.level.block.state.properties.IntegerProperty) prop;
+//$$                String pName = prop.getName().toLowerCase();
+//$$                if (pName.contains("amount") || pName.contains("flower")) {
+//$$                    @SuppressWarnings("unchecked")
+//$$                    net.minecraft.world.level.block.state.properties.Property<Integer> intProp = (net.minecraft.world.level.block.state.properties.Property<Integer>) prop;
 //$$                    int currentAmount = state.getValue(intProp);
 //$$                    // 50% chance to grow in place instead of spreading to a new block
 //$$                    if (currentAmount < 4 && random.nextBoolean()) {
 //$$                        level.setBlock(sourcePos, state.setValue(intProp, currentAmount + 1), 3);
 //$$                        return; // Successfully grew in place!
 //$$                    }
-//$$                    // If we spread, the new block should start fresh with 1 petal
-//$$                    state = state.setValue(intProp, 1);
+//$$                    // If we spread, randomize the new block's amount instead of forcing level 1
+//$$                    state = state.setValue(intProp, 1 + random.nextInt(4));
+//$$                } else if (pName.contains("facing") || pName.contains("direction")) {
+//$$                    @SuppressWarnings("unchecked")
+//$$                    net.minecraft.world.level.block.state.properties.Property<net.minecraft.core.Direction> dirProp = (net.minecraft.world.level.block.state.properties.Property<net.minecraft.core.Direction>) prop;
+//$$                    state = state.setValue(dirProp, net.minecraft.core.Direction.Plane.HORIZONTAL.getRandomDirection(random));
 //$$                }
 //$$            }
 //$$        }
@@ -369,12 +375,13 @@ public class ForestGrowthHandler {
 //$$                        int amount = 2 + random.nextInt(3); // Levels 2 to 4 (guaranteed to not be level 1)
 //$$                        BlockState petalState = net.minecraft.world.level.block.Blocks.PINK_PETALS.defaultBlockState();
 //$$                        for (net.minecraft.world.level.block.state.properties.Property<?> prop : petalState.getProperties()) {
-//$$                            if (prop.getName().equals("amount")) {
+//$$                            String pName = prop.getName().toLowerCase();
+//$$                            if (pName.contains("amount") || pName.contains("flower")) {
 //$$                                // Suppress generic warnings and forcefully set it
 //$$                                @SuppressWarnings("unchecked")
 //$$                                net.minecraft.world.level.block.state.properties.Property<Integer> intProp = (net.minecraft.world.level.block.state.properties.Property<Integer>) prop;
 //$$                                petalState = petalState.setValue(intProp, amount);
-//$$                            } else if (prop.getName().equals("facing")) {
+//$$                            } else if (pName.contains("facing") || pName.contains("direction")) {
 //$$                                @SuppressWarnings("unchecked")
 //$$                                net.minecraft.world.level.block.state.properties.Property<net.minecraft.core.Direction> dirProp = (net.minecraft.world.level.block.state.properties.Property<net.minecraft.core.Direction>) prop;
 //$$                                petalState = petalState.setValue(dirProp, net.minecraft.core.Direction.Plane.HORIZONTAL.getRandomDirection(random));
