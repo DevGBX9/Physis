@@ -158,11 +158,16 @@ public class ForestGrowthHandler {
     // ║   يفحص كثافة الأعشاب ويزيل الزائد منها للحفاظ على منظر طبيعي   ║
     // ║   يُستدعى عندما تصل الكثافة للحد الأقصى في منطقة معينة         ║
     // ╚══════════════════════════════════════════════════════════════════╝
-//$$    private static boolean manageVegetationBalance(ServerLevel level, BlockPos pos, int density, boolean isGrass, RandomSource random) {
+//$$    private static boolean manageVegetationBalance(ServerLevel level, BlockPos pos, int density, boolean isGrass, boolean isPlainBush, RandomSource random) {
 //$$        // إذا كانت الأعشاب مكتظة جداً (أكثر من ٨ في مساحة ٥×٥)، نزيل بعضها عشوائياً
 //$$        if (isGrass && density > 8 && random.nextBoolean()) {
 //$$            level.setBlock(pos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 3);
 //$$            return true; // تم التشذيب
+//$$        }
+//$$        // نظام التشذيب للشجيرات أيضاً: منع تشكيل مجموعات تتجاوز ٤ شجيرات
+//$$        if (isPlainBush && density >= 4 && random.nextBoolean()) {
+//$$            level.setBlock(pos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 3);
+//$$            return true;
 //$$        }
 //$$        return false; // لا حاجة للتشذيب
 //$$    }
@@ -267,7 +272,7 @@ public class ForestGrowthHandler {
 //$$        if (isGrass) {
 //$$            if (random.nextFloat() > 0.30f * waterBoost) return;
 //$$        } else if (isPlainBush) {
-//$$            if (random.nextFloat() > 0.25f * waterBoost) return;
+//$$            if (random.nextFloat() > 0.05f * waterBoost) return; // جعلنا الشجيرات أندر بكثير (٥٪ فرصة)
 //$$        } else if (isFireflyBush) {
 //$$            if (random.nextFloat() > 0.20f * waterBoost) return;
 //$$        } else if (isPetal) {
@@ -316,14 +321,14 @@ public class ForestGrowthHandler {
 //$$        int searchSpread = isGrass ? 5 : 4;
 //$$        
 //$$        if (density >= maxDensity) {
-//$$            // الكثافة المحلية وصلت للحد الأقصى!
-//$$            // نظام المستكشف: الشجيرات تقفز دائمًا لمكان بعيد إذا كانت المنطقة مزدحمة (100% فرصة)
-//$$            float pioneerChance = isPlainBush ? 1.00f : 0.05f;
+//$$            // الكثافة المحلية وصلت للحد الأقصى! نقوم بالتشذيب أولاً للتحكم في الحجم
+//$$            manageVegetationBalance(level, sourcePos, density, isGrass, isPlainBush, random);
+//$$            
+//$$            // نظام المستكشف: نسمح للنبتة بالقفز لمكان بعيد لبدء مجموعة جديدة متباعدة
+//$$            float pioneerChance = isPlainBush ? 0.30f : 0.05f;
 //$$            if (random.nextFloat() < pioneerChance) {
 //$$                searchSpread = isPlainBush ? 12 : 8; // قفزة بعيدة!
 //$$            } else {
-//$$                // نظام التشذيب: يزيل الزائد لو الكثافة عالية جداً
-//$$                manageVegetationBalance(level, sourcePos, density, isGrass, random);
 //$$                return;
 //$$            }
 //$$        } else {
@@ -368,6 +373,12 @@ public class ForestGrowthHandler {
 //$$            // العشب والأزهار: مسافة ٠ = تلاصق مسموح
 //$$            boolean tooClose = false;
 //$$            int minSpacing = isFireflyBush ? 4 : 0;  // الشجيرة الزخرفية والعشب = ٠ (تلاصق حر)
+//$$            
+//$$            // الشجيرة المستكشفة (المجموعة الجديدة) يجب أن تبدأ بعيدة بـ 6 بلوكات على الأقل عن أي مجموعة شجيرات أخرى
+//$$            if (isPlainBush && density >= maxDensity) {
+//$$                minSpacing = 6; 
+//$$            }
+//$$            
 //$$            if (minSpacing > 0) {
 //$$                for (BlockPos sp : BlockPos.betweenClosed(target.offset(-minSpacing, -1, -minSpacing), target.offset(minSpacing, 1, minSpacing))) {
 //$$                    if (sp.equals(sourcePos)) continue;
