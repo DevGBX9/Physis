@@ -138,10 +138,18 @@ public class ForestGrowthHandler {
 //$$            // النباتات تحتاج لضوء الشمس للنمو النشط، لذا تتباطأ العملية جداً في الليل
 //$$            // وقت النهار في ماينكرافت يكون بين 0 و 12000
 //$$            // [NIGHT SLOWDOWN] تباطؤ النمو في الليل (شبه توقف بنسبة ٩٠٪)
-//$$            // نستخدم getTimeOfDay() لأنها أكثر توافقاً عبر الإصدارات (تعيد قيمة بين 0 و 1)
-//$$            // 0.25 إلى 0.75 تمثل الفترة من الغروب إلى الشروق (الليل)
-//$$            float sunAngle = level.getTimeOfDay(1.0f);
-//$$            boolean isDayTime = sunAngle < 0.25f || sunAngle > 0.75f;
+//$$            // النباتات تحتاج لضوء الشمس للنمو النشط، لذا تتباطأ العملية جداً في الليل
+//$$            long dayTime = 0;
+//$$            //#if MC >= 26_00_00
+//$$            dayTime = level.getLevelData().dayTime();
+//$$            //#elseif MC >= 1_21_0
+//$$            dayTime = level.getLevelData().getDayTime();
+//$$            //#else
+//$$            dayTime = level.getDayTime();
+//$$            //#endif
+//$$
+//$$            // وقت النهار في ماينكرافت يكون بين 0 و 12000
+//$$            boolean isDayTime = (dayTime % 24000) < 12000;
 //$$            if (!isDayTime && level.getRandom().nextFloat() > 0.10f) return;
 //$$
 //$$            // We run few attempts per chunk, because this fires for EVERY chunk globally.
