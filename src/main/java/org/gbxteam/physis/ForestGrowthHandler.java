@@ -736,6 +736,8 @@ public class ForestGrowthHandler {
 //$$        }
 //$$        return null;
 //$$    }
+//$$
+//$$    private static void plantAtPosition(ServerLevel level, BlockPos targetPos, BlockPos sourceTreePos) {
 //$$        if (!level.isLoaded(targetPos)) return;
 //$$
 //$$        // --- حظر كامل وشامل للمستنقعات ---
