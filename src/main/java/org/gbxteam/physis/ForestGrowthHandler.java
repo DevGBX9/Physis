@@ -407,7 +407,7 @@ public class ForestGrowthHandler {
 //$$        //   عشب: ٣٠٪ → ٧٥٪  |  شجيرة: ٢٥٪ → ٦٢٪  |  بتلات: ٣٥٪ → ٨٧٪
 //$$        //   يراعات: ٢٠٪ → ٥٠٪  |  أزهار: ٢٠٪ → ٥٠٪
 //$$        if (isGrass) {
-//$$            if (random.nextFloat() > 0.30f * waterBoost) return;
+//$$            if (random.nextFloat() > 0.10f * waterBoost) return; // تم إبطاء انتشار العشب ليصبح واقعياً أكثر (١٠٪)
 //$$        } else if (isFern) {
 //$$            if (random.nextFloat() > 0.05f * waterBoost) return; // السرخس أصبح نادراً جداً (٥٪ فرصة)
 //$$        } else if (isPlainBush) {
