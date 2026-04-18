@@ -411,7 +411,7 @@ public class ForestGrowthHandler {
 //$$        } else if (isFern) {
 //$$            if (random.nextFloat() > 0.05f * waterBoost) return; // السرخس أصبح نادراً جداً (٥٪ فرصة)
 //$$        } else if (isPlainBush) {
-//$$            if (random.nextFloat() > 0.05f * waterBoost) return; // جعلنا الشجيرات أندر بكثير (٥٪ فرصة)
+//$$            if (random.nextFloat() > 0.30f * waterBoost) return; // تم رفع فرصة نمو الشجيرة إلى ٣٠٪
 //$$        } else if (isFireflyBush) {
 //$$            if (random.nextFloat() > 0.20f * waterBoost) return;
 //$$        } else if (isPetal) {
@@ -455,18 +455,18 @@ public class ForestGrowthHandler {
 //$$        }
 //$$        
 //$$        // الحد الأقصى للكثافة في المنطقة:
-//$$        //   عشب: ٦  |  شجيرة: ٤  |  يراعات: ١  |  بتلات: ٣  |  أزهار: ٣ (تكوّن مجموعات)
-//$$        int maxDensity = isGrass ? 6 : (isFireflyBush ? 1 : (isPlainBush ? 4 : (isPetal ? 3 : (isFlower ? 3 : 2))));
-//$$        int searchSpread = isGrass ? 5 : 4;
+//$$        //   عشب: ٦  |  شجيرة: ٨  |  يراعات: ١  |  بتلات: ٣  |  أزهار: ٣ (تكوّن مجموعات)
+//$$        int maxDensity = isGrass ? 6 : (isFireflyBush ? 1 : (isPlainBush ? 8 : (isPetal ? 3 : (isFlower ? 3 : 2))));
+//$$        int searchSpread = (isGrass || isPlainBush) ? 5 : 4;
 //$$        
 //$$        if (density >= maxDensity) {
 //$$            // الكثافة المحلية وصلت للحد الأقصى! نقوم بالتشذيب أولاً للتحكم في الحجم
 //$$            manageVegetationBalance(level, sourcePos, density, isGrass, isPlainBush, isFlower, random);
 //$$            
 //$$            // نظام المستكشف: نسمح للنبتة بالقفز لمكان بعيد لبدء مجموعة جديدة متباعدة
-//$$            float pioneerChance = isPlainBush ? 0.30f : (isFlower ? 0.15f : 0.05f);
+//$$            float pioneerChance = isPlainBush ? 0.40f : (isFlower ? 0.15f : 0.05f);
 //$$            if (random.nextFloat() < pioneerChance) {
-//$$                searchSpread = isPlainBush ? 18 : (isFlower ? 24 : 8); // قفزة أبعد بكثير للشجيرات والأزهار لخلق تنويع!
+//$$                searchSpread = isPlainBush ? 12 : (isFlower ? 24 : 8); // الشجيرة تقفز مسافة متوسطة لبدء غابة جديدة
 //$$            } else {
 //$$                return;
 //$$            }
