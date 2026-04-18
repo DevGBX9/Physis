@@ -552,6 +552,7 @@ public class ForestGrowthHandler {
 //$$        }
 //$$        
 //$$        // --- وضع النبتة في المكان الأفضل ---
+//$$        if (bestTarget != null) {
 //$$            level.setBlock(bestTarget, state, 3);
 //$$        }
 //$$    }
