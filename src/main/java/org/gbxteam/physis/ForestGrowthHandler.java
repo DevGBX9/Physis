@@ -1276,11 +1276,11 @@ public class ForestGrowthHandler {
 //$$    private static boolean isSuitableForSapling(ServerLevel level, BlockPos pos) {
 //$$        BlockState state = level.getBlockState(pos);
 //$$        BlockState ground = level.getBlockState(pos.below());
-//$$
 //$$        // السماح باستبدال الهواء أو النباتات الصغيرة أو الثلج
+//$$        String blockName = net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(state.getBlock()).getPath();
 //$$        boolean isReplaceable = state.isAir() || state.canBeReplaced() || 
-//$$            state.is(Blocks.SHORT_GRASS) || state.is(Blocks.GRASS) || state.is(Blocks.FERN) || 
-//$$            state.is(Blocks.SNOW) || state.getBlock() instanceof net.minecraft.world.level.block.FlowerBlock;
+//$$            blockName.contains("grass") || blockName.contains("fern") || 
+//$$            blockName.contains("flower") || state.is(Blocks.SNOW);
 //$$
 //$$        return isReplaceable && (
 //$$            ground.is(Blocks.GRASS_BLOCK) || 
