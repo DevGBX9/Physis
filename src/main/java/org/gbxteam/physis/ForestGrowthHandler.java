@@ -362,19 +362,14 @@ public class ForestGrowthHandler {
 //$$        boolean isMushroom = name.contains("mushroom");
 //$$        boolean isSurfaceFlora = !isNetherFlora && !isWaterFlora && !isCaveFlora && !isMushroom;
 //$$
-//$$        // تطبيق قوانين الانتشار البيئي:
-//$$        if (isNether) {
-//$$            if (!isNetherFlora && !isMushroom) return;
-//$$        } else if (isEnd) {
-//$$            return; // لا نمو في النهاية
-//$$        } else if (isWaterEnv) {
-//$$            if (!isWaterFlora) return;
-//$$        } else if (isCaveEnv) {
-//$$            if (!isCaveFlora && !isMushroom) return;
-//$$        } else {
-//$$            // السطح (Overworld Surface)
-//$$            if (!isSurfaceFlora && !isMushroom) return;
-//$$        }
+//$$        // تطبيق قوانين الحظر التام (Blacklist Logic):
+//$$        // 1. منع انتشار نباتات الكهوف والماء والنذر نهائياً
+//$$        if (isNetherFlora || isWaterFlora || isCaveFlora) return;
+//$$
+//$$        // 2. منع أي انتشار (حتى للعشب) داخل النذر أو تحت الماء أو في الكهوف العميقة
+//$$        // نستخدم فرق ارتفاع كبير (٢٥ بلوكة) لضمان عدم تداخل السطح مع الكهوف
+//$$        boolean isCaveEnv = !level.canSeeSky(targetPos) && level.getHeightmapPos(net.minecraft.world.level.levelgen.Heightmap.Types.WORLD_SURFACE, targetPos).getY() > targetPos.getY() + 25;
+//$$        if (isNether || isEnd || isWaterEnv || isCaveEnv) return;
 //$$
 //$$        // ═══════ تصنيف النبات ═══════
 //$$        // كل نبتة لها قواعد انتشار مختلفة، لذلك نصنفها هنا
@@ -623,17 +618,12 @@ public class ForestGrowthHandler {
 //$$    private static void processEdgeExpansion(ServerLevel level, BlockPos searchPos) {
 //$$        if (!level.isLoaded(searchPos)) return;
 //$$        
-//$$        // [ENVIRONMENT CHECK] منع الأشجار العادية من النمو في الكهوف أو النذر
+//$$        // [ENVIRONMENT CHECK] تعطيل انتشار الأشجار في النذر أو الكهوف
 //$$        String dim = level.dimension().toString();
-//$$        if (dim.contains("nether") || dim.contains("end")) {
-//$$            // مسموح فقط بانتشار "أشجار" النذر (Huge Fungi)
-//$$            BlockState s = level.getBlockState(searchPos);
-//$$            String n = net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(s.getBlock()).getPath();
-//$$            if (!n.contains("crimson") && !n.contains("warped")) return;
-//$$        } else {
-//$$            // في العالم العادي: الأشجار تنمو فقط في المناطق المفتوحة (ليست في كهف)
-//$$            if (!level.canSeeSky(searchPos)) return;
-//$$        }
+//$$        if (dim.contains("nether") || dim.contains("end")) return;
+//$$        
+//$$        // نمنع نمو الأشجار إذا كان المكان لا يرى السماء (كهف)
+//$$        if (!level.canSeeSky(searchPos)) return;
 //$$
 //$$        RandomSource random = level.getRandom();
 //$$        
