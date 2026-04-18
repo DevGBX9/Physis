@@ -317,13 +317,13 @@ public class ForestGrowthHandler {
 //$$                        break; // Hit terrain floor, skip to next column
 //$$                    }
 //$$                    
-//$$                    isVegetation = name.contains("grass") || name.contains("fern") || name.contains("flower") || name.contains("lily") || 
+//$$                    isVegetation = (name.contains("grass") || name.contains("fern") || name.contains("flower") || name.contains("lily") || 
 //$$                                   name.contains("mushroom") || name.contains("fungus") || name.contains("kelp") || 
 //$$                                   name.contains("seagrass") || name.contains("pickle") || name.contains("coral") ||
-//$$                                   name.contains("sugar_cane") || name.contains("bush") || name.contains("moss") || 
+//$$                                   name.contains("sugar_cane") || (name.contains("bush") && !name.contains("dead")) || name.contains("moss") || 
 //$$                                   name.contains("azalea") || name.contains("spore") || name.contains("dripleaf") || 
 //$$                                   name.contains("cave_vines") || name.contains("hanging_roots") || name.contains("glow_berries") ||
-//$$                                   name.contains("petal") || name.contains("nether_wart") || name.contains("roots") || name.contains("sprouts");
+//$$                                   name.contains("petal") || name.contains("nether_wart") || name.contains("roots") || name.contains("sprouts"));
 //$$                    
 //$$                    if (isVegetation) {
 //$$                        state = s;
@@ -809,7 +809,7 @@ public class ForestGrowthHandler {
 //$$                }
 //$$
 //$$                if (!isAreaClearForHealthCheck(level, pos, spacing)) {
-//$$                    level.setBlock(pos, Blocks.DEAD_BUSH.defaultBlockState(), 3);
+//$$                    level.setBlock(pos, Blocks.AIR.defaultBlockState(), 3); // Changed from DEAD_BUSH for diagnostics
 //$$                    data.removeSapling(pos);
 //$$                    data.addDeadBush(pos, currentTime);
 //$$                } else {
