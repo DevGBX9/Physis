@@ -341,7 +341,8 @@ public class ForestGrowthHandler {
 //$$        // هذه النباتات لا ينبغي أن تتكاثر لأنها إما مكونة من جزئين أو ميتة
 //$$        if (name.contains("sunflower") || name.contains("lilac") || name.contains("rose_bush") || 
 //$$            name.contains("peony") || name.contains("tall") || name.contains("large") || 
-//$$            name.contains("pitcher") || name.contains("dead_bush") || name.contains("berry_bush")) {
+//$$            name.contains("pitcher") || name.contains("dead_bush") || name.contains("berry_bush") ||
+//$$            name.contains("lily")) {
 //$$            return;
 //$$        }
 //$$        
