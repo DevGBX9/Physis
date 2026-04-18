@@ -341,7 +341,7 @@ public class ForestGrowthHandler {
 //$$        // هذه النباتات لا ينبغي أن تتكاثر لأنها إما مكونة من جزئين أو ميتة
 //$$        if (name.contains("sunflower") || name.contains("lilac") || name.contains("rose_bush") || 
 //$$            name.contains("peony") || name.contains("tall") || name.contains("large") || 
-//$$            name.contains("pitcher") || name.equals("dead_bush") || name.contains("berry_bush")) {
+//$$            name.contains("pitcher") || name.contains("dead_bush") || name.contains("berry_bush")) {
 //$$            return;
 //$$        }
 //$$        
@@ -744,9 +744,13 @@ public class ForestGrowthHandler {
 //$$        if (saplingOpt.isEmpty()) {
 //$$            saplingOpt = determineSapling(level, targetPos);
 //$$        }
+//$$
 //$$        if (saplingOpt.isEmpty()) return;
 //$$
 //$$        Block sapling = saplingOpt.get();
+//$$        // --- حماية نهائية: منع زراعة الشجيرات الميتة نهائياً كشتلة ---
+//$$        if (sapling == Blocks.DEAD_BUSH || BuiltInRegistries.BLOCK.getKey(sapling).getPath().contains("dead_bush")) return;
+//$$
 //$$
 //$$        // [1] DYNAMIC BIOME INVASION: Trees are now allowed to invade any biome.
 //$$        // The strict biome check has been removed.
@@ -1317,6 +1321,9 @@ public class ForestGrowthHandler {
 //$$        if (name.contains("azalea")) return Optional.of(Blocks.AZALEA);
 //$$        if (name.contains("crimson")) return Optional.of(Blocks.CRIMSON_FUNGUS);
 //$$        if (name.contains("warped")) return Optional.of(Blocks.WARPED_FUNGUS);
+//$$        
+//$$        // حماية: التأكد من عدم إرجاع شجيرة ميتة بالخطأ
+//$$        if (name.contains("dead_bush")) return Optional.empty();
 //$$        
 //$$        return Optional.empty();
 //$$    }
