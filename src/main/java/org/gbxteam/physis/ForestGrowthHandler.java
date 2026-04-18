@@ -683,7 +683,7 @@ public class ForestGrowthHandler {
 //$$                int dist = 2 + random.nextInt(4); // 2-5 blocks close range
 //$$                int ox = (int) (Math.cos(angle) * dist);
 //$$                int oz = (int) (Math.sin(angle) * dist);
-//$$                int groundY = findActualGroundY(level, treePos.offset(ox, 0, oz)).getY();
+//$$                int groundY = findActualGroundY(level, treePos.offset(ox, 0, oz));
 //$$                BlockPos targetPos = new BlockPos(treePos.getX() + ox, groundY + 1, treePos.getZ() + oz);
 //$$                plantAtPosition(level, targetPos, treePos);
 //$$            }
@@ -713,7 +713,7 @@ public class ForestGrowthHandler {
 //$$        // Add some randomness perpendicular to the direction for a natural look
 //$$        int perpX = (int) ((random.nextFloat() - 0.5f) * 4);
 //$$        int perpZ = (int) ((random.nextFloat() - 0.5f) * 4);
-//$$        int groundY = findActualGroundY(level, treePos.offset(chosenDir[0] * spreadDist + perpX, 0, chosenDir[1] * spreadDist + perpZ)).getY();
+//$$        int groundY = findActualGroundY(level, treePos.offset(chosenDir[0] * spreadDist + perpX, 0, chosenDir[1] * spreadDist + perpZ));
 //$$        BlockPos targetPos = new BlockPos(treePos.getX() + chosenDir[0] * spreadDist + perpX, groundY + 1, treePos.getZ() + chosenDir[1] * spreadDist + perpZ);
 //$$
 //$$        // Step 5: Apply all smart checks and plant
@@ -864,8 +864,6 @@ public class ForestGrowthHandler {
 //$$                BlockPos above = target.above();
 //$$
 //$$                if (level.getBlockState(target).is(Blocks.GRASS_BLOCK) && level.isEmptyBlock(above)) {
-//$$                    // Forest Expansion
-//$$                    processForestExpansion(level, center);
 //$$                    if (random.nextFloat() < 0.7f) {
 //$$                        level.levelEvent(2005, above, 0);
 //$$                        
