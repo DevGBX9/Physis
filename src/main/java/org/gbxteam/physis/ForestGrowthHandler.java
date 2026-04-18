@@ -134,7 +134,7 @@ public class ForestGrowthHandler {
 //$$
 //$$            // وقت النهار في ماينكرافت يكون بين 0 و 12000
 //$$            boolean isDayTime = (dayTime % 24000) < 12000;
-//$$            if (!isDayTime && level.getRandom().nextFloat() > 0.10f) return;
+//$$            if (!isDayTime && level.getRandom().nextFloat() > 0.01f) return;
 //$$
 //$$            // We run few attempts per chunk, because this fires for EVERY chunk globally.
 //$$            int attempts = isRaining ? 2 : 1;
