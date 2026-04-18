@@ -717,6 +717,12 @@ public class ForestGrowthHandler {
 //$$        // The strict biome check has been removed.
 //$$        int spacing = getRequiredSpacing(sapling);
 //$$        boolean needs2x2 = (sapling == Blocks.DARK_OAK_SAPLING || sapling == Blocks.PALE_OAK_SAPLING);
+//$$        
+//$$        // [Giant Spruce] فرصة ٢٠٪ لزراعة شتلات الصنوبر بنمط 2x2 لتصبح شجرة ضخمة
+//$$        if (sapling == Blocks.SPRUCE_SAPLING && level.getRandom().nextFloat() < 0.20f) {
+//$$            needs2x2 = true;
+//$$        }
+//$$
 //$$        long currentTime = level.getGameTime();
 //$$
 //$$        // [2] LIGHT CHECK
