@@ -67,6 +67,7 @@ public class ForestGrowthHandler {
     // ║   تُستدعى كل تيك من السيرفر. تدير الساعة الداخلية للمود        ║
     // ╚══════════════════════════════════════════════════════════════════╝
 //$$    public static void tick(ServerLevel level) {
+//$$        //#if MC >= 26_00_00
 //$$        long gameTime = level.getGameTime();
 //$$
 //$$        // Update wind direction every 5 minutes (6000 ticks)
@@ -102,6 +103,7 @@ public class ForestGrowthHandler {
 //$$        }
 //$$
 //$$        // Thunder damage is now handled globally in tickChunk()
+//$$        //#endif
 //$$    }
 //$$
     // ╔══════════════════════════════════════════════════════════════════╗
@@ -110,6 +112,8 @@ public class ForestGrowthHandler {
     // ║   المهام: رعد عشوائي + نمو أشجار + انتشار نباتات               ║
     // ╚══════════════════════════════════════════════════════════════════╝
 //$$    public static void tickChunk(net.minecraft.world.level.chunk.LevelChunk chunk, ServerLevel level) {
+//$$        //#if MC >= 26_00_00
+//$$        // [MOD EXCLUSIVE] المود يعمل فقط في إصدارات 26.1.x فما فوق
 //$$        if (!level.isLoaded(chunk.getPos().getMiddleBlockPosition(0))) return;
 //$$        
 //$$        boolean isRaining = level.isRaining();
@@ -183,6 +187,7 @@ public class ForestGrowthHandler {
 //$$                monitorPlantDistribution(level, monitorPos, "minecraft:grass",       4, 4.0,  6,  15, 4);
 //$$            }
 //$$        }
+//$$        //#endif
 //$$    }
 
     // ╔══════════════════════════════════════════════════════════════════╗
@@ -310,6 +315,7 @@ public class ForestGrowthHandler {
     // ║   يشمل: عشب، سراخس، أزهار، شجيرات، بتلات، فطريات              ║
     // ╚══════════════════════════════════════════════════════════════════╝
 //$$    private static void processVegetationExpansion(ServerLevel level, BlockPos searchPos) {
+//$$        //#if MC >= 26_00_00
 //$$        if (!level.isLoaded(searchPos)) return;
 //$$        RandomSource random = level.getRandom();
 //$$        
@@ -571,9 +577,9 @@ public class ForestGrowthHandler {
 //$$        }
 //$$        
 //$$        // --- وضع النبتة في المكان الأفضل ---
-//$$        if (bestTarget != null && ((isGrass || isPlainBush) ? bestScore >= 0 : bestScore >= 1)) {
 //$$            level.setBlock(bestTarget, state, 3);
 //$$        }
+//$$        //#endif
 //$$    }
 
     // ╔══════════════════════════════════════════════════════════════════╗
@@ -641,6 +647,7 @@ public class ForestGrowthHandler {
     // ║   معدل: ١-٢ شتلة كل نصف يوم ماينكرافت (بطيء جداً)            ║
     // ╚══════════════════════════════════════════════════════════════════╝
 //$$    private static void processEdgeExpansion(ServerLevel level, BlockPos searchPos) {
+//$$        //#if MC >= 26_00_00
 //$$        if (!level.isLoaded(searchPos)) return;
 //$$        
 //$$        // [ENVIRONMENT CHECK] تعطيل انتشار الأشجار في النذر أو الكهوف
@@ -797,6 +804,7 @@ public class ForestGrowthHandler {
 //$$                ForestGrowthData.get(level).addSapling(targetPos, currentTime);
 //$$            }
 //$$        }
+//$$        //#endif
 //$$    }
 
     // ╔══════════════════════════════════════════════════════════════════╗
@@ -804,6 +812,7 @@ public class ForestGrowthHandler {
     // ║   يفحص الشتلات المزروعة: هل نمت؟ هل ماتت؟ هل تحتاج تنظيف؟    ║
     // ╚══════════════════════════════════════════════════════════════════╝
 //$$    private static void runHealthChecks(ServerLevel level) {
+//$$        //#if MC >= 26_00_00
 //$$        long currentTime = level.getGameTime();
 //$$        ForestGrowthData data = ForestGrowthData.get(level);
 //$$        
@@ -829,10 +838,12 @@ public class ForestGrowthHandler {
 //$$                }
 //$$            }
 //$$        });
+//$$        //#endif
 //$$    }
 
     // ==================== COMPOSTING ====================
 //$$    private static void runCompostChecks(ServerLevel level) {
+//$$        //#if MC >= 26_00_00
 //$$        long currentTime = level.getGameTime();
 //$$        ForestGrowthData data = ForestGrowthData.get(level);
 //$$
@@ -848,6 +859,7 @@ public class ForestGrowthHandler {
 //$$                data.removeDeadBush(pos);
 //$$            }
 //$$        });
+//$$        //#endif
 //$$    }
 //$$
 //$$    private static void applyCompostEffect(ServerLevel level, BlockPos pos) {
