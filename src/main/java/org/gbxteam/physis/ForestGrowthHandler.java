@@ -1315,7 +1315,18 @@ public class ForestGrowthHandler {
 //$$    }
 
     // ==================== BIOME KEY LOOKUP ====================
-//$$    public static Optional<ResourceKey<Biome>> getRelatedBiomeKey(Block sapling) {
+//$$    public static Optional<ResourceKey<Biome>> getRelatedBiomeKey(ServerLevel level, BlockPos pos, Block sapling) {
+//$$        Holder<Biome> currentBiome = level.getBiome(pos);
+//$$        Optional<ResourceKey<Biome>> currentKeyOpt = currentBiome.unwrapKey();
+//$$        
+//$$        // --- حالة خاصة: البلوط في المستنقع ---
+//$$        if (sapling == Blocks.OAK_SAPLING && currentKeyOpt.isPresent()) {
+//$$            ResourceKey<Biome> currentKey = currentKeyOpt.get();
+//$$            if (currentKey == Biomes.SWAMP || currentKey == Biomes.MANGROVE_SWAMP) {
+//$$                return Optional.of(currentKey);
+//$$            }
+//$$        }
+//$$
 //$$        if (sapling == Blocks.OAK_SAPLING) return Optional.of(Biomes.FOREST);
 //$$        if (sapling == Blocks.BIRCH_SAPLING) return Optional.of(Biomes.BIRCH_FOREST);
 //$$        if (sapling == Blocks.SPRUCE_SAPLING) return Optional.of(Biomes.TAIGA);

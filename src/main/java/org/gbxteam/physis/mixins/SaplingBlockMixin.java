@@ -19,7 +19,7 @@ package org.gbxteam.physis.mixins;
 //$$        // Check if a tree grew (block changed) AND if it was planted by the mod
 //$$        org.gbxteam.physis.ForestGrowthData data = org.gbxteam.physis.ForestGrowthData.get(level);
 //$$        if (!(level.getBlockState(pos).getBlock() instanceof SaplingBlock) && data.isModPlanted(pos)) {
-//$$            ForestGrowthHandler.getRelatedBiomeKey(state.getBlock()).ifPresent(biomeKey -> {
+//$$            ForestGrowthHandler.getRelatedBiomeKey(level, pos, state.getBlock()).ifPresent(biomeKey -> {
 //$$                ForestGrowthHandler.executeFillBiome(level, pos, biomeKey);
 //$$            });
 //$$            // Remove from tracker after the tree has grown and biome is changed
