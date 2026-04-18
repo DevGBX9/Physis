@@ -801,6 +801,13 @@ public class ForestGrowthHandler {
 //$$            long age = currentTime - lastTime;
 //$$            if ((age >= 600 && age < 640) || (age >= 1200)) {
 //$$                int spacing = getRequiredSpacing(state.getBlock());
+//$$                
+//$$                // --- مرونة في المستنقعات ---
+//$$                Holder<Biome> biome = level.getBiome(pos);
+//$$                if (biome.is(Biomes.SWAMP) || biome.is(Biomes.MANGROVE_SWAMP)) {
+//$$                    spacing = Math.max(1, spacing - 1); // السماح بكثافة أكبر في المستنقعات
+//$$                }
+//$$
 //$$                if (!isAreaClearForHealthCheck(level, pos, spacing)) {
 //$$                    level.setBlock(pos, Blocks.DEAD_BUSH.defaultBlockState(), 3);
 //$$                    data.removeSapling(pos);
@@ -890,7 +897,7 @@ public class ForestGrowthHandler {
 //$$            BlockState state = level.getBlockState(checkPos);
 //$$            Block block = state.getBlock();
 //$$            
-//$$            if (block instanceof RotatedPillarBlock || block instanceof SaplingBlock || block == Blocks.AZALEA) {
+//$$            if (block instanceof RotatedPillarBlock || block instanceof SaplingBlock || block == Blocks.AZALEA || block == Blocks.MANGROVE_PROPAGULE) {
 //$$                if (is2x2Tree && block == currentBlock) {
 //$$                    int dx = Math.abs(checkPos.getX() - pos.getX());
 //$$                    int dz = Math.abs(checkPos.getZ() - pos.getZ());
@@ -1204,7 +1211,7 @@ public class ForestGrowthHandler {
 //$$        for (BlockPos checkPos : BlockPos.betweenClosed(pos.offset(-radius, -1, -radius), pos.offset(radius, 3, radius))) {
 //$$            BlockState state = level.getBlockState(checkPos);
 //$$            Block block = state.getBlock();
-//$$            if (block instanceof RotatedPillarBlock || block instanceof SaplingBlock || block == Blocks.AZALEA) {
+//$$            if (block instanceof RotatedPillarBlock || block instanceof SaplingBlock || block == Blocks.AZALEA || block == Blocks.MANGROVE_PROPAGULE) {
 //$$                return false;
 //$$            }
 //$$        }
@@ -1219,7 +1226,7 @@ public class ForestGrowthHandler {
 //$$        if (sapling == Blocks.JUNGLE_SAPLING) return 4;
 //$$        if (sapling == Blocks.ACACIA_SAPLING) return 5;
 //$$        if (sapling == Blocks.DARK_OAK_SAPLING) return 6;
-//$$        if (sapling == Blocks.MANGROVE_PROPAGULE) return 9;
+//$$        if (sapling == Blocks.MANGROVE_PROPAGULE) return 4;
 //$$        if (sapling == Blocks.CHERRY_SAPLING) return 6;
 //$$        if (sapling == Blocks.AZALEA) return 4;
 //$$        if (sapling == Blocks.PALE_OAK_SAPLING) return 7;
