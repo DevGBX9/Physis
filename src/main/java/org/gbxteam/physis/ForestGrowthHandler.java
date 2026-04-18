@@ -407,17 +407,17 @@ public class ForestGrowthHandler {
 //$$        //   عشب: ٣٠٪ → ٧٥٪  |  شجيرة: ٢٥٪ → ٦٢٪  |  بتلات: ٣٥٪ → ٨٧٪
 //$$        //   يراعات: ٢٠٪ → ٥٠٪  |  أزهار: ٢٠٪ → ٥٠٪
 //$$        if (isGrass) {
-//$$            if (random.nextFloat() > 0.10f * waterBoost) return; // تم إبطاء انتشار العشب ليصبح واقعياً أكثر (١٠٪)
+//$$            if (random.nextFloat() > 0.10f * waterBoost) return; // العشب هو الأسرع (١٠٪)
 //$$        } else if (isFern) {
-//$$            if (random.nextFloat() > 0.05f * waterBoost) return; // السرخس أصبح نادراً جداً (٥٪ فرصة)
+//$$            if (random.nextFloat() > 0.03f * waterBoost) return; // السرخس (٣٪)
 //$$        } else if (isPlainBush) {
-//$$            if (random.nextFloat() > 0.30f * waterBoost) return; // تم رفع فرصة نمو الشجيرة إلى ٣٠٪
+//$$            if (random.nextFloat() > 0.07f * waterBoost) return; // الشجيرة (٧٪)
 //$$        } else if (isFireflyBush) {
-//$$            if (random.nextFloat() > 0.20f * waterBoost) return;
+//$$            if (random.nextFloat() > 0.05f * waterBoost) return; // يراعات (٥٪)
 //$$        } else if (isPetal) {
-//$$            if (random.nextFloat() > 0.35f * waterBoost) return;
+//$$            if (random.nextFloat() > 0.08f * waterBoost) return; // بتلات (٨٪)
 //$$        } else {
-//$$            if (random.nextFloat() > 0.015f * waterBoost) return;  // أزهار عادية (مبطأة جدا لتصبح أبطأ من انتشار الأشجار)
+//$$            if (random.nextFloat() > 0.01f * waterBoost) return;  // أزهار عادية (١٪)
 //$$        }
 //$$        
 //$$        // Smart Level Spreading for Pink Petals
