@@ -67,7 +67,6 @@ public class ForestGrowthHandler {
     // ║   تُستدعى كل تيك من السيرفر. تدير الساعة الداخلية للمود        ║
     // ╚══════════════════════════════════════════════════════════════════╝
 //$$    public static void tick(ServerLevel level) {
-//$$        //#if MC >= 26_00_00
 //$$        long gameTime = level.getGameTime();
 //$$
 //$$        // Update wind direction every 5 minutes (6000 ticks)
@@ -79,10 +78,7 @@ public class ForestGrowthHandler {
 //$$        // [10] WEATHER IMPACT
 //$$        boolean isRaining = level.isRaining();
 //$$        boolean isThundering = level.isThundering();
-//$$        float tps = 20.0f;
-//$$        //#if MC >= 1_20_04
-//$$        tps = level.getServer().tickRateManager().tickrate();
-//$$        //#endif
+//$$        float tps = level.getServer().tickRateManager().tickrate();
 //$$
 //$$        // Multiplier based on /tick rate. Standard is 20.
 //$$        int speedMultiplier = Math.max(1, (int)(tps / 20.0f)); 
@@ -103,7 +99,6 @@ public class ForestGrowthHandler {
 //$$        }
 //$$
 //$$        // Thunder damage is now handled globally in tickChunk()
-//$$        //#endif
 //$$    }
 //$$
     // ╔══════════════════════════════════════════════════════════════════╗
@@ -112,15 +107,10 @@ public class ForestGrowthHandler {
     // ║   المهام: رعد عشوائي + نمو أشجار + انتشار نباتات               ║
     // ╚══════════════════════════════════════════════════════════════════╝
 //$$    public static void tickChunk(net.minecraft.world.level.chunk.LevelChunk chunk, ServerLevel level) {
-//$$        //#if MC >= 26_00_00
-//$$        // [MOD EXCLUSIVE] المود يعمل فقط في إصدارات 26.1.x فما فوق
 //$$        if (!level.isLoaded(chunk.getPos().getMiddleBlockPosition(0))) return;
 //$$        
 //$$        boolean isRaining = level.isRaining();
-//$$        float tps = 20.0f;
-//$$        //#if MC >= 1_20_04
-//$$        tps = level.getServer().tickRateManager().tickrate();
-//$$        //#endif
+//$$        float tps = level.getServer().tickRateManager().tickrate();
 //$$        int speedMultiplier = Math.max(1, (int)(tps / 20.0f)); 
 //$$        
 //$$        // Thunder strikes randomly globally per chunk (very rare, approx 1 strike per 5 seconds per 1000 chunks)
@@ -140,17 +130,7 @@ public class ForestGrowthHandler {
 //$$            
 //$$            // [NIGHT SLOWDOWN] تباطؤ النمو في الليل (شبه توقف بنسبة ٩٠٪)
 //$$            // النباتات تحتاج لضوء الشمس للنمو النشط، لذا تتباطأ العملية جداً في الليل
-//$$            // وقت النهار في ماينكرافت يكون بين 0 و 12000
-//$$            // [NIGHT SLOWDOWN] تباطؤ النمو في الليل (شبه توقف بنسبة ٩٠٪)
-//$$            // النباتات تحتاج لضوء الشمس للنمو النشط، لذا تتباطأ العملية جداً في الليل
-//$$            long dayTime = 0;
-//$$            //#if MC >= 26_00_00
-//$$            dayTime = level.getLevelData().dayTime();
-//$$            //#elseif MC >= 1_21_0
-//$$            dayTime = level.getLevelData().getDayTime();
-//$$            //#else
-//$$            dayTime = level.getDayTime();
-//$$            //#endif
+//$$            long dayTime = level.getLevelData().dayTime();
 //$$
 //$$            // وقت النهار في ماينكرافت يكون بين 0 و 12000
 //$$            boolean isDayTime = (dayTime % 24000) < 12000;
@@ -179,15 +159,11 @@ public class ForestGrowthHandler {
 //$$                int oz2 = level.getRandom().nextInt(16) - 8;
 //$$                BlockPos monitorPos = center.offset(ox2, 0, oz2);
 //$$                
-//$$                // شجيرة bush: حد 3 بالمجموعة, 6 بلوكات فصل, نقل 10-30 بلوكة
 //$$                monitorPlantDistribution(level, monitorPos, "minecraft:bush",       3, 6.0,  10, 30, 6);
-//$$                // سرخس: حد ٣ بالمجموعة، ١٢ بلوكة فصل بين المجموعات (مثل الفانيلا)، نقل ١٥-٣٠ بلوكة
 //$$                monitorPlantDistribution(level, monitorPos, "minecraft:fern",        3, 12.0,  15,  30, 6);
-//$$                // عشب قصير (tall grass legacy): حد 4, فصل 4, نقل 6-15
 //$$                monitorPlantDistribution(level, monitorPos, "minecraft:grass",       4, 4.0,  6,  15, 4);
 //$$            }
 //$$        }
-//$$        //#endif
 //$$    }
 
     // ╔══════════════════════════════════════════════════════════════════╗
@@ -315,7 +291,6 @@ public class ForestGrowthHandler {
     // ║   يشمل: عشب، سراخس، أزهار، شجيرات، بتلات، فطريات              ║
     // ╚══════════════════════════════════════════════════════════════════╝
 //$$    private static void processVegetationExpansion(ServerLevel level, BlockPos searchPos) {
-//$$        //#if MC >= 26_00_00
 //$$        if (!level.isLoaded(searchPos)) return;
 //$$        RandomSource random = level.getRandom();
 //$$        
@@ -579,7 +554,6 @@ public class ForestGrowthHandler {
 //$$        // --- وضع النبتة في المكان الأفضل ---
 //$$            level.setBlock(bestTarget, state, 3);
 //$$        }
-//$$        //#endif
 //$$    }
 
     // ╔══════════════════════════════════════════════════════════════════╗
@@ -647,7 +621,6 @@ public class ForestGrowthHandler {
     // ║   معدل: ١-٢ شتلة كل نصف يوم ماينكرافت (بطيء جداً)            ║
     // ╚══════════════════════════════════════════════════════════════════╝
 //$$    private static void processEdgeExpansion(ServerLevel level, BlockPos searchPos) {
-//$$        //#if MC >= 26_00_00
 //$$        if (!level.isLoaded(searchPos)) return;
 //$$        
 //$$        // [ENVIRONMENT CHECK] تعطيل انتشار الأشجار في النذر أو الكهوف
@@ -804,7 +777,6 @@ public class ForestGrowthHandler {
 //$$                ForestGrowthData.get(level).addSapling(targetPos, currentTime);
 //$$            }
 //$$        }
-//$$        //#endif
 //$$    }
 
     // ╔══════════════════════════════════════════════════════════════════╗
@@ -812,7 +784,6 @@ public class ForestGrowthHandler {
     // ║   يفحص الشتلات المزروعة: هل نمت؟ هل ماتت؟ هل تحتاج تنظيف؟    ║
     // ╚══════════════════════════════════════════════════════════════════╝
 //$$    private static void runHealthChecks(ServerLevel level) {
-//$$        //#if MC >= 26_00_00
 //$$        long currentTime = level.getGameTime();
 //$$        ForestGrowthData data = ForestGrowthData.get(level);
 //$$        
@@ -838,12 +809,10 @@ public class ForestGrowthHandler {
 //$$                }
 //$$            }
 //$$        });
-//$$        //#endif
 //$$    }
 
     // ==================== COMPOSTING ====================
 //$$    private static void runCompostChecks(ServerLevel level) {
-//$$        //#if MC >= 26_00_00
 //$$        long currentTime = level.getGameTime();
 //$$        ForestGrowthData data = ForestGrowthData.get(level);
 //$$
@@ -859,7 +828,6 @@ public class ForestGrowthHandler {
 //$$                data.removeDeadBush(pos);
 //$$            }
 //$$        });
-//$$        //#endif
 //$$    }
 //$$
 //$$    private static void applyCompostEffect(ServerLevel level, BlockPos pos) {
@@ -1363,5 +1331,6 @@ public class ForestGrowthHandler {
 //$$    }
     //#else
     public static void tick(Object level) {}
+    public static void tickChunk(Object chunk, Object level) {}
     //#endif
 }
