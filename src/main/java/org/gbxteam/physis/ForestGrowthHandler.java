@@ -501,7 +501,8 @@ public class ForestGrowthHandler {
 //$$            if (!tState.isAir()) continue;
 //$$
 //$$            // [BARRIER CHECK] منع القفز فوق الأسوار أو الجدران أو دخول البيوت
-//$$            if (isSpreadBlocked(level, sourcePos, target)) continue;
+//$$            // العشب يحتاج لثقب بارتفاع بلوك واحد فقط ليمر (واقعية)
+//$$            if (isSpreadBlocked(level, sourcePos, target, 1)) continue;
 //$$
 //$$            // [DESTINATION CHECK] منع النمو في الكهوف أو الماء
 //$$            if (level.getFluidState(target).is(net.minecraft.world.level.material.Fluids.WATER)) continue;
@@ -767,7 +768,8 @@ public class ForestGrowthHandler {
 //$$        float fertilityBonus = getSoilFertility(level, targetPos);
 //$$        if (level.getRandom().nextFloat() > fertilityBonus) return;
 //$$        // [BARRIER CHECK] منع الأشجار من الانتشار داخل المناطق المسورة
-//$$        if (isSpreadBlocked(level, sourceTreePos, targetPos)) return;
+//$$        // الأشجار تحتاج لمساحة أكبر (2 بلوك طولاً) لضمان عدم مرورها عبر الثقوب الصغيرة جداً
+//$$        if (isSpreadBlocked(level, sourceTreePos, targetPos, 2)) return;
 //$$
 //$$        if (needs2x2) {
 //$$            place2x2Saplings(level, targetPos, sapling, spacing, currentTime);
@@ -1052,28 +1054,30 @@ public class ForestGrowthHandler {
 
     // ==================== [3] WATER PROXIMITY ====================
 //$$    /**
-//$$     * يفحص المسار بين نقطتين للتأكد من عدم وجود حواجز (أسوار، جدران، أبواب)
+//$$     * يفحص المسار بين نقطتين في الأبعاد الثلاثة للتأكد من وجود ممر متاح
+//$$     * @param height الارتفاع المطلوب للممر (1 للعشب، 2 للأشجار)
 //$$     */
-//$$    private static boolean isSpreadBlocked(ServerLevel level, BlockPos source, BlockPos target) {
-//$$        int x1 = source.getX();
-//$$        int z1 = source.getZ();
-//$$        int x2 = target.getX();
-//$$        int z2 = target.getZ();
+//$$    private static boolean isSpreadBlocked(ServerLevel level, BlockPos source, BlockPos target, int height) {
+//$$        int x1 = source.getX(), y1 = source.getY(), z1 = source.getZ();
+//$$        int x2 = target.getX(), y2 = target.getY(), z2 = target.getZ();
 //$$        
-//$$        int dx = Math.abs(x2 - x1);
-//$$        int dz = Math.abs(z2 - z1);
-//$$        int steps = Math.max(dx, dz);
+//$$        int dx = Math.abs(x2 - x1), dy = Math.abs(y2 - y1), dz = Math.abs(z2 - z1);
+//$$        int steps = Math.max(dx, Math.max(dy, dz));
 //$$        if (steps == 0) return false;
 //$$
 //$$        for (int i = 1; i <= steps; i++) {
 //$$            float t = (float) i / steps;
 //$$            int x = Math.round(x1 + (x2 - x1) * t);
+//$$            int y = Math.round(y1 + (y2 - y1) * t);
 //$$            int z = Math.round(z1 + (z2 - z1) * t);
 //$$            
-//$$            BlockPos checkPos = new BlockPos(x, target.getY(), z);
-//$$            // لا نفحص نقطة البداية أو النهاية نفسها لأنها عادة ما تحتوي على النبتة أو الهواء
+//$$            BlockPos checkPos = new BlockPos(x, y, z);
+//$$            
+//$$            // فحص الممر بالكامل حسب الارتفاع المطلوب
 //$$            if (!checkPos.equals(source) && !checkPos.equals(target)) {
-//$$                if (isBarrier(level, checkPos, false) || isBarrier(level, checkPos.above(), true)) return true;
+//$$                for (int h = 0; h < height; h++) {
+//$$                    if (isBarrier(level, checkPos.above(h), h > 0)) return true;
+//$$                }
 //$$            }
 //$$        }
 //$$        return false;
