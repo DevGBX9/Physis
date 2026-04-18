@@ -112,10 +112,6 @@ public class ForestGrowthHandler {
 //$$    public static void tickChunk(net.minecraft.world.level.chunk.LevelChunk chunk, ServerLevel level) {
 //$$        if (!level.isLoaded(chunk.getPos().getMiddleBlockPosition(0))) return;
 //$$        
-//$$        // [DISABLE] تعطيل النمو تماماً في النذر والنهاية
-//$$        String dim = level.dimension().toString();
-//$$        if (dim.contains("nether") || dim.contains("end")) return;
-//$$        
 //$$        boolean isRaining = level.isRaining();
 //$$        float tps = 20.0f;
 //$$        //#if MC >= 1_20_04
@@ -299,10 +295,6 @@ public class ForestGrowthHandler {
 //$$        if (!level.isLoaded(searchPos)) return;
 //$$        RandomSource random = level.getRandom();
 //$$        
-//$$//$$        // [DISABLE] تعطيل الانتشار في الكهوف (إذا كان المكان تحت السطح بشكل عميق ولا يرى السماء)
-//$$        BlockPos surfacePos = level.getHeightmapPos(net.minecraft.world.level.levelgen.Heightmap.Types.WORLD_SURFACE, searchPos);
-//$$        if (surfacePos.getY() > searchPos.getY() + 15 && !level.canSeeSky(searchPos)) return;
-//$$        
 //$$        // Find a valid vegetation block by scanning a 5x5 area around the random point
 //$$        // This prevents the mod from "missing" sparse plants and makes growth beautifully consistent
 //$$        BlockPos surfaceStart = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, searchPos);
@@ -327,13 +319,12 @@ public class ForestGrowthHandler {
 //$$                    }
 //$$                    
 //$$                    isVegetation = name.contains("grass") || name.contains("fern") || name.contains("flower") || name.contains("lily") || 
-//$$                                   name.contains("mushroom") || name.contains("fungus") || 
-//$$                                   name.contains("sugar_cane") || name.contains("bush") || name.equals("moss_carpet") || name.equals("moss_block") || 
-//$$                                   name.contains("azalea") || name.contains("spore") || name.contains("bluet") || 
-//$$                                   name.contains("dandelion") || name.contains("poppy") || name.contains("orchid") || 
-//$$                                   name.contains("allium") || name.contains("tulip") || name.contains("daisy") || 
-//$$                                   name.contains("peony") || name.contains("lilac") || name.contains("rose") || 
-//$$                                   name.contains("sunflower") || name.contains("petal");
+//$$                                   name.contains("mushroom") || name.contains("fungus") || name.contains("kelp") || 
+//$$                                   name.contains("seagrass") || name.contains("pickle") || name.contains("coral") ||
+//$$                                   name.contains("sugar_cane") || name.contains("bush") || name.contains("moss") || 
+//$$                                   name.contains("azalea") || name.contains("spore") || name.contains("dripleaf") || 
+//$$                                   name.contains("cave_vines") || name.contains("hanging_roots") || name.contains("glow_berries") ||
+//$$                                   name.contains("petal") || name.contains("nether_wart") || name.contains("roots") || name.contains("sprouts");
 //$$                    
 //$$                    if (isVegetation) {
 //$$                        state = s;
@@ -357,6 +348,34 @@ public class ForestGrowthHandler {
 //$$        
 //$$        BlockPos sourcePos = mut.immutable();
 //$$        
+//$$        // ═══════ نظام الفحص البيئي (Environment Check 1.21) ═══════
+//$$        String dim = level.dimension().toString();
+//$$        boolean isNether = dim.contains("nether");
+//$$        boolean isEnd = dim.contains("end");
+//$$        boolean isWaterEnv = level.getFluidState(targetPos).is(net.minecraft.world.level.material.Fluids.WATER);
+//$$        boolean isCaveEnv = !level.canSeeSky(targetPos) && level.getHeightmapPos(net.minecraft.world.level.levelgen.Heightmap.Types.WORLD_SURFACE, targetPos).getY() > targetPos.getY() + 5;
+//$$
+//$$        // تصنيف النباتات حسب البيئة
+//$$        boolean isNetherFlora = name.contains("fungus") || name.contains("nether_wart") || name.contains("roots") || name.contains("sprouts") || name.contains("vines");
+//$$        boolean isWaterFlora = name.contains("kelp") || name.contains("seagrass") || name.contains("pickle") || name.contains("coral");
+//$$        boolean isCaveFlora = name.contains("moss") || name.contains("azalea") || name.contains("spore") || name.contains("dripleaf") || name.contains("cave_vines") || name.contains("glow_berries");
+//$$        boolean isMushroom = name.contains("mushroom");
+//$$        boolean isSurfaceFlora = !isNetherFlora && !isWaterFlora && !isCaveFlora && !isMushroom;
+//$$
+//$$        // تطبيق قوانين الانتشار البيئي:
+//$$        if (isNether) {
+//$$            if (!isNetherFlora && !isMushroom) return;
+//$$        } else if (isEnd) {
+//$$            return; // لا نمو في النهاية
+//$$        } else if (isWaterEnv) {
+//$$            if (!isWaterFlora) return;
+//$$        } else if (isCaveEnv) {
+//$$            if (!isCaveFlora && !isMushroom) return;
+//$$        } else {
+//$$            // السطح (Overworld Surface)
+//$$            if (!isSurfaceFlora && !isMushroom) return;
+//$$        }
+//$$
 //$$        // ═══════ تصنيف النبات ═══════
 //$$        // كل نبتة لها قواعد انتشار مختلفة، لذلك نصنفها هنا
 //$$        int density = 0;
@@ -366,8 +385,7 @@ public class ForestGrowthHandler {
 //$$        boolean isFireflyBush = name.contains("firefly_bush");  // شجيرة اليراعات (قرب الماء فقط)
 //$$        boolean isPetal = name.contains("petal");               // بتلات الكرز الوردية
 //$$        boolean isFungus = name.contains("mushroom") || name.contains("fungus");  // فطريات
-//$$        boolean isWaterPlant = name.contains("kelp") || name.contains("seagrass") || name.contains("pickle"); // نباتات مائية
-//$$        boolean isFlower = !isGrass && !isPlainBush && !isFireflyBush && !isPetal && !isFungus && !isWaterPlant; // أي نبتة أخرى تعتبر من الأزهار
+//$$        boolean isFlower = !isGrass && !isPlainBush && !isFireflyBush && !isPetal && !isFungus && !isWaterFlora; // أي نبتة أخرى تعتبر من الأزهار
 //$$        
 //$$        // --- شروط خاصة لبعض النباتات ---
 //$$        // شجيرة اليراعات لا تنتشر إلا بجوار الماء مباشرة
@@ -485,7 +503,8 @@ public class ForestGrowthHandler {
 //$$            }
 //$$            
 //$$            BlockState tState = level.getBlockState(target);
-//$$            if (!tState.isAir()) continue;
+//$$            if (isWaterFlora && !tState.is(Blocks.WATER)) continue;
+//$$            if (!isWaterFlora && !tState.isAir()) continue;
 //$$            
 //$$            // Firefly bush: target must be directly adjacent to water (within 2 blocks)
 //$$            if (isFireflyBush && !isNearWater(level, target, 2)) continue;
@@ -603,6 +622,19 @@ public class ForestGrowthHandler {
     // ╚══════════════════════════════════════════════════════════════════╝
 //$$    private static void processEdgeExpansion(ServerLevel level, BlockPos searchPos) {
 //$$        if (!level.isLoaded(searchPos)) return;
+//$$        
+//$$        // [ENVIRONMENT CHECK] منع الأشجار العادية من النمو في الكهوف أو النذر
+//$$        String dim = level.dimension().toString();
+//$$        if (dim.contains("nether") || dim.contains("end")) {
+//$$            // مسموح فقط بانتشار "أشجار" النذر (Huge Fungi)
+//$$            BlockState s = level.getBlockState(searchPos);
+//$$            String n = net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(s.getBlock()).getPath();
+//$$            if (!n.contains("crimson") && !n.contains("warped")) return;
+//$$        } else {
+//$$            // في العالم العادي: الأشجار تنمو فقط في المناطق المفتوحة (ليست في كهف)
+//$$            if (!level.canSeeSky(searchPos)) return;
+//$$        }
+//$$
 //$$        RandomSource random = level.getRandom();
 //$$        
 //$$        // [Nerf] Extremely slow global tree spreading: roughly 1 to 2 saplings per half Minecraft day (5% base chance to even attempt check)
