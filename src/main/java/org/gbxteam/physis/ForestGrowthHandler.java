@@ -273,11 +273,11 @@ public class ForestGrowthHandler {
     // ║   يُستدعى عندما تصل الكثافة للحد الأقصى في منطقة معينة         ║
     // ╚══════════════════════════════════════════════════════════════════╝
 //$$    private static boolean manageVegetationBalance(ServerLevel level, BlockPos pos, int density, boolean isGrass, boolean isPlainBush, boolean isFlower, RandomSource random) {
-//$$        // إذا كانت الأعشاب مكتظة جداً (أكثر من ٨ في مساحة ٥×٥)، نزيل بعضها عشوائياً
-//$$        if (isGrass && density > 8 && random.nextBoolean()) {
-//$$            level.setBlock(pos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 3);
-//$$            return true; // تم التشذيب
-//$$        }
+//$$        // إذا كانت الأعشاب مكتظة جداً (أكثر من ٣ في مساحة ٥×٥)، نزيل بعضها عشوائياً للحفاظ على فراغات فانيلا
+        if (isGrass && density > 3 && random.nextBoolean()) {
+            level.setBlock(pos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 3);
+            return true; // تم التشذيب
+        }
 //$$        // نظام التشذيب للشجيرات والأزهار أيضاً: منع تشكيل مجموعات تتجاوز الحد (٤ للشجيرات و ٣ للأزهار)
 //$$        if ((isPlainBush && density >= 4 && random.nextBoolean()) || (isFlower && density >= 3 && random.nextBoolean())) {
 //$$            level.setBlock(pos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 3);
