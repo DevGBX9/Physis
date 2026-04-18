@@ -348,28 +348,27 @@ public class ForestGrowthHandler {
 //$$        
 //$$        BlockPos sourcePos = mut.immutable();
 //$$        
-//$$        // ═══════ نظام الفحص البيئي (Environment Check 1.21) ═══════
+//$$        // ═══════ نظام الفحص البيئي والحظر (Environment Blacklist) ═══════
 //$$        String dim = level.dimension().toString();
 //$$        boolean isNether = dim.contains("nether");
 //$$        boolean isEnd = dim.contains("end");
-//$$        boolean isWaterEnv = level.getFluidState(targetPos).is(net.minecraft.world.level.material.Fluids.WATER);
-//$$        boolean isCaveEnv = !level.canSeeSky(targetPos) && level.getHeightmapPos(net.minecraft.world.level.levelgen.Heightmap.Types.WORLD_SURFACE, targetPos).getY() > targetPos.getY() + 5;
 //$$
-//$$        // تصنيف النباتات حسب البيئة
+//$$        // تصنيف النباتات حسب البيئة (للتحقق من الحظر)
 //$$        boolean isNetherFlora = name.contains("fungus") || name.contains("nether_wart") || name.contains("roots") || name.contains("sprouts") || name.contains("vines");
 //$$        boolean isWaterFlora = name.contains("kelp") || name.contains("seagrass") || name.contains("pickle") || name.contains("coral");
 //$$        boolean isCaveFlora = name.contains("moss") || name.contains("azalea") || name.contains("spore") || name.contains("dripleaf") || name.contains("cave_vines") || name.contains("glow_berries");
-//$$        boolean isMushroom = name.contains("mushroom");
-//$$        boolean isSurfaceFlora = !isNetherFlora && !isWaterFlora && !isCaveFlora && !isMushroom;
 //$$
-//$$        // تطبيق قوانين الحظر التام (Blacklist Logic):
-//$$        // 1. منع انتشار نباتات الكهوف والماء والنذر نهائياً
+//$$        // تطبيق قوانين الحظر التام:
+//$$        // 1. منع انتشار نباتات الكهوف والماء والنذر نهائياً (حسب نوع النبتة)
 //$$        if (isNetherFlora || isWaterFlora || isCaveFlora) return;
 //$$
-//$$        // 2. منع أي انتشار (حتى للعشب) داخل النذر أو تحت الماء أو في الكهوف العميقة
-//$$        // نستخدم فرق ارتفاع كبير (٢٥ بلوكة) لضمان عدم تداخل السطح مع الكهوف
-//$$        boolean isCaveEnv = !level.canSeeSky(targetPos) && level.getHeightmapPos(net.minecraft.world.level.levelgen.Heightmap.Types.WORLD_SURFACE, targetPos).getY() > targetPos.getY() + 25;
-//$$        if (isNether || isEnd || isWaterEnv || isCaveEnv) return;
+//$$        // 2. منع أي انتشار في بيئة النذر أو النهاية
+//$$        if (isNether || isEnd) return;
+//$$
+//$$        // 3. منع الانتشار إذا كان الأصل (sourcePos) تحت الماء أو في كهف عميق
+//$$        boolean sourceInWater = level.getFluidState(sourcePos).is(net.minecraft.world.level.material.Fluids.WATER);
+//$$        boolean sourceInCave = !level.canSeeSky(sourcePos) && level.getHeightmapPos(net.minecraft.world.level.levelgen.Heightmap.Types.WORLD_SURFACE, sourcePos).getY() > sourcePos.getY() + 25;
+//$$        if (sourceInWater || sourceInCave) return;
 //$$
 //$$        // ═══════ تصنيف النبات ═══════
 //$$        // كل نبتة لها قواعد انتشار مختلفة، لذلك نصنفها هنا
@@ -380,7 +379,8 @@ public class ForestGrowthHandler {
 //$$        boolean isFireflyBush = name.contains("firefly_bush");  // شجيرة اليراعات (قرب الماء فقط)
 //$$        boolean isPetal = name.contains("petal");               // بتلات الكرز الوردية
 //$$        boolean isFungus = name.contains("mushroom") || name.contains("fungus");  // فطريات
-//$$        boolean isFlower = !isGrass && !isPlainBush && !isFireflyBush && !isPetal && !isFungus && !isWaterFlora; // أي نبتة أخرى تعتبر من الأزهار
+//$$        boolean isWaterPlant = isWaterFlora; // إعادة الاسم القديم للتوافق
+//$$        boolean isFlower = !isGrass && !isPlainBush && !isFireflyBush && !isPetal && !isFungus && !isWaterPlant; // أي نبتة أخرى تعتبر من الأزهار
 //$$        
 //$$        // --- شروط خاصة لبعض النباتات ---
 //$$        // شجيرة اليراعات لا تنتشر إلا بجوار الماء مباشرة
@@ -498,8 +498,11 @@ public class ForestGrowthHandler {
 //$$            }
 //$$            
 //$$            BlockState tState = level.getBlockState(target);
-//$$            if (isWaterFlora && !tState.is(Blocks.WATER)) continue;
-//$$            if (!isWaterFlora && !tState.isAir()) continue;
+//$$            if (!tState.isAir()) continue;
+//$$
+//$$            // [DESTINATION CHECK] منع النمو في الكهوف أو الماء
+//$$            if (level.getFluidState(target).is(net.minecraft.world.level.material.Fluids.WATER)) continue;
+//$$            if (!level.canSeeSky(target) && level.getHeightmapPos(net.minecraft.world.level.levelgen.Heightmap.Types.WORLD_SURFACE, target).getY() > target.getY() + 25) continue;
 //$$            
 //$$            // Firefly bush: target must be directly adjacent to water (within 2 blocks)
 //$$            if (isFireflyBush && !isNearWater(level, target, 2)) continue;
