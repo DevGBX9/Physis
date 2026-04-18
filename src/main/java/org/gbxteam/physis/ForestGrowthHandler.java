@@ -130,7 +130,7 @@ public class ForestGrowthHandler {
 //$$            
 //$$            // [NIGHT SLOWDOWN] تباطؤ النمو في الليل (شبه توقف بنسبة ٩٠٪)
 //$$            // النباتات تحتاج لضوء الشمس للنمو النشط، لذا تتباطأ العملية جداً في الليل
-//$$            long dayTime = level.getLevelData().dayTime();
+//$$            long dayTime = level.getLevelData().getDayTime();
 //$$
 //$$            // وقت النهار في ماينكرافت يكون بين 0 و 12000
 //$$            boolean isDayTime = (dayTime % 24000) < 12000;
