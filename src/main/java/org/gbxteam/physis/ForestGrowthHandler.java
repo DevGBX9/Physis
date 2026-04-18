@@ -1087,19 +1087,14 @@ public class ForestGrowthHandler {
 //$$        if (state.isAir()) return false;
 //$$        
 //$$        Block block = state.getBlock();
-//$$        // الأسوار، الجدران، الأبواب، والبوابات هي دائماً حواجز
-//$$        if (block instanceof net.minecraft.world.level.block.FenceBlock || 
-//$$            block instanceof net.minecraft.world.level.block.WallBlock ||
-//$$            block instanceof net.minecraft.world.level.block.FenceGateBlock ||
-//$$            block instanceof net.minecraft.world.level.block.DoorBlock ||
-//$$            block instanceof net.minecraft.world.level.block.IronBarsBlock ||
-//$$            block instanceof net.minecraft.world.level.block.StainedGlassPaneBlock ||
-//$$            block instanceof net.minecraft.world.level.block.GlassPaneBlock) return true;
+//$$        // الأسوار، الجدران، الأبواب، البوابات، وقضبان الحديد/الزجاج هي حواجز دائماً
+//$$        // نستخدم الفحص بالاسم لضمان التوافق مع جميع إصدارات ماينكرافت
+//$$        String name = net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(block).getPath();
+//$$        if (name.contains("fence") || name.contains("wall") || name.contains("gate") || 
+//$$            name.contains("door") || name.contains("pane") || name.contains("bars")) return true;
 //$$            
 //$$        // البلوكات الصلبة الكاملة التي ليست تضاريس طبيعية
 //$$        if (state.isRedstoneConductor(level, pos)) {
-//$$            String name = net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(block).getPath();
-//$$            
 //$$            // السماح بالانتشار عبر هذه البلوكات الطبيعية
 //$$            if (name.contains("grass") || name.contains("dirt") || name.contains("sand") || 
 //$$                name.contains("gravel") || name.contains("stone") || name.contains("moss") || 
