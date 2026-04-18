@@ -380,7 +380,7 @@ public class ForestGrowthHandler {
 //$$        boolean isPetal = name.contains("petal");               // بتلات الكرز الوردية
 //$$        boolean isFungus = name.contains("mushroom") || name.contains("fungus");  // فطريات
 //$$        boolean isWaterPlant = isWaterFlora; // إعادة الاسم القديم للتوافق
-//$$        boolean isFlower = !isGrass && !isPlainBush && !isFireflyBush && !isPetal && !isFungus && !isWaterPlant; // أي نبتة أخرى تعتبر من الأزهار
+//$$        boolean isFlower = !isGrass && !isFern && !isPlainBush && !isFireflyBush && !isPetal && !isFungus && !isWaterPlant; // أي نبتة أخرى تعتبر من الأزهار
 //$$        
 //$$        // --- شروط خاصة لبعض النباتات ---
 //$$        // شجيرة اليراعات لا تنتشر إلا بجوار الماء مباشرة
@@ -455,8 +455,8 @@ public class ForestGrowthHandler {
 //$$        }
 //$$        
 //$$        // الحد الأقصى للكثافة في المنطقة:
-//$$        //   عشب: ٦  |  شجيرة: ٨  |  يراعات: ١  |  بتلات: ٣  |  أزهار: ٣ (تكوّن مجموعات)
-//$$        int maxDensity = isGrass ? 6 : (isFireflyBush ? 1 : (isPlainBush ? 8 : (isPetal ? 3 : (isFlower ? 3 : 2))));
+//$$        //   عشب: ٦  |  شجيرة: ١٠  |  سرخس: ٤  |  يراعات: ١  |  بتلات: ٣  |  أزهار: ٣
+//$$        int maxDensity = isGrass ? 6 : (isFireflyBush ? 1 : (isPlainBush ? 10 : (isFern ? 4 : (isPetal ? 3 : (isFlower ? 3 : 2)))));
 //$$        int searchSpread = (isGrass || isPlainBush) ? 5 : 4;
 //$$        
 //$$        if (density >= maxDensity) {
