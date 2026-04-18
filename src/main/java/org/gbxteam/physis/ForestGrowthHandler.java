@@ -1121,18 +1121,20 @@ public class ForestGrowthHandler {
 //$$        if (name.contains("fence") || name.contains("wall") || name.contains("gate") || 
 //$$            name.contains("door") || name.contains("pane") || name.contains("bars")) return true;
 //$$            
+//$$        // الأشجار والنباتات الطبيعية لا تعتبر حواجز أبداً للسماح بالانتشار
+//$$        if (name.contains("leaves") || name.contains("log") || name.contains("wood") || 
+//$$            name.contains("grass") || name.contains("fern") || name.contains("flower") ||
+//$$            name.contains("sapling") || name.contains("bush")) return false;
+//$$            
 //$$        // البلوكات الصلبة الكاملة التي ليست تضاريس طبيعية
 //$$        if (state.isRedstoneConductor(level, pos)) {
-//$$            // السماح بالانتشار عبر هذه البلوكات الطبيعية
-//$$            if (name.contains("grass") || name.contains("dirt") || name.contains("sand") || 
-//$$                name.contains("gravel") || name.contains("stone") || name.contains("moss") || 
-//$$                name.contains("mud") || name.contains("clay") || name.contains("snow") ||
-//$$                name.contains("ice") || name.contains("mycelium") || name.contains("podzol")) return false;
+//$$            // السماح بالانتشار عبر هذه البلوكات الطبيعية الأرضية
+//$$            if (name.contains("dirt") || name.contains("sand") || name.contains("gravel") || 
+//$$                name.contains("stone") || name.contains("moss") || name.contains("mud") || 
+//$$                name.contains("clay") || name.contains("snow") || name.contains("ice") || 
+//$$                name.contains("mycelium") || name.contains("podzol")) return false;
 //$$            
-//$$            // الأشجار (خشب وأوراق) لا تعتبر حواجز إذا كانت فوق مستوى الأرض (للسماح بالنمو تحت الغابة)
-//$$            if (isAbove && (name.contains("leaves") || name.contains("log") || name.contains("wood"))) return false;
-//$$            
-//$$            // أي بلوك صلب آخر (خشب مصنع، صخر بناء، طوب، إلخ) يعتبر حاجزاً
+//$$            // أي بلوك صلب صناعي آخر يعتبر حاجزاً
 //$$            return true;
 //$$        }
 //$$        
@@ -1160,7 +1162,7 @@ public class ForestGrowthHandler {
 //$$                maxDiff = Math.max(maxDiff, Math.abs(y - centerY));
 //$$            }
 //$$        }
-//$$        return maxDiff <= 3; // جعلناه أكثر تسامحاً قليلاً (٣ بلوكات) ليتناسب مع التلال
+//$$        return maxDiff <= 8; // رفعنا التسامح لـ ٨ بلوكات ليتناسب مع الجبال الوعرة جداً
 //$$    }
 //$$
 //$$    private static int findActualGroundY(ServerLevel level, BlockPos pos) {
