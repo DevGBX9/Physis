@@ -113,7 +113,7 @@ public class ForestGrowthHandler {
 //$$        if (!level.isLoaded(chunk.getPos().getMiddleBlockPosition(0))) return;
 //$$        
 //$$        // [DISABLE] تعطيل النمو تماماً في النذر والنهاية
-//$$        String dim = level.dimension().location().getPath();
+//$$        String dim = level.dimension().toString();
 //$$        if (dim.contains("nether") || dim.contains("end")) return;
 //$$        
 //$$        boolean isRaining = level.isRaining();
