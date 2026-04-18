@@ -1173,7 +1173,7 @@ public class ForestGrowthHandler {
 //$$            String name = net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(state.getBlock()).getPath();
 //$$            // نتوقف عند الوصول للتربة أو العشب الحقيقي
 //$$            if (state.isAir() || name.contains("leaves") || name.contains("log") || name.contains("wood") || 
-//$$                name.contains("flower") || name.contains("fern")) {
+//$$                name.contains("flower") || name.contains("fern") || name.contains("grass") || name.contains("bush")) {
 //$$                p = p.below();
 //$$            } else {
 //$$                break;
