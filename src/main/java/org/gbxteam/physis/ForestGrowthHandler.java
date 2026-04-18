@@ -644,9 +644,6 @@ public class ForestGrowthHandler {
 //$$
 //$$        RandomSource random = level.getRandom();
 //$$        
-//$$        // [Nerf] Extremely slow global tree spreading: roughly 1 to 2 saplings per half Minecraft day (5% base chance to even attempt check)
-//$$        if (random.nextFloat() > 0.05f) return;
-//$$
 //$$        // Step 1: Find a tree near this position (search a spiral)
 //$$        BlockPos treePos = findNearbyTree(level, searchPos, 12);
 //$$        if (treePos == null) return;
@@ -680,13 +677,13 @@ public class ForestGrowthHandler {
 //$$
 //$$        // PIONEER TREE: Isolated trees (0-1 forested neighbors) spread slowly nearby
 //$$        if (forestedDirs <= 1) {
-//$$            // Pioneer growth is rare (25% chance) to simulate slow natural seeding
-//$$            if (random.nextFloat() < 0.25f) {
+//$$            // Pioneer growth: slow but steady spreading for isolated trees
+//$$            if (random.nextFloat() < 0.50f) { // رفعنا النسبة لـ 50% ليكون النمو ملحوظاً
 //$$                double angle = random.nextDouble() * 2 * Math.PI;
 //$$                int dist = 2 + random.nextInt(4); // 2-5 blocks close range
 //$$                int ox = (int) (Math.cos(angle) * dist);
 //$$                int oz = (int) (Math.sin(angle) * dist);
-//$$                int groundY = findActualGroundY(level, treePos.offset(ox, 0, oz));
+//$$                int groundY = findActualGroundY(level, treePos.offset(ox, 0, oz)).getY();
 //$$                BlockPos targetPos = new BlockPos(treePos.getX() + ox, groundY + 1, treePos.getZ() + oz);
 //$$                plantAtPosition(level, targetPos, treePos);
 //$$            }
@@ -716,7 +713,7 @@ public class ForestGrowthHandler {
 //$$        // Add some randomness perpendicular to the direction for a natural look
 //$$        int perpX = (int) ((random.nextFloat() - 0.5f) * 4);
 //$$        int perpZ = (int) ((random.nextFloat() - 0.5f) * 4);
-//$$        int groundY = findActualGroundY(level, treePos.offset(chosenDir[0] * spreadDist + perpX, 0, chosenDir[1] * spreadDist + perpZ));
+//$$        int groundY = findActualGroundY(level, treePos.offset(chosenDir[0] * spreadDist + perpX, 0, chosenDir[1] * spreadDist + perpZ)).getY();
 //$$        BlockPos targetPos = new BlockPos(treePos.getX() + chosenDir[0] * spreadDist + perpX, groundY + 1, treePos.getZ() + chosenDir[1] * spreadDist + perpZ);
 //$$
 //$$        // Step 5: Apply all smart checks and plant
@@ -724,21 +721,21 @@ public class ForestGrowthHandler {
 //$$    }
 //$$
 //$$    private static BlockPos findNearbyTree(ServerLevel level, BlockPos center, int maxRadius) {
-//$$        RandomSource random = level.getRandom();
-//$$        // Random sampling method (faster than spiral)
-//$$        for (int attempt = 0; attempt < 15; attempt++) {
-//$$            int ox = random.nextInt(maxRadius * 2) - maxRadius;
-//$$            int oz = random.nextInt(maxRadius * 2) - maxRadius;
-//$$            BlockPos checkPos = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING, center.offset(ox, 0, oz)).below();
-//$$            BlockState state = level.getBlockState(checkPos);
-//$$            if (state.getBlock() instanceof RotatedPillarBlock || state.getBlock() instanceof LeavesBlock) {
-//$$                return checkPos; // Found a log or leaves = found a tree
+//$$        // بحث حلزوني مكثف لضمان العثور على الشجرة حتى لو كانت وحيدة
+//$$        for (int r = 1; r <= maxRadius; r++) {
+//$$            for (int x = -r; x <= r; x++) {
+//$$                for (int z = -r; z <= r; z++) {
+//$$                    if (Math.abs(x) != r && Math.abs(z) != r) continue;
+//$$                    BlockPos checkPos = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING, center.offset(x, 0, z)).below();
+//$$                    BlockState state = level.getBlockState(checkPos);
+//$$                    if (state.getBlock() instanceof RotatedPillarBlock || state.getBlock() instanceof LeavesBlock) {
+//$$                        return checkPos;
+//$$                    }
+//$$                }
 //$$            }
 //$$        }
 //$$        return null;
 //$$    }
-//$$
-//$$    private static void plantAtPosition(ServerLevel level, BlockPos targetPos, BlockPos sourceTreePos) {
 //$$        if (!level.isLoaded(targetPos)) return;
 //$$
 //$$        // --- حظر كامل وشامل للمستنقعات ---
@@ -798,7 +795,7 @@ public class ForestGrowthHandler {
 //$$            }
 //$$        }
 //$$    }
-
+//$$
     // ╔══════════════════════════════════════════════════════════════════╗
     // ║         القسم ٨: فحوصات الصحة والتسميد (صيانة الشتلات)         ║
     // ║   يفحص الشتلات المزروعة: هل نمت؟ هل ماتت؟ هل تحتاج تنظيف؟    ║
@@ -837,8 +834,8 @@ public class ForestGrowthHandler {
 //$$            }
 //$$        });
 //$$    }
-
-    // ==================== COMPOSTING ====================
+//$$
+//$$    // ==================== COMPOSTING ====================
 //$$    private static void runCompostChecks(ServerLevel level) {
 //$$        long currentTime = level.getGameTime();
 //$$        ForestGrowthData data = ForestGrowthData.get(level);
@@ -865,6 +862,8 @@ public class ForestGrowthHandler {
 //$$                BlockPos above = target.above();
 //$$
 //$$                if (level.getBlockState(target).is(Blocks.GRASS_BLOCK) && level.isEmptyBlock(above)) {
+//$$                    // Forest Expansion
+//$$                    processForestExpansion(level, center);
 //$$                    if (random.nextFloat() < 0.7f) {
 //$$                        level.levelEvent(2005, above, 0);
 //$$                        
@@ -1170,9 +1169,9 @@ public class ForestGrowthHandler {
 //$$        while (p.getY() > -64) { // حد آمن متوافق مع جميع النسخ
 //$$            BlockState state = level.getBlockState(p);
 //$$            String name = net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(state.getBlock()).getPath();
-//$$            // إذا كان البلوك شجرة أو هواء أو نبات، نستمر في النزول
+//$$            // نتوقف عند الوصول للتربة أو العشب الحقيقي
 //$$            if (state.isAir() || name.contains("leaves") || name.contains("log") || name.contains("wood") || 
-//$$                name.contains("grass") || name.contains("flower") || name.contains("fern")) {
+//$$                name.contains("flower") || name.contains("fern")) {
 //$$                p = p.below();
 //$$            } else {
 //$$                break;
