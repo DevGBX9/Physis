@@ -112,6 +112,10 @@ public class ForestGrowthHandler {
 //$$    public static void tickChunk(net.minecraft.world.level.chunk.LevelChunk chunk, ServerLevel level) {
 //$$        if (!level.isLoaded(chunk.getPos().getMiddleBlockPosition(0))) return;
 //$$        
+//$$        // [DISABLE] تعطيل النمو تماماً في النذر والنهاية
+//$$        String dim = level.dimension().location().getPath();
+//$$        if (dim.contains("nether") || dim.contains("end")) return;
+//$$        
 //$$        boolean isRaining = level.isRaining();
 //$$        float tps = 20.0f;
 //$$        //#if MC >= 1_20_04
@@ -295,6 +299,10 @@ public class ForestGrowthHandler {
 //$$        if (!level.isLoaded(searchPos)) return;
 //$$        RandomSource random = level.getRandom();
 //$$        
+//$$//$$        // [DISABLE] تعطيل الانتشار في الكهوف (إذا كان المكان تحت السطح بشكل عميق ولا يرى السماء)
+//$$        BlockPos surfacePos = level.getHeightmapPos(net.minecraft.world.level.levelgen.Heightmap.Types.WORLD_SURFACE, searchPos);
+//$$        if (surfacePos.getY() > searchPos.getY() + 15 && !level.canSeeSky(searchPos)) return;
+//$$        
 //$$        // Find a valid vegetation block by scanning a 5x5 area around the random point
 //$$        // This prevents the mod from "missing" sparse plants and makes growth beautifully consistent
 //$$        BlockPos surfaceStart = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, searchPos);
@@ -319,13 +327,13 @@ public class ForestGrowthHandler {
 //$$                    }
 //$$                    
 //$$                    isVegetation = name.contains("grass") || name.contains("fern") || name.contains("flower") || name.contains("lily") || 
-//$$                                   name.contains("mushroom") || name.contains("fungus") || name.contains("kelp") || 
+//$$                                   name.contains("mushroom") || name.contains("fungus") || 
 //$$                                   name.contains("sugar_cane") || name.contains("bush") || name.equals("moss_carpet") || name.equals("moss_block") || 
 //$$                                   name.contains("azalea") || name.contains("spore") || name.contains("bluet") || 
 //$$                                   name.contains("dandelion") || name.contains("poppy") || name.contains("orchid") || 
 //$$                                   name.contains("allium") || name.contains("tulip") || name.contains("daisy") || 
 //$$                                   name.contains("peony") || name.contains("lilac") || name.contains("rose") || 
-//$$                                   name.contains("sunflower") || name.contains("pickle") || name.contains("petal");
+//$$                                   name.contains("sunflower") || name.contains("petal");
 //$$                    
 //$$                    if (isVegetation) {
 //$$                        state = s;
@@ -477,8 +485,7 @@ public class ForestGrowthHandler {
 //$$            }
 //$$            
 //$$            BlockState tState = level.getBlockState(target);
-//$$            if (isWaterPlant && !tState.is(Blocks.WATER)) continue;
-//$$            if (!isWaterPlant && !tState.isAir()) continue;
+//$$            if (!tState.isAir()) continue;
 //$$            
 //$$            // Firefly bush: target must be directly adjacent to water (within 2 blocks)
 //$$            if (isFireflyBush && !isNearWater(level, target, 2)) continue;
