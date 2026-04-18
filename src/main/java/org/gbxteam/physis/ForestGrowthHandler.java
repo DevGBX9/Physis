@@ -1167,7 +1167,7 @@ public class ForestGrowthHandler {
 //$$    private static int findActualGroundY(ServerLevel level, BlockPos pos) {
 //$$        // نبدأ من أعلى مكان وننزل لنجد أول بلوك صلب حقيقي (ليس شجرة)
 //$$        BlockPos p = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, pos);
-//$$        while (p.getY() > level.getMinBuildHeight()) {
+//$$        while (p.getY() > -64) { // حد آمن متوافق مع جميع النسخ
 //$$            BlockState state = level.getBlockState(p);
 //$$            String name = net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(state.getBlock()).getPath();
 //$$            // إذا كان البلوك شجرة أو هواء أو نبات، نستمر في النزول
