@@ -631,6 +631,10 @@ public class ForestGrowthHandler {
 //$$        // نمنع نمو الأشجار إذا كان المكان لا يرى السماء (كهف)
 //$$        if (!level.canSeeSky(searchPos)) return;
 //$$
+//$$        // --- تعطيل المستنقعات كلياً ---
+//$$        Holder<Biome> currentBiome = level.getBiome(searchPos);
+//$$        if (currentBiome.is(Biomes.SWAMP) || currentBiome.is(Biomes.MANGROVE_SWAMP)) return;
+//$$
 //$$        RandomSource random = level.getRandom();
 //$$        
 //$$        // [Nerf] Extremely slow global tree spreading: roughly 1 to 2 saplings per half Minecraft day (5% base chance to even attempt check)
@@ -729,6 +733,10 @@ public class ForestGrowthHandler {
 //$$
 //$$    private static void plantAtPosition(ServerLevel level, BlockPos targetPos, BlockPos sourceTreePos) {
 //$$        if (!level.isLoaded(targetPos)) return;
+//$$
+//$$        // --- حظر كامل وشامل للمستنقعات ---
+//$$        Holder<Biome> targetBiome = level.getBiome(targetPos);
+//$$        if (targetBiome.is(Biomes.SWAMP) || targetBiome.is(Biomes.MANGROVE_SWAMP)) return;
 //$$
 //$$        // [4] TERRAIN CHECK
 //$$        if (!isTerrainFlat(level, targetPos)) return;
@@ -949,7 +957,7 @@ public class ForestGrowthHandler {
 //$$        // Map: which saplings are valid in which biomes
 //$$        if (sapling == Blocks.OAK_SAPLING) {
 //$$            return biomeKey == Biomes.FOREST || biomeKey == Biomes.PLAINS || biomeKey == Biomes.FLOWER_FOREST 
-//$$                || biomeKey == Biomes.SWAMP || biomeKey == Biomes.MEADOW || biomeKey == Biomes.WINDSWEPT_FOREST;
+//$$                || biomeKey == Biomes.MEADOW || biomeKey == Biomes.WINDSWEPT_FOREST;
 //$$        }
 //$$        if (sapling == Blocks.BIRCH_SAPLING) {
 //$$            return biomeKey == Biomes.BIRCH_FOREST || biomeKey == Biomes.OLD_GROWTH_BIRCH_FOREST 
@@ -1037,8 +1045,8 @@ public class ForestGrowthHandler {
 //$$            if (random.nextFloat() < 0.3f) return Optional.of(Blocks.OAK_SAPLING);
 //$$            return Optional.empty();
 //$$        }
-//$$        if (biomeKey == Biomes.SWAMP) {
-//$$            return Optional.of(Blocks.OAK_SAPLING);
+//$$        if (biomeKey == Biomes.SWAMP || biomeKey == Biomes.MANGROVE_SWAMP) {
+//$$            return Optional.empty(); // Disabled swamp growth
 //$$        }
 //$$        return Optional.empty(); // Desert, ocean, etc. - no growth
 //$$    }
