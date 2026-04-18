@@ -160,7 +160,7 @@ public class ForestGrowthHandler {
 //$$                BlockPos monitorPos = center.offset(ox2, 0, oz2);
 //$$                
 //$$                monitorPlantDistribution(level, monitorPos, "minecraft:bush",       3, 6.0,  10, 30, 6);
-//$$                monitorPlantDistribution(level, monitorPos, "minecraft:fern",        3, 12.0,  15,  30, 6);
+//$$                monitorPlantDistribution(level, monitorPos, "minecraft:fern",        2, 25.0,  20,  40, 6);
 //$$                monitorPlantDistribution(level, monitorPos, "minecraft:grass",       4, 4.0,  6,  15, 4);
 //$$            }
 //$$        }
@@ -406,8 +406,10 @@ public class ForestGrowthHandler {
 //$$        // نسب الانتشار (جاف → رطب):
 //$$        //   عشب: ٣٠٪ → ٧٥٪  |  شجيرة: ٢٥٪ → ٦٢٪  |  بتلات: ٣٥٪ → ٨٧٪
 //$$        //   يراعات: ٢٠٪ → ٥٠٪  |  أزهار: ٢٠٪ → ٥٠٪
-//$$        if (isGrass || isFern) {
+//$$        if (isGrass) {
 //$$            if (random.nextFloat() > 0.30f * waterBoost) return;
+//$$        } else if (isFern) {
+//$$            if (random.nextFloat() > 0.05f * waterBoost) return; // السرخس أصبح نادراً جداً (٥٪ فرصة)
 //$$        } else if (isPlainBush) {
 //$$            if (random.nextFloat() > 0.05f * waterBoost) return; // جعلنا الشجيرات أندر بكثير (٥٪ فرصة)
 //$$        } else if (isFireflyBush) {
@@ -519,8 +521,12 @@ public class ForestGrowthHandler {
 //$$            int minSpacing = isFireflyBush ? 4 : 0;  // الشجيرة الزخرفية والعشب والأزهار = ٠
 //$$            
 //$$            // الشجيرة والأزهار المستكشفة (المجموعة الجديدة) يجب أن تبدأ بعيدة عن أي مجموعة مساوية
-//$$            if ((isPlainBush || isFlower) && density >= maxDensity) {
-//$$                minSpacing = isFlower ? (10 + random.nextInt(11)) : 10; // الشجيرة 10, والأزهار 10-20 блоكات متباعدة
+//$$            if ((isPlainBush || isFlower || isFern) && density >= maxDensity) {
+//$$                if (isFern) {
+//$$                    minSpacing = 20 + random.nextInt(11); // السرخس يبتعد ٢٠-٣٠ بلوكة
+//$$                } else {
+//$$                    minSpacing = isFlower ? (10 + random.nextInt(11)) : 10;
+//$$                }
 //$$            }
 //$$            
 //$$            if (minSpacing > 0) {
