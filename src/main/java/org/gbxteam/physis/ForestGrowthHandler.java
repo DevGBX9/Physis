@@ -159,8 +159,8 @@ public class ForestGrowthHandler {
 //$$                
 //$$                // شجيرة bush: حد 3 بالمجموعة, 6 بلوكات فصل, نقل 10-30 بلوكة
 //$$                monitorPlantDistribution(level, monitorPos, "minecraft:bush",       3, 6.0,  10, 30, 6);
-//$$                // سرخس: حد 4 بالمجموعة, 5 بلوكات فصل, نقل 8-20 بلوكة
-//$$                monitorPlantDistribution(level, monitorPos, "minecraft:fern",        4, 5.0,  8,  20, 5);
+//$$                // سرخس: حد ٣ بالمجموعة، ١٢ بلوكة فصل بين المجموعات (مثل الفانيلا)، نقل ١٥-٣٠ بلوكة
+//$$                monitorPlantDistribution(level, monitorPos, "minecraft:fern",        3, 12.0,  15,  30, 6);
 //$$                // عشب قصير (tall grass legacy): حد 4, فصل 4, نقل 6-15
 //$$                monitorPlantDistribution(level, monitorPos, "minecraft:grass",       4, 4.0,  6,  15, 4);
 //$$            }
@@ -352,7 +352,8 @@ public class ForestGrowthHandler {
 //$$        // ═══════ تصنيف النبات ═══════
 //$$        // كل نبتة لها قواعد انتشار مختلفة، لذلك نصنفها هنا
 //$$        int density = 0;
-//$$        boolean isGrass = name.equals("grass") || name.equals("short_grass") || name.equals("fern");  // أعشاب قصيرة
+//$$        boolean isGrass = name.equals("grass") || name.equals("short_grass");  // أعشاب قصيرة
+//$$        boolean isFern = name.equals("fern");                  // سرخس
 //$$        boolean isPlainBush = name.equals("bush");              // شجيرة minecraft:bush الزخرفية فقط
 //$$        boolean isFireflyBush = name.contains("firefly_bush");  // شجيرة اليراعات (قرب الماء فقط)
 //$$        boolean isPetal = name.contains("petal");               // بتلات الكرز الوردية
@@ -384,7 +385,7 @@ public class ForestGrowthHandler {
 //$$        // نسب الانتشار (جاف → رطب):
 //$$        //   عشب: ٣٠٪ → ٧٥٪  |  شجيرة: ٢٥٪ → ٦٢٪  |  بتلات: ٣٥٪ → ٨٧٪
 //$$        //   يراعات: ٢٠٪ → ٥٠٪  |  أزهار: ٢٠٪ → ٥٠٪
-//$$        if (isGrass) {
+//$$        if (isGrass || isFern) {
 //$$            if (random.nextFloat() > 0.30f * waterBoost) return;
 //$$        } else if (isPlainBush) {
 //$$            if (random.nextFloat() > 0.05f * waterBoost) return; // جعلنا الشجيرات أندر بكثير (٥٪ فرصة)
