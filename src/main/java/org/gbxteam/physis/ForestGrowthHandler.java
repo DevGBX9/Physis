@@ -686,8 +686,8 @@ public class ForestGrowthHandler {
 //$$                int dist = 2 + random.nextInt(4); // 2-5 blocks close range
 //$$                int ox = (int) (Math.cos(angle) * dist);
 //$$                int oz = (int) (Math.sin(angle) * dist);
-//$$                BlockPos targetPos = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
-//$$                    treePos.offset(ox, 0, oz));
+//$$                int groundY = findActualGroundY(level, treePos.offset(ox, 0, oz));
+//$$                BlockPos targetPos = new BlockPos(treePos.getX() + ox, groundY + 1, treePos.getZ() + oz);
 //$$                plantAtPosition(level, targetPos, treePos);
 //$$            }
 //$$            return;
@@ -716,8 +716,8 @@ public class ForestGrowthHandler {
 //$$        // Add some randomness perpendicular to the direction for a natural look
 //$$        int perpX = (int) ((random.nextFloat() - 0.5f) * 4);
 //$$        int perpZ = (int) ((random.nextFloat() - 0.5f) * 4);
-//$$        BlockPos targetPos = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
-//$$            treePos.offset(chosenDir[0] * spreadDist + perpX, 0, chosenDir[1] * spreadDist + perpZ));
+//$$        int groundY = findActualGroundY(level, treePos.offset(chosenDir[0] * spreadDist + perpX, 0, chosenDir[1] * spreadDist + perpZ));
+//$$        BlockPos targetPos = new BlockPos(treePos.getX() + chosenDir[0] * spreadDist + perpX, groundY + 1, treePos.getZ() + chosenDir[1] * spreadDist + perpZ);
 //$$
 //$$        // Step 5: Apply all smart checks and plant
 //$$        plantAtPosition(level, targetPos, treePos);
@@ -1249,7 +1249,9 @@ public class ForestGrowthHandler {
 //$$            BlockState state = level.getBlockState(checkPos);
 //$$            Block block = state.getBlock();
 //$$            if (block instanceof RotatedPillarBlock || block instanceof SaplingBlock || block == Blocks.AZALEA || block == Blocks.MANGROVE_PROPAGULE) {
-//$$                return false;
+//$$                // في الغابة الكثيفة، نسمح بوجود الأشجار القريبة إذا كانت بعيدة قليلاً (نقلل نصف القطر الفعلي للفحص)
+//$$                double distSq = checkPos.distSqr(pos);
+//$$                if (distSq < (radius * radius * 0.6)) return false; 
 //$$            }
 //$$        }
 //$$        return true;
