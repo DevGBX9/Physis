@@ -500,6 +500,9 @@ public class ForestGrowthHandler {
 //$$            BlockState tState = level.getBlockState(target);
 //$$            if (!tState.isAir()) continue;
 //$$
+//$$            // [BARRIER CHECK] منع القفز فوق الأسوار أو الجدران أو دخول البيوت
+//$$            if (isSpreadBlocked(level, sourcePos, target)) continue;
+//$$
 //$$            // [DESTINATION CHECK] منع النمو في الكهوف أو الماء
 //$$            if (level.getFluidState(target).is(net.minecraft.world.level.material.Fluids.WATER)) continue;
 //$$            if (!level.canSeeSky(target) && level.getHeightmapPos(net.minecraft.world.level.levelgen.Heightmap.Types.WORLD_SURFACE, target).getY() > target.getY() + 25) continue;
@@ -763,6 +766,8 @@ public class ForestGrowthHandler {
 //$$        // [9] SOIL FERTILITY
 //$$        float fertilityBonus = getSoilFertility(level, targetPos);
 //$$        if (level.getRandom().nextFloat() > fertilityBonus) return;
+//$$        // [BARRIER CHECK] منع الأشجار من الانتشار داخل المناطق المسورة
+//$$        if (isSpreadBlocked(level, sourceTreePos, targetPos)) return;
 //$$
 //$$        if (needs2x2) {
 //$$            place2x2Saplings(level, targetPos, sapling, spacing, currentTime);
@@ -1046,6 +1051,71 @@ public class ForestGrowthHandler {
 //$$    }
 
     // ==================== [3] WATER PROXIMITY ====================
+//$$    /**
+//$$     * يفحص المسار بين نقطتين للتأكد من عدم وجود حواجز (أسوار، جدران، أبواب)
+//$$     */
+//$$    private static boolean isSpreadBlocked(ServerLevel level, BlockPos source, BlockPos target) {
+//$$        int x1 = source.getX();
+//$$        int z1 = source.getZ();
+//$$        int x2 = target.getX();
+//$$        int z2 = target.getZ();
+//$$        
+//$$        int dx = Math.abs(x2 - x1);
+//$$        int dz = Math.abs(z2 - z1);
+//$$        int steps = Math.max(dx, dz);
+//$$        if (steps == 0) return false;
+//$$
+//$$        for (int i = 1; i <= steps; i++) {
+//$$            float t = (float) i / steps;
+//$$            int x = Math.round(x1 + (x2 - x1) * t);
+//$$            int z = Math.round(z1 + (z2 - z1) * t);
+//$$            
+//$$            BlockPos checkPos = new BlockPos(x, target.getY(), z);
+//$$            // لا نفحص نقطة البداية أو النهاية نفسها لأنها عادة ما تحتوي على النبتة أو الهواء
+//$$            if (!checkPos.equals(source) && !checkPos.equals(target)) {
+//$$                if (isBarrier(level, checkPos, false) || isBarrier(level, checkPos.above(), true)) return true;
+//$$            }
+//$$        }
+//$$        return false;
+//$$    }
+//$$
+//$$    /**
+//$$     * يحدد ما إذا كان البلوك يعتبر حاجزاً (سياج، جدار، بناء صناعي)
+//$$     */
+//$$    private static boolean isBarrier(ServerLevel level, BlockPos pos, boolean isAbove) {
+//$$        BlockState state = level.getBlockState(pos);
+//$$        if (state.isAir()) return false;
+//$$        
+//$$        Block block = state.getBlock();
+//$$        // الأسوار، الجدران، الأبواب، والبوابات هي دائماً حواجز
+//$$        if (block instanceof net.minecraft.world.level.block.FenceBlock || 
+//$$            block instanceof net.minecraft.world.level.block.WallBlock ||
+//$$            block instanceof net.minecraft.world.level.block.FenceGateBlock ||
+//$$            block instanceof net.minecraft.world.level.block.DoorBlock ||
+//$$            block instanceof net.minecraft.world.level.block.IronBarsBlock ||
+//$$            block instanceof net.minecraft.world.level.block.StainedGlassPaneBlock ||
+//$$            block instanceof net.minecraft.world.level.block.GlassPaneBlock) return true;
+//$$            
+//$$        // البلوكات الصلبة الكاملة التي ليست تضاريس طبيعية
+//$$        if (state.isRedstoneConductor(level, pos)) {
+//$$            String name = net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(block).getPath();
+//$$            
+//$$            // السماح بالانتشار عبر هذه البلوكات الطبيعية
+//$$            if (name.contains("grass") || name.contains("dirt") || name.contains("sand") || 
+//$$                name.contains("gravel") || name.contains("stone") || name.contains("moss") || 
+//$$                name.contains("mud") || name.contains("clay") || name.contains("snow") ||
+//$$                name.contains("ice") || name.contains("mycelium") || name.contains("podzol")) return false;
+//$$            
+//$$            // الأشجار (خشب وأوراق) لا تعتبر حواجز إذا كانت فوق مستوى الأرض (للسماح بالنمو تحت الغابة)
+//$$            if (isAbove && (name.contains("leaves") || name.contains("log") || name.contains("wood"))) return false;
+//$$            
+//$$            // أي بلوك صلب آخر (خشب مصنع، صخر بناء، طوب، إلخ) يعتبر حاجزاً
+//$$            return true;
+//$$        }
+//$$        
+//$$        return false;
+//$$    }
+//$$
 //$$    private static boolean isNearWater(ServerLevel level, BlockPos pos, int radius) {
 //$$        for (BlockPos p : BlockPos.betweenClosed(pos.offset(-radius, -2, -radius), pos.offset(radius, 1, radius))) {
 //$$            if (level.getBlockState(p).is(Blocks.WATER)) {
