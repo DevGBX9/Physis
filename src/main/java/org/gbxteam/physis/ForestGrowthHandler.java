@@ -645,13 +645,10 @@ public class ForestGrowthHandler {
 //$$        RandomSource random = level.getRandom();
 //$$        
 //$$        // Step 1: Find a tree near this position (search a spiral)
-//$$        BlockPos treePos = findNearbyTree(level, searchPos, 12);
+//$$        BlockPos treePos = findNearbyTree(level, searchPos, 16);
 //$$        if (treePos == null) return;
-//$$        
-//$$        // [NEW] Feature: Check for Cherry Blossom petal dropping
-//$$        tryCherryPetalDrop(level, treePos);
 //$$
-//$$        // Step 2: Check if this tree is on the forest EDGE
+//$$        System.out.println("[Physis Debug] Found tree at " + treePos + " starting expansion check...");
 //$$        int scanRadius = 8; // How far to look for forest density in each direction
 //$$        int forestedDirs = 0;
 //$$        List<int[]> openDirections = new ArrayList<>();
@@ -745,10 +742,16 @@ public class ForestGrowthHandler {
 //$$        if (targetBiome.is(Biomes.SWAMP) || targetBiome.is(Biomes.MANGROVE_SWAMP)) return;
 //$$
 //$$        // [4] TERRAIN CHECK
-//$$        if (!isTerrainFlat(level, targetPos)) return;
+//$$        if (!isTerrainFlat(level, targetPos)) {
+//$$            // System.out.println("[Physis Debug] Planting failed: Terrain not flat at " + targetPos);
+//$$            return;
+//$$        }
 //$$
 //$$        // [5] CANOPY DENSITY
-//$$        if (hasHeavyCanopy(level, targetPos)) return;
+//$$        if (hasHeavyCanopy(level, targetPos)) {
+//$$            // System.out.println("[Physis Debug] Planting failed: Heavy canopy at " + targetPos);
+//$$            return;
+//$$        }
 //$$
 //$$        // Determine sapling type from the source edge tree
 //$$        BlockState sourceState = level.getBlockState(sourceTreePos);
@@ -794,6 +797,9 @@ public class ForestGrowthHandler {
 //$$            if (isSuitableForSapling(level, targetPos) && isAreaClear(level, targetPos, spacing)) {
 //$$                level.setBlock(targetPos, sapling.defaultBlockState(), 3);
 //$$                ForestGrowthData.get(level).addSapling(targetPos, currentTime);
+//$$                System.out.println("[Physis Debug] SUCCESS! Planted " + sapling.getDescriptionId() + " at " + targetPos);
+//$$            } else {
+//$$                // System.out.println("[Physis Debug] Planting failed: Area not clear or not suitable at " + targetPos);
 //$$            }
 //$$        }
 //$$    }
@@ -1173,7 +1179,7 @@ public class ForestGrowthHandler {
 //$$            String name = net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(state.getBlock()).getPath();
 //$$            // نتوقف عند الوصول للتربة أو العشب الحقيقي
 //$$            if (state.isAir() || name.contains("leaves") || name.contains("log") || name.contains("wood") || 
-//$$                name.contains("flower") || name.contains("fern") || name.contains("grass") || name.contains("bush")) {
+//$$                name.contains("flower") || name.contains("fern")) {
 //$$                p = p.below();
 //$$            } else {
 //$$                break;
