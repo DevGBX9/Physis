@@ -134,6 +134,10 @@ public class ForestGrowthHandler {
 //$$            net.minecraft.world.level.ChunkPos pos = chunk.getPos();
 //$$            BlockPos center = pos.getMiddleBlockPosition(0);
 //$$            
+//$$            // [NIGHT SLOWDOWN] تباطؤ النمو في الليل (شبه توقف بنسبة ٩٠٪)
+//$$            // النباتات تحتاج لضوء الشمس للنمو النشط، لذا تتباطأ العملية جداً في الليل
+//$$            if (!level.isDay() && level.getRandom().nextFloat() > 0.10f) return;
+//$$
 //$$            // We run few attempts per chunk, because this fires for EVERY chunk globally.
 //$$            int attempts = isRaining ? 2 : 1;
 //$$            
