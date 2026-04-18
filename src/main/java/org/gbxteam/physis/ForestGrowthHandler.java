@@ -1151,16 +1151,34 @@ public class ForestGrowthHandler {
 
     // ==================== [4] TERRAIN CHECK ====================
 //$$    private static boolean isTerrainFlat(ServerLevel level, BlockPos pos) {
-//$$        // Check height difference in a 3x3 area - reject steep slopes
-//$$        int centerY = pos.getY();
+//$$        // البحث عن مستوى الأرض الحقيقي وتجاهل الجذوع والأوراق التي قد تخدع الـ Heightmap
+//$$        int centerY = findActualGroundY(level, pos);
 //$$        int maxDiff = 0;
+//$$        
 //$$        for (int x = -1; x <= 1; x++) {
 //$$            for (int z = -1; z <= 1; z++) {
-//$$                int y = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, pos.offset(x, 0, z)).getY();
+//$$                int y = findActualGroundY(level, pos.offset(x, 0, z));
 //$$                maxDiff = Math.max(maxDiff, Math.abs(y - centerY));
 //$$            }
 //$$        }
-//$$        return maxDiff <= 2; // Allow up to 2 blocks height difference
+//$$        return maxDiff <= 3; // جعلناه أكثر تسامحاً قليلاً (٣ بلوكات) ليتناسب مع التلال
+//$$    }
+//$$
+//$$    private static int findActualGroundY(ServerLevel level, BlockPos pos) {
+//$$        // نبدأ من أعلى مكان وننزل لنجد أول بلوك صلب حقيقي (ليس شجرة)
+//$$        BlockPos p = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, pos);
+//$$        while (p.getY() > level.getMinBuildHeight()) {
+//$$            BlockState state = level.getBlockState(p);
+//$$            String name = net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(state.getBlock()).getPath();
+//$$            // إذا كان البلوك شجرة أو هواء أو نبات، نستمر في النزول
+//$$            if (state.isAir() || name.contains("leaves") || name.contains("log") || name.contains("wood") || 
+//$$                name.contains("grass") || name.contains("flower") || name.contains("fern")) {
+//$$                p = p.below();
+//$$            } else {
+//$$                break;
+//$$            }
+//$$        }
+//$$        return p.getY();
 //$$    }
 
     // ==================== [5] CANOPY DENSITY ====================
