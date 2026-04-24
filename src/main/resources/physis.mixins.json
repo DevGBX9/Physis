@@ -1,0 +1,19 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "org.gbxteam.physis.mixins",
+  "compatibilityLevel": "{{COMPATIBILITY_LEVEL}}",
+  "mixins": [
+    "MinecraftServerMixin",
+    "ServerLevelMixin",
+    "SaplingBlockMixin"
+  ],
+  "client": [
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "overwrites": {
+    "requireAnnotations": true
+  }
+}
