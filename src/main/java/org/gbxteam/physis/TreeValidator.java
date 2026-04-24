@@ -45,7 +45,7 @@ public class TreeValidator {
     // ═══════════════════════════════════════════════════════
 
     /** الحد الأدنى لعدد بلوكات الخشب المتتالية لاعتبارها جذع شجرة */
-//$$    public static final int MIN_TRUNK_HEIGHT = 2;
+//$$    public static final int MIN_TRUNK_HEIGHT = 3;
 
     /** الحد الأقصى للبحث عن ارتفاع الجذع (حماية من الحلقات اللانهائية) */
 //$$    public static final int MAX_TRUNK_SCAN = 20;
@@ -140,36 +140,64 @@ public class TreeValidator {
 //$$    }
 
     /**
-     * يعدّ بلوكات الخشب المتتالية من القاعدة للأعلى ويستخرج نوع الخشب.
+     * يعدّ بلوكات الخشب المتصلة (حتى المائلة منها كأشجار السافانا) ويستخرج نوع الخشب.
+     * يستخدم خوارزمية BFS (بحث العرض أولاً) لتتبع تفرعات الشجرة.
      */
 //$$    public static TrunkInfo scanTrunk(ServerLevel level, BlockPos basePos) {
-//$$        int logCount = 0;
-//$$        BlockPos current = basePos;
-//$$        String logSpecies = null;
+//$$        java.util.Set<BlockPos> visited = new java.util.HashSet<>();
+//$$        java.util.Queue<BlockPos> queue = new java.util.LinkedList<>();
 //$$        
-//$$        while (logCount < MAX_TRUNK_SCAN) {
+//$$        queue.add(basePos);
+//$$        visited.add(basePos);
+//$$        
+//$$        int logCount = 0;
+//$$        String logSpecies = null;
+//$$        int maxHeight = basePos.getY();
+//$$        BlockPos highestLog = basePos;
+//$$        
+//$$        while (!queue.isEmpty() && logCount < 64) { // حد أقصى لتفادي اللاق
+//$$            BlockPos current = queue.poll();
 //$$            BlockState currentState = level.getBlockState(current);
-//$$            if (!(currentState.getBlock() instanceof RotatedPillarBlock)) break;
+//$$            
+//$$            if (!(currentState.getBlock() instanceof RotatedPillarBlock)) continue;
 //$$            
 //$$            String blockName = BuiltInRegistries.BLOCK.getKey(currentState.getBlock()).getPath();
-//$$            if (!isTreeLog(blockName)) break;
+//$$            if (!isTreeLog(blockName)) continue;
 //$$            
 //$$            if (logSpecies == null) {
 //$$                logSpecies = extractSpecies(blockName);
 //$$            }
 //$$            
 //$$            logCount++;
-//$$            current = current.above();
+//$$            if (current.getY() > maxHeight) {
+//$$                maxHeight = current.getY();
+//$$                highestLog = current;
+//$$            }
+//$$            
+//$$            // البحث في البلوكات المجاورة (للأعلى والجوانب فقط، لا ننزل للأسفل لتفادي الأرضيات)
+//$$            for (int dy = 0; dy <= 1; dy++) {
+//$$                for (int dx = -1; dx <= 1; dx++) {
+//$$                    for (int dz = -1; dz <= 1; dz++) {
+//$$                        if (dx == 0 && dy == 0 && dz == 0) continue;
+//$$                        BlockPos neighbor = current.offset(dx, dy, dz);
+//$$                        if (!visited.contains(neighbor)) {
+//$$                            visited.add(neighbor);
+//$$                            queue.add(neighbor);
+//$$                        }
+//$$                    }
+//$$                }
+//$$            }
 //$$        }
 //$$        
-//$$        return new TrunkInfo(logCount, logSpecies);
+//$$        int treeHeight = (maxHeight - basePos.getY()) + 1;
+//$$        return new TrunkInfo(treeHeight, logCount, logSpecies, highestLog);
 //$$    }
 
     /**
      * يبحث عن أوراق شجر مطابقة للنوع ومولّدة طبيعياً حول قمة الجذع.
      */
 //$$    public static boolean hasMatchingNaturalLeaves(ServerLevel level, BlockPos basePos, TrunkInfo trunk) {
-//$$        BlockPos topOfTrunk = basePos.above(trunk.height - 1);
+//$$        BlockPos topOfTrunk = trunk.highestLogPos;
 //$$        
 //$$        for (BlockPos leafCheck : BlockPos.betweenClosed(
 //$$                topOfTrunk.offset(-LEAF_SEARCH_RADIUS_XZ, -LEAF_SEARCH_BELOW, -LEAF_SEARCH_RADIUS_XZ),
@@ -182,15 +210,14 @@ public class TreeValidator {
 //$$            try {
 //$$                if (leafState.getValue(LeavesBlock.PERSISTENT)) continue;
 //$$            } catch (Exception e) {
-//$$                // لبعض بلوكات النيذر مثل nether_wart_block التي لا تملك خاصية persistent
-//$$                // إذا كانت فوق جذع الفطر، نعتبرها صالحة.
-//$$                String leafName = BuiltInRegistries.BLOCK.getKey(leafState.getBlock()).getPath();
-//$$                if (!leafName.contains("wart")) continue;
+//$$                continue;
 //$$            }
 //$$            
-//$$            // بمجرد إيجاد ورقة شجر طبيعية متصلة أو فوق الجذع، نعتبرها شجرة صالحة.
-//$$            // إزالة شرط تطابق الأسماء يحل مشكلة أشجار الأزاليا (جذع بلوط + ورق أزاليا) وغيرها.
-//$$            return true;
+//$$            // التحقق من تطابق نوع الأوراق مع نوع الخشب
+//$$            String leafName = BuiltInRegistries.BLOCK.getKey(leafState.getBlock()).getPath();
+//$$            if (trunk.species != null && leafName.contains(trunk.species.split("_")[0])) {
+//$$                return true;
+//$$            }
 //$$        }
 //$$        
 //$$        return false;
@@ -221,11 +248,15 @@ public class TreeValidator {
      */
 //$$    public static class TrunkInfo {
 //$$        public final int height;
+//$$        public final int logCount;
 //$$        public final String species;
+//$$        public final BlockPos highestLogPos;
 //$$        
-//$$        public TrunkInfo(int height, String species) {
+//$$        public TrunkInfo(int height, int logCount, String species, BlockPos highestLogPos) {
 //$$            this.height = height;
+//$$            this.logCount = logCount;
 //$$            this.species = species;
+//$$            this.highestLogPos = highestLogPos;
 //$$        }
 //$$    }
 
