@@ -624,13 +624,14 @@ public class ForestGrowthHandler {
 //$$    }
 //$$
     // ╔══════════════════════════════════════════════════════════════════╗
-    // ║             القسم ٧: نظام توسع الغابات (الشتلات)               ║
-    // ║   الهدف: توسيع الغابات من حوافها وتأسيس غابات جديدة           ║
-    // ║   ● شجرة داخلية (٦+ اتجاهات مغطاة) → لا تنشر شيئاً          ║
-    // ║   ● شجرة حافة (٢-٥ اتجاهات) → تنشر للخارج فقط               ║
-    // ║   ● شجرة رائدة (٠-١ اتجاه) → تؤسس غابة جديدة حولها          ║
-    // ║   معدل: ١-٣ شتلات في اليوم الماينكرافتي الواحد               ║
-    // ╚══════════════════════════════════════════════════════════════════╝
+//$$    // ╔══════════════════════════════════════════════════════════════════╗
+//$$    // ║             القسم ٧: نظام توسع الغابات (الشتلات)               ║
+//$$    // ║   الهدف: توسيع الغابات من حوافها وتأسيس غابات جديدة           ║
+//$$    // ║   ● شجرة داخلية (٦+ اتجاهات مغطاة) → لا تنشر شيئاً          ║
+//$$    // ║   ● شجرة حافة (٢-٥ اتجاهات) → تنشر للخارج فقط               ║
+//$$    // ║   ● شجرة رائدة (٠-١ اتجاه) → تؤسس غابة جديدة حولها          ║
+//$$    // ║   معدل: ١-٣ شتلات في اليوم الماينكرافتي الواحد               ║
+//$$    // ╚══════════════════════════════════════════════════════════════════╝
 //$$    private static void processEdgeExpansion(ServerLevel level, BlockPos searchPos) {
 //$$        if (!level.isLoaded(searchPos)) return;
 //$$        
@@ -670,7 +671,8 @@ public class ForestGrowthHandler {
 //$$                BlockPos checkPos = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING, 
 //$$                    treePos.offset(dir[0] * dist, 0, dir[1] * dist)).below();
 //$$                BlockState state = level.getBlockState(checkPos);
-//$$                if (state.getBlock() instanceof RotatedPillarBlock || state.getBlock() instanceof LeavesBlock) {
+//$$                if ((state.getBlock() instanceof RotatedPillarBlock || state.getBlock() instanceof LeavesBlock)
+//$$                    && isValidTree(level, checkPos)) {
 //$$                    hasForest = true;
 //$$                    break;
 //$$                }
@@ -740,6 +742,16 @@ public class ForestGrowthHandler {
 //$$        plantAtPosition(level, targetPos, treePos);
 //$$    }
 //$$
+//$$    /**
+//$$     * يتحقق ما إذا كان الموقع يحتوي على شجرة حقيقية وليس مجرد بلوكة خشب.
+//$$     * يستخدم نظام TreeValidator المنفصل للفحص.
+//$$     * @see TreeValidator#isValidTree
+//$$     */
+//$$    private static boolean isValidTree(ServerLevel level, BlockPos pos) {
+//$$        return TreeValidator.isValidTree(level, pos);
+//$$    }
+
+//$$
 //$$    private static BlockPos findNearbyTree(ServerLevel level, BlockPos center, int maxRadius) {
 //$$        // بحث حلزوني مكثف لضمان العثور على الشجرة حتى لو كانت وحيدة
 //$$        for (int r = 1; r <= maxRadius; r++) {
@@ -749,7 +761,10 @@ public class ForestGrowthHandler {
 //$$                    BlockPos checkPos = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING, center.offset(x, 0, z)).below();
 //$$                    BlockState state = level.getBlockState(checkPos);
 //$$                    if (state.getBlock() instanceof RotatedPillarBlock || state.getBlock() instanceof LeavesBlock) {
-//$$                        return checkPos;
+//$$                        // تحقق إضافي: هل هذه شجرة حقيقية وليست مجرد بلوكة خشب؟
+//$$                        if (isValidTree(level, checkPos)) {
+//$$                            return checkPos;
+//$$                        }
 //$$                    }
 //$$                }
 //$$            }
@@ -1358,7 +1373,8 @@ public class ForestGrowthHandler {
 //$$            BlockPos checkPos = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING, pos.offset(dx, 0, dz)).below();
 //$$            BlockState state = level.getBlockState(checkPos);
 //$$            
-//$$            if (state.getBlock() instanceof RotatedPillarBlock || state.getBlock() instanceof LeavesBlock) {
+//$$            if ((state.getBlock() instanceof RotatedPillarBlock || state.getBlock() instanceof LeavesBlock)
+//$$                && isValidTree(level, checkPos)) {
 //$$                getRelatedSapling(state.getBlock()).ifPresent(sapling -> {
 //$$                    speciesCount.merge(sapling, 1, Integer::sum);
 //$$                });
