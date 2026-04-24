@@ -74,8 +74,13 @@ public class TreeValidator {
      * @return true إذا كانت شجرة حقيقية، false إذا كانت خشب وضعه لاعب
      */
 //$$    public static boolean isValidTree(ServerLevel level, BlockPos pos) {
+//$$        // قد يكون الموقع المرسل عبارة عن أوراق شجر (خاصة في الأشجار العريضة مثل الكرز)
+//$$        // لذا نبحث عن الجذع المرتبط أولاً
+//$$        BlockPos logPos = findAssociatedLog(level, pos);
+//$$        if (logPos == null) return false;
+//$$
 //$$        // الخطوة ١: إيجاد قاعدة الجذع (ننزل حتى نجد أول بلوك ليس خشباً)
-//$$        BlockPos basePos = findTrunkBase(level, pos);
+//$$        BlockPos basePos = findTrunkBase(level, logPos);
 //$$        
 //$$        // الخطوة ٢: عدّ بلوكات الخشب المتتالية وتحديد النوع
 //$$        TrunkInfo trunk = scanTrunk(level, basePos);
@@ -90,6 +95,36 @@ public class TreeValidator {
     // ═══════════════════════════════════════════════════════
     // الدوال المساعدة
     // ═══════════════════════════════════════════════════════
+
+    /**
+     * يبحث عن أقرب بلوك خشب متصل بالموقع.
+     * يفيد عندما يكون الموقع المدخل هو أوراق شجر (مثل عند استخدام Heightmap).
+     */
+//$$    public static BlockPos findAssociatedLog(ServerLevel level, BlockPos pos) {
+//$$        BlockState state = level.getBlockState(pos);
+//$$        if (state.getBlock() instanceof RotatedPillarBlock) {
+//$$            String name = BuiltInRegistries.BLOCK.getKey(state.getBlock()).getPath();
+//$$            if (isTreeLog(name)) return pos;
+//$$        }
+//$$        
+//$$        // بحث حلزوني للأسفل (بحثاً عن الجذع تحت الأوراق)
+//$$        for (int y = 0; y <= 14; y++) {
+//$$            for (int r = 0; r <= 3; r++) {
+//$$                for (int x = -r; x <= r; x++) {
+//$$                    for (int z = -r; z <= r; z++) {
+//$$                        if (Math.abs(x) != r && Math.abs(z) != r) continue;
+//$$                        BlockPos checkPos = pos.offset(x, -y, z);
+//$$                        BlockState checkState = level.getBlockState(checkPos);
+//$$                        if (checkState.getBlock() instanceof RotatedPillarBlock) {
+//$$                            String name = BuiltInRegistries.BLOCK.getKey(checkState.getBlock()).getPath();
+//$$                            if (isTreeLog(name)) return checkPos;
+//$$                        }
+//$$                    }
+//$$                }
+//$$            }
+//$$        }
+//$$        return null;
+//$$    }
 
     /**
      * يجد قاعدة الجذع بالنزول للأسفل حتى آخر بلوكة خشب متصلة.
