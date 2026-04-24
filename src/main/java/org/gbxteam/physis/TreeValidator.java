@@ -45,7 +45,7 @@ public class TreeValidator {
     // ═══════════════════════════════════════════════════════
 
     /** الحد الأدنى لعدد بلوكات الخشب المتتالية لاعتبارها جذع شجرة */
-//$$    public static final int MIN_TRUNK_HEIGHT = 3;
+//$$    public static final int MIN_TRUNK_HEIGHT = 2;
 
     /** الحد الأقصى للبحث عن ارتفاع الجذع (حماية من الحلقات اللانهائية) */
 //$$    public static final int MAX_TRUNK_SCAN = 20;
@@ -182,14 +182,15 @@ public class TreeValidator {
 //$$            try {
 //$$                if (leafState.getValue(LeavesBlock.PERSISTENT)) continue;
 //$$            } catch (Exception e) {
-//$$                continue;
+//$$                // لبعض بلوكات النيذر مثل nether_wart_block التي لا تملك خاصية persistent
+//$$                // إذا كانت فوق جذع الفطر، نعتبرها صالحة.
+//$$                String leafName = BuiltInRegistries.BLOCK.getKey(leafState.getBlock()).getPath();
+//$$                if (!leafName.contains("wart")) continue;
 //$$            }
 //$$            
-//$$            // التحقق من تطابق نوع الأوراق مع نوع الخشب
-//$$            String leafName = BuiltInRegistries.BLOCK.getKey(leafState.getBlock()).getPath();
-//$$            if (trunk.species != null && leafName.contains(trunk.species.split("_")[0])) {
-//$$                return true;
-//$$            }
+//$$            // بمجرد إيجاد ورقة شجر طبيعية متصلة أو فوق الجذع، نعتبرها شجرة صالحة.
+//$$            // إزالة شرط تطابق الأسماء يحل مشكلة أشجار الأزاليا (جذع بلوط + ورق أزاليا) وغيرها.
+//$$            return true;
 //$$        }
 //$$        
 //$$        return false;
