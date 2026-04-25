@@ -55,5 +55,9 @@ public class Physis implements ModInitializer
 		ModMetadata metadata = FabricLoader.getInstance().getModContainer(MOD_ID).orElseThrow(RuntimeException::new).getMetadata();
 		MOD_NAME = metadata.getName();
 		MOD_VERSION = metadata.getVersion().getFriendlyString();
+		
+		//#if MC >= 260100
+//$$		PhysisSounds.register();
+		//#endif
 	}
 }
