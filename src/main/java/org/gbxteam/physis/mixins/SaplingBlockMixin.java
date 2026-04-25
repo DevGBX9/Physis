@@ -10,7 +10,6 @@ package org.gbxteam.physis.mixins;
 //$$ import net.minecraft.sounds.SoundEvents;
 //$$ import net.minecraft.sounds.SoundSource;
 //$$ import org.gbxteam.physis.ForestGrowthHandler;
-//$$ import org.gbxteam.physis.PhysisSounds;
 //$$ import org.spongepowered.asm.mixin.Mixin;
 //$$ import org.spongepowered.asm.mixin.injection.At;
 //$$ import org.spongepowered.asm.mixin.injection.Inject;
@@ -34,10 +33,13 @@ package org.gbxteam.physis.mixins;
 //$$                saplingBlock == Blocks.SPRUCE_SAPLING) {
 //$$                volume = 3.5f;
 //$$                pitch = 0.5f;
-//$$                level.playSound(null, pos, PhysisSounds.TREE_GROWTH_PRO, SoundSource.BLOCKS, volume, pitch);
-//$$            } else {
-//$$                level.playSound(null, pos, PhysisSounds.TREE_GROWTH, SoundSource.BLOCKS, volume, pitch);
 //$$            }
+//$$
+//$$            level.playSound(null, pos, SoundEvents.WOOD_BREAK, SoundSource.BLOCKS, volume, pitch);
+//$$            level.playSound(null, pos, SoundEvents.GRASS_BREAK, SoundSource.BLOCKS, volume * 0.8f, pitch + 0.1f);
+//$$            level.playSound(null, pos, SoundEvents.AZALEA_LEAVES_PLACE, SoundSource.BLOCKS, volume, pitch + 0.2f);
+//$$            level.playSound(null, pos, SoundEvents.MOSS_STEP, SoundSource.BLOCKS, volume * 0.7f, pitch + 0.3f);
+//$$            level.playSound(null, pos, SoundEvents.BONE_MEAL_USE, SoundSource.BLOCKS, volume, pitch + 0.4f);
 //$$
 //$$            // [BIOME FILL & TRACKING]
 //$$            if (data.isModPlanted(pos)) {
