@@ -78,6 +78,11 @@ public class ForestGrowthHandler {
 //$$        // [10] WEATHER IMPACT
 //$$        boolean isRaining = level.isRaining();
 //$$        boolean isThundering = level.isThundering();
+//$$        // 8. صحة الشتلات وتسميد التربة (كل 200 تيك لتخفيف الحمل)
+//$$        if (level.getGameTime() % 200 == 0) {
+//$$            SaplingLifecycleManager.runHealthChecks(level);
+//$$            SaplingLifecycleManager.runCompostChecks(level);
+//$$        }
 //$$        float tps = level.getServer().tickRateManager().tickrate();
 //$$
 //$$        // Multiplier based on /tick rate. Standard is 20.
@@ -92,11 +97,7 @@ public class ForestGrowthHandler {
 //$$            // Growth is now globally managed by tickChunk() for every loaded chunk.
 //$$        }
 //$$
-//$$        // Periodic checks (Every 1 minute)
-//$$        if (gameTime % 1200 == 0) {
-//$$            runHealthChecks(level);
-//$$            runCompostChecks(level);
-//$$        }
+
 //$$
 //$$        // Thunder damage is now handled globally in tickChunk()
 //$$    }
@@ -839,93 +840,7 @@ public class ForestGrowthHandler {
 //$$        }
 //$$    }
 //$$
-    // ╔══════════════════════════════════════════════════════════════════╗
-    // ║         القسم ٨: فحوصات الصحة والتسميد (صيانة الشتلات)         ║
-    // ║   يفحص الشتلات المزروعة: هل نمت؟ هل ماتت؟ هل تحتاج تنظيف؟    ║
-    // ╚══════════════════════════════════════════════════════════════════╝
-//$$    private static void runHealthChecks(ServerLevel level) {
-//$$        long currentTime = level.getGameTime();
-//$$        ForestGrowthData data = ForestGrowthData.get(level);
-//$$        
-//$$        data.getAllTrackedSaplings().forEach((posLong, lastTime) -> {
-//$$            BlockPos pos = BlockPos.of(posLong);
-//$$            if (!level.isLoaded(pos)) return;
-//$$
-//$$            BlockState state = level.getBlockState(pos);
-//$$            if (!(state.getBlock() instanceof SaplingBlock || state.getBlock() == Blocks.AZALEA || state.getBlock() == Blocks.MANGROVE_PROPAGULE)) {
-//$$                data.removeSapling(pos);
-//$$                return;
-//$$            }
-//$$
-//$$            long age = currentTime - lastTime;
-//$$            if ((age >= 600 && age < 640) || (age >= 1200)) {
-//$$                int spacing = getRequiredSpacing(state.getBlock());
-//$$                
-//$$                // --- مرونة في المستنقعات ---
-//$$                Holder<Biome> biome = level.getBiome(pos);
-//$$                if (biome.is(Biomes.SWAMP) || biome.is(Biomes.MANGROVE_SWAMP)) {
-//$$                    spacing = Math.max(1, spacing - 1); // السماح بكثافة أكبر في المستنقعات
-//$$                }
-//$$
-//$$                if (!isAreaClearForHealthCheck(level, pos, spacing)) {
-//$$                    level.setBlock(pos, Blocks.DEAD_BUSH.defaultBlockState(), 3);
-//$$                    data.removeSapling(pos);
-//$$                    data.addDeadBush(pos, currentTime);
-//$$                } else {
-//$$                    data.updateSaplingCheckTime(pos, currentTime);
-//$$                }
-//$$            }
-//$$        });
-//$$    }
-//$$
-//$$    // ==================== COMPOSTING ====================
-//$$    private static void runCompostChecks(ServerLevel level) {
-//$$        long currentTime = level.getGameTime();
-//$$        ForestGrowthData data = ForestGrowthData.get(level);
-//$$
-//$$        data.getAllDeadBushes().forEach((posLong, deathTime) -> {
-//$$            BlockPos pos = BlockPos.of(posLong);
-//$$            if (!level.isLoaded(pos)) return;
-//$$
-//$$            if (currentTime - deathTime >= 300) {
-//$$                if (level.getBlockState(pos).is(Blocks.DEAD_BUSH)) {
-//$$                    level.setBlock(pos, Blocks.AIR.defaultBlockState(), 3);
-//$$                    applyCompostEffect(level, pos);
-//$$                }
-//$$                data.removeDeadBush(pos);
-//$$            }
-//$$        });
-//$$    }
-//$$
-//$$    private static void applyCompostEffect(ServerLevel level, BlockPos pos) {
-//$$        RandomSource random = level.getRandom();
-//$$        for (int x = -2; x <= 2; x++) {
-//$$            for (int z = -2; z <= 2; z++) {
-//$$                BlockPos target = pos.offset(x, -1, z);
-//$$                BlockPos above = target.above();
-//$$
-//$$                if (level.getBlockState(target).is(Blocks.GRASS_BLOCK) && level.isEmptyBlock(above)) {
-//$$                    if (random.nextFloat() < 0.7f) {
-//$$                        level.levelEvent(2005, above, 0);
-//$$                        
-//$$                        String blockToPlace = "short_grass";
-//$$                        float r = random.nextFloat();
-//$$                        
-//$$                        if (r < 0.15f) {
-//$$                            String[] flowers = {"dandelion", "poppy", "oxeye_daisy", "azure_bluet", "cornflower"};
-//$$                            blockToPlace = flowers[random.nextInt(flowers.length)];
-//$$                        } else if (r < 0.25f) {
-//$$                            blockToPlace = "fern";
-//$$                        }
-//$$                        
-//$$                        level.getServer().getCommands().performPrefixedCommand(
-//$$                            level.getServer().createCommandSourceStack().withLevel(level).withSuppressedOutput(),
-//$$                            String.format("setblock %d %d %d %s keep", above.getX(), above.getY(), above.getZ(), blockToPlace));
-//$$                    }
-//$$                }
-//$$            }
-//$$        }
-//$$    }
+
 
     // ╔══════════════════════════════════════════════════════════════════╗
     // ║            القسم ٩: نظام أضرار الرعد (Thunder Damage)          ║
@@ -944,31 +859,7 @@ public class ForestGrowthHandler {
 //$$        }
 //$$    }
 
-    // ==================== HEALTH CHECK AREA SCAN ====================
-//$$    private static boolean isAreaClearForHealthCheck(ServerLevel level, BlockPos pos, int radius) {
-//$$        BlockState currentState = level.getBlockState(pos);
-//$$        Block currentBlock = currentState.getBlock();
-//$$        boolean is2x2Tree = (currentBlock == Blocks.DARK_OAK_SAPLING || currentBlock == Blocks.PALE_OAK_SAPLING);
-//$$
-//$$        for (BlockPos checkPos : BlockPos.betweenClosed(pos.offset(-radius, -1, -radius), pos.offset(radius, 3, radius))) {
-//$$            if (checkPos.equals(pos)) continue;
-//$$            
-//$$            BlockState state = level.getBlockState(checkPos);
-//$$            Block block = state.getBlock();
-//$$            
-//$$            if (block instanceof RotatedPillarBlock || block instanceof SaplingBlock || block == Blocks.AZALEA || block == Blocks.MANGROVE_PROPAGULE) {
-//$$                if (is2x2Tree && block == currentBlock) {
-//$$                    int dx = Math.abs(checkPos.getX() - pos.getX());
-//$$                    int dz = Math.abs(checkPos.getZ() - pos.getZ());
-//$$                    if (dx <= 1 && dz <= 1) {
-//$$                        continue;
-//$$                    }
-//$$                }
-//$$                return false;
-//$$            }
-//$$        }
-//$$        return true;
-//$$    }
+
 
     // ╔══════════════════════════════════════════════════════════════════╗
     // ║     القسم ١٠: أنظمة البيئة الحيوية (Biome Systems)             ║
@@ -1292,28 +1183,28 @@ public class ForestGrowthHandler {
 //$$            BlockState state = level.getBlockState(checkPos);
 //$$            Block block = state.getBlock();
 //$$            if (block instanceof RotatedPillarBlock || block instanceof SaplingBlock || block == Blocks.AZALEA || block == Blocks.MANGROVE_PROPAGULE) {
-//$$                // في الغابة الكثيفة، نسمح بوجود الأشجار القريبة إذا كانت بعيدة قليلاً (نقلل نصف القطر الفعلي للفحص)
+//$$                // التحقق من المسافة الصارمة (نصف قطر حقيقي)
 //$$                double distSq = checkPos.distSqr(pos);
-//$$                if (distSq < (radius * radius * 0.6)) return false; 
+//$$                if (distSq < (radius * radius)) return false; 
 //$$            }
 //$$        }
 //$$        return true;
 //$$    }
 
     // ==================== SPACING ====================
-//$$    private static int getRequiredSpacing(Block sapling) {
-//$$        if (sapling == Blocks.OAK_SAPLING) return 4;
-//$$        if (sapling == Blocks.BIRCH_SAPLING) return 3;
-//$$        if (sapling == Blocks.SPRUCE_SAPLING) return 4;
-//$$        if (sapling == Blocks.JUNGLE_SAPLING) return 4;
-//$$        if (sapling == Blocks.ACACIA_SAPLING) return 5;
+//$$    public static int getRequiredSpacing(Block sapling) {
+//$$        if (sapling == Blocks.OAK_SAPLING) return 5;
+//$$        if (sapling == Blocks.BIRCH_SAPLING) return 5;
+//$$        if (sapling == Blocks.SPRUCE_SAPLING) return 5;
+//$$        if (sapling == Blocks.JUNGLE_SAPLING) return 5;
+//$$        if (sapling == Blocks.ACACIA_SAPLING) return 6;
 //$$        if (sapling == Blocks.DARK_OAK_SAPLING) return 6;
-//$$        if (sapling == Blocks.MANGROVE_PROPAGULE) return 4;
+//$$        if (sapling == Blocks.MANGROVE_PROPAGULE) return 5;
 //$$        if (sapling == Blocks.CHERRY_SAPLING) return 6;
-//$$        if (sapling == Blocks.AZALEA) return 4;
+//$$        if (sapling == Blocks.AZALEA) return 5;
 //$$        if (sapling == Blocks.PALE_OAK_SAPLING) return 7;
-//$$        if (sapling == Blocks.CRIMSON_FUNGUS || sapling == Blocks.WARPED_FUNGUS) return 3;
-//$$        return 4; // Default
+//$$        if (sapling == Blocks.CRIMSON_FUNGUS || sapling == Blocks.WARPED_FUNGUS) return 5;
+//$$        return 5; // Default (At least 5 blocks)
 //$$    }
 
     // ==================== BIOME FILL UTILITY ====================
