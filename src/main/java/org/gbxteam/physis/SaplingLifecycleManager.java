@@ -144,9 +144,9 @@ public class SaplingLifecycleManager {
 //$$            Block block = state.getBlock();
 //$$            
 //$$            // التسامح مع العشب والزهور
-//$$            if (block == Blocks.AIR || block == Blocks.GRASS || block == Blocks.TALL_GRASS || 
+//$$            if (block == Blocks.AIR || block == Blocks.SHORT_GRASS || block == Blocks.TALL_GRASS || 
 //$$                block == Blocks.FERN || block == Blocks.LARGE_FERN || 
-//$$                block == Blocks.SHORT_GRASS || block == Blocks.DANDELION || block == Blocks.POPPY) {
+//$$                block == Blocks.DANDELION || block == Blocks.POPPY) {
 //$$                continue;
 //$$            }
 //$$            
@@ -160,7 +160,7 @@ public class SaplingLifecycleManager {
 //$$                }
 //$$            }
 //$$            
-//$$            if (block instanceof RotatedPillarBlock || block instanceof SaplingBlock || state.isSolidRender(level, checkPos)) {
+//$$            if (block instanceof RotatedPillarBlock || block instanceof SaplingBlock || state.isSolidRender()) {
 //$$                double distSq = checkPos.distSqr(pos);
 //$$                if (distSq < (radius * radius)) { 
 //$$                    return false;
