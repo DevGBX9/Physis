@@ -1,6 +1,6 @@
 package org.gbxteam.physis;
 
-//#if MC >= 260100
+//#if MC >= 12100
 //$$ import net.minecraft.core.Registry;
 //$$ import net.minecraft.core.registries.BuiltInRegistries;
 //$$ import net.minecraft.resources.ResourceLocation;
@@ -9,7 +9,7 @@ package org.gbxteam.physis;
 
 public class PhysisSounds {
 
-    //#if MC >= 260100
+    //#if MC >= 12100
 //$$    public static final SoundEvent TREE_GROWTH = register("tree_growth");
 //$$    public static final SoundEvent TREE_GROWTH_PRO = register("tree_growth_pro");
 

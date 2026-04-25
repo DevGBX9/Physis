@@ -56,7 +56,7 @@ public class Physis implements ModInitializer
 		MOD_NAME = metadata.getName();
 		MOD_VERSION = metadata.getVersion().getFriendlyString();
 		
-		//#if MC >= 260100
+		//#if MC >= 12100
 //$$		PhysisSounds.register();
 		//#endif
 	}
