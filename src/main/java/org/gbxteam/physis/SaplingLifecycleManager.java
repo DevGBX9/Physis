@@ -12,6 +12,8 @@ package org.gbxteam.physis;
 //$$ import net.minecraft.world.level.block.RotatedPillarBlock;
 //$$ import net.minecraft.world.level.block.SaplingBlock;
 //$$ import net.minecraft.world.level.block.state.BlockState;
+//$$ import net.minecraft.sounds.SoundEvents;
+//$$ import net.minecraft.sounds.SoundSource;
 //#endif
 
 // ╔══════════════════════════════════════════════════════════════════╗
@@ -107,6 +109,7 @@ public class SaplingLifecycleManager {
 //$$                    // 70% فرصة لإنبات عشب أو زهور
 //$$                    if (random.nextFloat() < 0.7f) {
 //$$                        level.levelEvent(2005, above, 0); // Bone meal particles
+//$$                        level.playSound(null, above, SoundEvents.BONE_MEAL_USE, SoundSource.BLOCKS, 1.0f, 1.0f); // صوت البون ميل
 //$$                        
 //$$                        String blockToPlace = "short_grass";
 //$$                        float r = random.nextFloat();
