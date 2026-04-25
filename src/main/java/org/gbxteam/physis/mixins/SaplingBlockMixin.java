@@ -36,7 +36,9 @@ package org.gbxteam.physis.mixins;
 //$$            }
 //$$
 //$$            level.playSound(null, pos, SoundEvents.WOOD_BREAK, SoundSource.BLOCKS, volume, pitch);
+//$$            level.playSound(null, pos, SoundEvents.GRASS_BREAK, SoundSource.BLOCKS, volume * 0.8f, pitch + 0.1f); // صوت شق التربة
 //$$            level.playSound(null, pos, SoundEvents.AZALEA_LEAVES_PLACE, SoundSource.BLOCKS, volume, pitch + 0.2f);
+//$$            level.playSound(null, pos, SoundEvents.MOSS_STEP, SoundSource.BLOCKS, volume * 0.7f, pitch + 0.3f); // حفيف الأغصان
 //$$            level.playSound(null, pos, SoundEvents.BONE_MEAL_USE, SoundSource.BLOCKS, volume, pitch + 0.4f);
 //$$
 //$$            // [BIOME FILL & TRACKING]
