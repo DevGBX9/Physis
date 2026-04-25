@@ -35,11 +35,22 @@ package org.gbxteam.physis.mixins;
 //$$                pitch = 0.5f;
 //$$            }
 //$$
-//$$            level.playSound(null, pos, SoundEvents.WOOD_BREAK, SoundSource.BLOCKS, volume, pitch);
+//$$            // [SOUND MIX - EVOLVED]
+//$$            // ١. صوت القاعدة (شق التربة والجذور)
 //$$            level.playSound(null, pos, SoundEvents.GRASS_BREAK, SoundSource.BLOCKS, volume * 0.8f, pitch + 0.1f);
-//$$            level.playSound(null, pos, SoundEvents.AZALEA_LEAVES_PLACE, SoundSource.BLOCKS, volume, pitch + 0.2f);
-//$$            level.playSound(null, pos, SoundEvents.MOSS_STEP, SoundSource.BLOCKS, volume * 0.7f, pitch + 0.3f);
-//$$            level.playSound(null, pos, SoundEvents.BONE_MEAL_USE, SoundSource.BLOCKS, volume, pitch + 0.4f);
+//$$            level.playSound(null, pos, SoundEvents.BONE_MEAL_USE, SoundSource.BLOCKS, volume * 0.5f, pitch);
+//$$
+//$$            // ٢. صوت الجذع (تكسر الخشب - مرتفع قليلاً)
+//$$            BlockPos trunkPos = pos.above(2);
+//$$            level.playSound(null, trunkPos, SoundEvents.WOOD_BREAK, SoundSource.BLOCKS, volume, pitch - 0.1f);
+//$$            
+//$$            // ٣. صوت التاج (حفيف الأوراق والأغصان - مرتفع أكثر)
+//$$            BlockPos canopyPos = pos.above(4);
+//$$            level.playSound(null, canopyPos, SoundEvents.AZALEA_LEAVES_PLACE, SoundSource.BLOCKS, volume, pitch + 0.2f);
+//$$            level.playSound(null, canopyPos, SoundEvents.MOSS_STEP, SoundSource.BLOCKS, volume * 0.7f, pitch + 0.4f);
+//$$
+//$$            // ٤. الطبقة السحرية (رنين خفيف يعطي إيحاءً بالحيوية)
+//$$            level.playSound(null, pos, SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.BLOCKS, volume * 0.4f, 2.0f); 
 //$$
 //$$            // [BIOME FILL & TRACKING]
 //$$            if (data.isModPlanted(pos)) {
