@@ -577,48 +577,50 @@ public class ForestGrowthHandler {
 //$$        
 //$$        // It's a cherry tree!
 //$$        BlockPos surfaceCenter = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, treePos);
-//$$        int petalCount = 0;
+//$$        int petalBlockCount = 0;
 //$$        
-//$$        // Scan a 5x5 area under the tree
-//$$        for (BlockPos p : BlockPos.betweenClosed(surfaceCenter.offset(-2, -2, -2), surfaceCenter.offset(2, 2, 2))) {
+//$$        // فحص مساحة أوسع (١١×١١) لضمان عدم تجاوز حد الكثافة المسموح به لكل شجرة
+//$$        int scanRadius = 5;
+//$$        for (BlockPos p : BlockPos.betweenClosed(surfaceCenter.offset(-scanRadius, -2, -scanRadius), surfaceCenter.offset(scanRadius, 2, scanRadius))) {
 //$$            if (level.getBlockState(p).is(net.minecraft.world.level.block.Blocks.PINK_PETALS)) {
-//$$                petalCount++;
+//$$                petalBlockCount++;
 //$$            }
 //$$        }
 //$$        
-//$$        // If exactly 0 petals exist, we drop some gracefully.
-//$$        if (petalCount == 0) {
-//$$            RandomSource random = level.getRandom();
-//$$            if (random.nextFloat() < 0.3f) return; // Add a small delay/chance so it doesn't happen instantly 100% of the time.
+//$$        // حد الكثافة: إذا وجدنا أكثر من ١٠ مجموعات بتلات في المحيط، نتوقف عن الزيادة
+//$$        if (petalBlockCount >= 10) return;
+//$$
+//$$        RandomSource random = level.getRandom();
+//$$        // فرصة ضئيلة لتساقط البتلات لضمان نمو بطيء وطبيعي (١٠٪ فرصة في كل دورة فحص)
+//$$        if (random.nextFloat() < 0.9f) return;
+//$$        
+//$$        int drops = 1 + random.nextInt(3); // تقليل عدد المجموعات المضافة (١ إلى ٣ مجموعات فقط)
+//$$        for (int i = 0; i < drops; i++) {
+//$$            int ox = random.nextInt(11) - 5; // توزيع أوسع قليلاً (-٥ إلى ٥)
+//$$            int oz = random.nextInt(11) - 5;
 //$$            
-//$$            int drops = 3 + random.nextInt(4); // 3 to 6 petal clusters
-//$$            for (int i = 0; i < drops; i++) {
-//$$                int ox = random.nextInt(7) - 3; // -3 to 3
-//$$                int oz = random.nextInt(7) - 3;
-//$$                
-//$$                BlockPos target = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, surfaceCenter.offset(ox, 0, oz));
-//$$                BlockState targetState = level.getBlockState(target);
-//$$                
-//$$                if (targetState.canBeReplaced() || targetState.isAir()) {
-//$$                    BlockState soil = level.getBlockState(target.below());
-//$$                    if (soil.is(net.minecraft.world.level.block.Blocks.GRASS_BLOCK) || soil.is(net.minecraft.world.level.block.Blocks.DIRT) || soil.is(net.minecraft.world.level.block.Blocks.PODZOL)) {
-//$$                        int amount = 2 + random.nextInt(3); // Levels 2 to 4 (guaranteed to not be level 1)
-//$$                        BlockState petalState = net.minecraft.world.level.block.Blocks.PINK_PETALS.defaultBlockState();
-//$$                        for (net.minecraft.world.level.block.state.properties.Property<?> prop : petalState.getProperties()) {
-//$$                            String pName = prop.getName().toLowerCase();
-//$$                            if (pName.contains("amount") || pName.contains("flower")) {
-//$$                                // Suppress generic warnings and forcefully set it
-//$$                                @SuppressWarnings("unchecked")
-//$$                                net.minecraft.world.level.block.state.properties.Property<Integer> intProp = (net.minecraft.world.level.block.state.properties.Property<Integer>) prop;
-//$$                                petalState = petalState.setValue(intProp, amount);
-//$$                            } else if (pName.contains("facing") || pName.contains("direction")) {
-//$$                                @SuppressWarnings("unchecked")
-//$$                                net.minecraft.world.level.block.state.properties.Property<net.minecraft.core.Direction> dirProp = (net.minecraft.world.level.block.state.properties.Property<net.minecraft.core.Direction>) prop;
-//$$                                petalState = petalState.setValue(dirProp, net.minecraft.core.Direction.Plane.HORIZONTAL.getRandomDirection(random));
-//$$                            }
+//$$            BlockPos target = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, surfaceCenter.offset(ox, 0, oz));
+//$$            BlockState targetState = level.getBlockState(target);
+//$$            
+//$$            if (targetState.canBeReplaced() || targetState.isAir()) {
+//$$                BlockState soil = level.getBlockState(target.below());
+//$$                if (soil.is(net.minecraft.world.level.block.Blocks.GRASS_BLOCK) || soil.is(net.minecraft.world.level.block.Blocks.DIRT) || soil.is(net.minecraft.world.level.block.Blocks.PODZOL)) {
+//$$                    // تنويع الكميات: غالباً ما تكون بتلة واحدة أو اثنتين، ونادراً ما تصل لـ ٣
+//$$                    int amount = 1 + (random.nextFloat() < 0.2f ? random.nextInt(3) : random.nextInt(2));
+//$$                    BlockState petalState = net.minecraft.world.level.block.Blocks.PINK_PETALS.defaultBlockState();
+//$$                    for (net.minecraft.world.level.block.state.properties.Property<?> prop : petalState.getProperties()) {
+//$$                        String pName = prop.getName().toLowerCase();
+//$$                        if (pName.contains("amount") || pName.contains("flower")) {
+//$$                            @SuppressWarnings("unchecked")
+//$$                            net.minecraft.world.level.block.state.properties.Property<Integer> intProp = (net.minecraft.world.level.block.state.properties.Property<Integer>) prop;
+//$$                            petalState = petalState.setValue(intProp, amount);
+//$$                        } else if (pName.contains("facing") || pName.contains("direction")) {
+//$$                            @SuppressWarnings("unchecked")
+//$$                            net.minecraft.world.level.block.state.properties.Property<net.minecraft.core.Direction> dirProp = (net.minecraft.world.level.block.state.properties.Property<net.minecraft.core.Direction>) prop;
+//$$                            petalState = petalState.setValue(dirProp, net.minecraft.core.Direction.Plane.HORIZONTAL.getRandomDirection(random));
 //$$                        }
-//$$                        level.setBlock(target, petalState, 3);
 //$$                    }
+//$$                    level.setBlock(target, petalState, 3);
 //$$                }
 //$$            }
 //$$        }
