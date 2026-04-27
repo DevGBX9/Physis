@@ -825,6 +825,10 @@ public class ForestGrowthHandler {
 //$$        if (sapling == Blocks.SPRUCE_SAPLING && level.getRandom().nextFloat() < 0.20f) {
 //$$            needs2x2 = true;
 //$$        }
+//$$        // [Giant Jungle] فرصة ١٥٪ لزراعة شتلات الأدغال بنمط 2x2 لتصبح شجرة عملاقة
+//$$        if (sapling == Blocks.JUNGLE_SAPLING && level.getRandom().nextFloat() < 0.15f) {
+//$$            needs2x2 = true;
+//$$        }
 //$$
 //$$        long currentTime = level.getGameTime();
 //$$

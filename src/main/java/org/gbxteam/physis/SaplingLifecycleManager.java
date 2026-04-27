@@ -49,6 +49,13 @@ public class SaplingLifecycleManager {
 //$$            long age = currentTime - lastTime;
 //$$            // التحقق من العمر: بعد مرور فترة، يتم فحص المساحة المتاحة
 //$$            if ((age >= 600 && age < 640) || (age >= 1200)) {
+//$$                
+//$$                // [2x2 PROTECTION] حماية شتلات التشكيلة 2x2 من الحذف
+//$$                if (isPartOf2x2Formation(level, pos, state.getBlock())) {
+//$$                    data.updateSaplingCheckTime(pos, currentTime);
+//$$                    return; // لا تحذف هذه الشتلة - هي جزء من تشكيلة 2x2
+//$$                }
+//$$
 //$$                int spacing = ForestGrowthHandler.getRequiredSpacing(state.getBlock());
 //$$                
 //$$                // --- مرونة في المستنقعات ---
@@ -163,6 +170,12 @@ public class SaplingLifecycleManager {
 //$$                }
 //$$            }
 //$$            
+//$$            // التسامح مع الشتلات المجاورة من نفس النوع (جزء من تشكيلة 2x2)
+//$$            if (block == currentBlock && block instanceof SaplingBlock) {
+//$$                double distSq = checkPos.distSqr(pos);
+//$$                if (distSq <= 2.0) continue; // الشتلات المجاورة مباشرة (مسافة 1 أو قطرية)
+//$$            }
+//$$            
 //$$            if (block instanceof RotatedPillarBlock || block instanceof SaplingBlock || state.isSolidRender()) {
 //$$                double distSq = checkPos.distSqr(pos);
 //$$                if (distSq < (radius * radius)) { 
@@ -171,6 +184,36 @@ public class SaplingLifecycleManager {
 //$$            }
 //$$        }
 //$$        return true;
+//$$    }
+
+    // ==================== 2x2 FORMATION DETECTION ====================
+    
+    /**
+     * يتحقق مما إذا كانت الشتلة جزءاً من تشكيلة 2x2 (أربع شتلات من نفس النوع في مربع)
+     * يفحص جميع الاتجاهات الأربعة الممكنة التي يمكن أن تكون فيها الشتلة ضمن مربع 2x2
+     */
+//$$    private static boolean isPartOf2x2Formation(ServerLevel level, BlockPos pos, Block saplingBlock) {
+//$$        // فحص 4 احتمالات: الشتلة الحالية قد تكون في أي زاوية من المربع 2x2
+//$$        int[][] offsets = {{0, 0}, {-1, 0}, {0, -1}, {-1, -1}};
+//$$        
+//$$        for (int[] offset : offsets) {
+//$$            BlockPos corner = pos.offset(offset[0], 0, offset[1]);
+//$$            boolean allMatch = true;
+//$$            
+//$$            for (int x = 0; x < 2; x++) {
+//$$                for (int z = 0; z < 2; z++) {
+//$$                    BlockPos check = corner.offset(x, 0, z);
+//$$                    if (!level.getBlockState(check).is(saplingBlock)) {
+//$$                        allMatch = false;
+//$$                        break;
+//$$                    }
+//$$                }
+//$$                if (!allMatch) break;
+//$$            }
+//$$            
+//$$            if (allMatch) return true;
+//$$        }
+//$$        return false;
 //$$    }
 
     //#endif
