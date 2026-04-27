@@ -503,6 +503,12 @@ public class ForestGrowthHandler {
 //$$            BlockState tState = level.getBlockState(target);
 //$$            if (!tState.isAir()) continue;
 //$$
+//$$            // [GRASS BLOCK ONLY] النباتات البرية تنمو فقط على العشب الأخضر (Grass Block)
+//$$            if (!isWaterPlant && !isFungus) {
+//$$                BlockState below = level.getBlockState(target.below());
+//$$                if (!below.is(net.minecraft.world.level.block.Blocks.GRASS_BLOCK)) continue;
+//$$            }
+//$$
 //$$            // [BARRIER CHECK] منع القفز فوق الأسوار أو الجدران أو دخول البيوت
 //$$            // العشب يحتاج لثقب بارتفاع بلوك واحد فقط ليمر (واقعية)
 //$$            if (isSpreadBlocked(level, sourcePos, target, 1)) continue;
