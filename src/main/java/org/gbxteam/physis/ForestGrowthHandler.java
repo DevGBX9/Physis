@@ -355,12 +355,12 @@ public class ForestGrowthHandler {
 //$$        boolean isEnd = dim.contains("end");
 //$$
 //$$        // تصنيف النباتات حسب البيئة (للتحقق من الحظر)
-//$$        boolean isNetherFlora = name.contains("fungus") || name.contains("nether_wart") || name.contains("roots") || name.contains("sprouts") || name.contains("vines");
+//$$        boolean isNetherFlora = name.contains("fungus") || name.contains("nether_wart") || name.contains("roots") || name.contains("sprouts") || name.contains("vines") || name.contains("mushroom");
 //$$        boolean isWaterFlora = name.contains("kelp") || name.contains("seagrass") || name.contains("pickle") || name.contains("coral");
 //$$        boolean isCaveFlora = name.contains("moss") || name.contains("azalea") || name.contains("spore") || name.contains("dripleaf") || name.contains("cave_vines") || name.contains("glow_berries");
 //$$
 //$$        // تطبيق قوانين الحظر التام:
-//$$        // 1. منع انتشار نباتات الكهوف والماء والنذر نهائياً (حسب نوع النبتة)
+//$$        // 1. منع انتشار نباتات الكهوف والماء والنذر والفطريات نهائياً
 //$$        if (isNetherFlora || isWaterFlora || isCaveFlora) return;
 //$$
 //$$        // 2. منع أي انتشار في بيئة النذر أو النهاية
@@ -504,7 +504,7 @@ public class ForestGrowthHandler {
 //$$            if (!tState.isAir()) continue;
 //$$
 //$$            // [GRASS BLOCK ONLY] النباتات البرية تنمو فقط على العشب الأخضر (Grass Block)
-//$$            if (!isWaterPlant && !isFungus) {
+//$$            {
 //$$                BlockState below = level.getBlockState(target.below());
 //$$                if (!below.is(net.minecraft.world.level.block.Blocks.GRASS_BLOCK)) continue;
 //$$            }
