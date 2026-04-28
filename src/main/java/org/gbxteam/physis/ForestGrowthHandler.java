@@ -160,9 +160,17 @@ public class ForestGrowthHandler {
 //$$                int oz2 = level.getRandom().nextInt(16) - 8;
 //$$                BlockPos monitorPos = center.offset(ox2, 0, oz2);
 //$$                
-//$$                monitorPlantDistribution(level, monitorPos, "minecraft:bush",       3, 6.0,  10, 30, 6);
-//$$                monitorPlantDistribution(level, monitorPos, "minecraft:fern",        2, 25.0,  20,  40, 6);
-//$$                monitorPlantDistribution(level, monitorPos, "minecraft:grass",       8, 4.0,  6,  15, 4);
+//$$                // نظام المراقبة: ضبط الكثافات لمطابقة توزيع الفانيلا
+//$$                // العشب: حد أقصى ٤ في المجموعة، مسافة ٣ بلوكات بين المجموعات
+//$$                monitorPlantDistribution(level, monitorPos, "minecraft:short_grass", 4, 3.0,  6,  12, 3);
+//$$                // البوش: حد أقصى ٢ في المجموعة، مسافة ٨ بلوكات بين المجموعات (نادرة نسبياً)
+//$$                monitorPlantDistribution(level, monitorPos, "minecraft:bush",        2, 8.0,  12, 30, 8);
+//$$                // الفيرن: حد أقصى ٢ في المجموعة، مسافة ١٠ بلوكات بين المجموعات (نادرة)
+//$$                monitorPlantDistribution(level, monitorPos, "minecraft:fern",         2, 10.0, 15, 35, 8);
+//$$                // العشب الطويل: حد أقصى ٢ في المجموعة، مسافة ٦ بلوكات
+//$$                monitorPlantDistribution(level, monitorPos, "minecraft:tall_grass",   2, 6.0,  8,  20, 5);
+//$$                // السرخس الكبير: حد أقصى ١ في المجموعة (نادر جداً)
+//$$                monitorPlantDistribution(level, monitorPos, "minecraft:large_fern",   1, 12.0, 15, 35, 8);
 //$$            }
 //$$        }
 //$$    }
@@ -273,17 +281,22 @@ public class ForestGrowthHandler {
     // ║   يُستدعى عندما تصل الكثافة للحد الأقصى في منطقة معينة         ║
     // ╚══════════════════════════════════════════════════════════════════╝
 //$$    private static boolean manageVegetationBalance(ServerLevel level, BlockPos pos, int density, boolean isGrass, boolean isPlainBush, boolean isFlower, RandomSource random) {
-//$$        // إذا كانت الأعشاب مكتظة جداً (أكثر من ٣ في مساحة ٥×٥)، نزيل بعضها عشوائياً للحفاظ على فراغات فانيلا
-//$$        if (isGrass && density > 3 && random.nextBoolean()) {
-//$$            level.setBlock(pos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 3);
-//$$            return true; // تم التشذيب
-//$$        }
-//$$        // نظام التشذيب للشجيرات والأزهار أيضاً: منع تشكيل مجموعات تتجاوز الحد (٤ للشجيرات و ٣ للأزهار)
-//$$        if ((isPlainBush && density >= 4 && random.nextBoolean()) || (isFlower && density >= 3 && random.nextBoolean())) {
+//$$        // العشب: إذا الكثافة تجاوزت ٣ → نزيل الزائد للحفاظ على الفراغات الطبيعية
+//$$        if (isGrass && density > 3 && random.nextFloat() < 0.7f) {
 //$$            level.setBlock(pos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 3);
 //$$            return true;
 //$$        }
-//$$        return false; // لا حاجة للتشذيب
+//$$        // البوش: إذا الكثافة تجاوزت ٢ → نزيل (في الفانيلا البوش يظهر بشكل متناثر)
+//$$        if (isPlainBush && density >= 2 && random.nextFloat() < 0.8f) {
+//$$            level.setBlock(pos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 3);
+//$$            return true;
+//$$        }
+//$$        // الأزهار: إذا الكثافة تجاوزت ٢ → نزيل
+//$$        if (isFlower && density >= 2 && random.nextFloat() < 0.6f) {
+//$$            level.setBlock(pos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 3);
+//$$            return true;
+//$$        }
+//$$        return false;
 //$$    }
 
     // ╔══════════════════════════════════════════════════════════════════╗
@@ -408,11 +421,11 @@ public class ForestGrowthHandler {
 //$$        //   عشب: ٣٠٪ → ٧٥٪  |  شجيرة: ٢٥٪ → ٦٢٪  |  بتلات: ٣٥٪ → ٨٧٪
 //$$        //   يراعات: ٢٠٪ → ٥٠٪  |  أزهار: ٢٠٪ → ٥٠٪
 //$$        if (isGrass) {
-//$$            if (random.nextFloat() > 0.10f * waterBoost) return; // العشب هو الأسرع (١٠٪)
+//$$            if (random.nextFloat() > 0.08f * waterBoost) return; // العشب (٨٪)
 //$$        } else if (isFern) {
-//$$            if (random.nextFloat() > 0.03f * waterBoost) return; // السرخس (٣٪)
+//$$            if (random.nextFloat() > 0.015f * waterBoost) return; // السرخس نادر جداً (١.٥٪)
 //$$        } else if (isPlainBush) {
-//$$            if (random.nextFloat() > 0.07f * waterBoost) return; // الشجيرة (٧٪)
+//$$            if (random.nextFloat() > 0.03f * waterBoost) return; // البوش نادر (٣٪)
 //$$        } else if (isFireflyBush) {
 //$$            if (random.nextFloat() > 0.05f * waterBoost) return; // يراعات (٥٪)
 //$$        } else if (isPetal) {
@@ -457,7 +470,7 @@ public class ForestGrowthHandler {
 //$$        
 //$$        // الحد الأقصى للكثافة في المنطقة:
 //$$        //   عشب: ٦  |  شجيرة: ١٠  |  سرخس: ٤  |  يراعات: ١  |  بتلات: ٣  |  أزهار: ٣
-//$$        int maxDensity = isGrass ? 6 : (isFireflyBush ? 1 : (isPlainBush ? 10 : (isFern ? 4 : (isPetal ? 3 : (isFlower ? 3 : 2)))));
+//$$        int maxDensity = isGrass ? 4 : (isFireflyBush ? 1 : (isPlainBush ? 3 : (isFern ? 2 : (isPetal ? 3 : (isFlower ? 2 : 2)))));
 //$$        int searchSpread = (isGrass || isPlainBush) ? 5 : 4;
 //$$        
 //$$        if (density >= maxDensity) {
