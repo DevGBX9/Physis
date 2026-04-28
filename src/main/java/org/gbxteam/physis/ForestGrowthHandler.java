@@ -161,8 +161,8 @@ public class ForestGrowthHandler {
 //$$                BlockPos monitorPos = center.offset(ox2, 0, oz2);
 //$$                
 //$$                // نظام المراقبة: ضبط الكثافات لمطابقة توزيع الفانيلا
-//$$                // العشب: حد أقصى ٤ في المجموعة، مسافة ٣ بلوكات بين المجموعات
-//$$                monitorPlantDistribution(level, monitorPos, "minecraft:short_grass", 4, 3.0,  6,  12, 3);
+//$$                // العشب: حد أقصى ٦ في المجموعة، مسافة ٢ بلوكات بين المجموعات (مع بقع كثيفة)
+//$$                monitorPlantDistribution(level, monitorPos, "minecraft:short_grass", 6, 2.0,  5,  10, 3);
 //$$                // البوش: حد أقصى ٢ في المجموعة، مسافة ٨ بلوكات بين المجموعات (نادرة نسبياً)
 //$$                monitorPlantDistribution(level, monitorPos, "minecraft:bush",        2, 8.0,  12, 30, 8);
 //$$                // الفيرن: حد أقصى ٢ في المجموعة، مسافة ١٠ بلوكات بين المجموعات (نادرة)
@@ -281,12 +281,12 @@ public class ForestGrowthHandler {
     // ║   يُستدعى عندما تصل الكثافة للحد الأقصى في منطقة معينة         ║
     // ╚══════════════════════════════════════════════════════════════════╝
 //$$    private static boolean manageVegetationBalance(ServerLevel level, BlockPos pos, int density, boolean isGrass, boolean isPlainBush, boolean isFlower, RandomSource random) {
-//$$        // العشب: إذا الكثافة تجاوزت ٣ → نزيل الزائد للحفاظ على الفراغات الطبيعية
-//$$        if (isGrass && density > 3 && random.nextFloat() < 0.7f) {
+//$$        // العشب: إذا الكثافة تجاوزت الحد المحلي (يتغير حسب البقعة) → نزيل الزائد
+//$$        if (isGrass && density > 5 && random.nextFloat() < 0.6f) {
 //$$            level.setBlock(pos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 3);
 //$$            return true;
 //$$        }
-//$$        // البوش: إذا الكثافة تجاوزت ٢ → نزيل (في الفانيلا البوش يظهر بشكل متناثر)
+//$$        // البوش: إذا الكثافة تجاوزت ٢ → نزيل
 //$$        if (isPlainBush && density >= 2 && random.nextFloat() < 0.8f) {
 //$$            level.setBlock(pos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 3);
 //$$            return true;
@@ -421,7 +421,7 @@ public class ForestGrowthHandler {
 //$$        //   عشب: ٣٠٪ → ٧٥٪  |  شجيرة: ٢٥٪ → ٦٢٪  |  بتلات: ٣٥٪ → ٨٧٪
 //$$        //   يراعات: ٢٠٪ → ٥٠٪  |  أزهار: ٢٠٪ → ٥٠٪
 //$$        if (isGrass) {
-//$$            if (random.nextFloat() > 0.08f * waterBoost) return; // العشب (٨٪)
+//$$            if (random.nextFloat() > 0.12f * waterBoost) return; // العشب (١٢٪) - أسرع قليلاً لتكوين بقع كثيفة
 //$$        } else if (isFern) {
 //$$            if (random.nextFloat() > 0.015f * waterBoost) return; // السرخس نادر جداً (١.٥٪)
 //$$        } else if (isPlainBush) {
@@ -469,8 +469,18 @@ public class ForestGrowthHandler {
 //$$        }
 //$$        
 //$$        // الحد الأقصى للكثافة في المنطقة:
-//$$        //   عشب: ٦  |  شجيرة: ١٠  |  سرخس: ٤  |  يراعات: ١  |  بتلات: ٣  |  أزهار: ٣
-//$$        int maxDensity = isGrass ? 4 : (isFireflyBush ? 1 : (isPlainBush ? 3 : (isFern ? 2 : (isPetal ? 3 : (isFlower ? 2 : 2)))));
+//$$        // العشب يستخدم نظام البقع الكثيفة: بعض المناطق تسمح بكثافة أعلى (حتى ٩) وبعضها أقل (٥)
+//$$        int grassMaxDensity = 6;
+//$$        if (isGrass) {
+//$$            // نظام البقع الكثيفة: استخدام الإحداثيات لتحديد ما إذا كانت المنطقة "بقعة كثيفة" أم لا
+//$$            // نقسم العالم لمربعات 8x8 ونستخدم hash لتحديد الكثافة
+//$$            int gridX = Math.floorDiv(sourcePos.getX(), 8);
+//$$            int gridZ = Math.floorDiv(sourcePos.getZ(), 8);
+//$$            int patchHash = (gridX * 73856093) ^ (gridZ * 19349663);
+//$$            boolean isDensePatch = (Math.abs(patchHash) % 5) < 2; // ~40% من المناطق تكون بقع كثيفة
+//$$            grassMaxDensity = isDensePatch ? 9 : 5;
+//$$        }
+//$$        int maxDensity = isGrass ? grassMaxDensity : (isFireflyBush ? 1 : (isPlainBush ? 3 : (isFern ? 2 : (isPetal ? 3 : (isFlower ? 2 : 2)))));
 //$$        int searchSpread = (isGrass || isPlainBush) ? 5 : 4;
 //$$        
 //$$        if (density >= maxDensity) {
