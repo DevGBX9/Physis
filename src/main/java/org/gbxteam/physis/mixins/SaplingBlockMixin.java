@@ -24,15 +24,22 @@ package org.gbxteam.physis.mixins;
 //$$        if (!(level.getBlockState(pos).getBlock() instanceof SaplingBlock)) {
 //$$            // [SOUND EFFECTS]
 //$$            net.minecraft.world.level.block.Block saplingBlock = state.getBlock();
-//$$            float volume = 1.5f;
+//$$            float volume = 5.0f;  // الأشجار العادية: مدى سماع ~80 بلوك
 //$$            float pitch = 0.8f;
 //$$            
-//$$            // تضخيم الصوت للأشجار العملاقة
-//$$            if (saplingBlock == Blocks.DARK_OAK_SAPLING || saplingBlock == Blocks.PALE_OAK_SAPLING || 
-//$$                saplingBlock == Blocks.MANGROVE_PROPAGULE || saplingBlock == Blocks.JUNGLE_SAPLING || 
-//$$                saplingBlock == Blocks.SPRUCE_SAPLING) {
-//$$                volume = 3.5f;
+//$$            // تضخيم الصوت للأشجار الكبيرة والعملاقة
+//$$            if (saplingBlock == Blocks.DARK_OAK_SAPLING || saplingBlock == Blocks.PALE_OAK_SAPLING) {
+//$$                volume = 12.0f;  // أشجار عملاقة (2x2): مدى سماع ~192 بلوك
+//$$                pitch = 0.4f;
+//$$            } else if (saplingBlock == Blocks.JUNGLE_SAPLING || saplingBlock == Blocks.SPRUCE_SAPLING) {
+//$$                volume = 10.0f;  // أشجار كبيرة: مدى سماع ~160 بلوك
 //$$                pitch = 0.5f;
+//$$            } else if (saplingBlock == Blocks.MANGROVE_PROPAGULE) {
+//$$                volume = 8.0f;   // مانغروف: مدى سماع ~128 بلوك
+//$$                pitch = 0.6f;
+//$$            } else if (saplingBlock == Blocks.OAK_SAPLING || saplingBlock == Blocks.ACACIA_SAPLING || saplingBlock == Blocks.CHERRY_SAPLING) {
+//$$                volume = 6.0f;   // أشجار متوسطة: مدى سماع ~96 بلوك
+//$$                pitch = 0.7f;
 //$$            }
 //$$
 //$$            // [SOUND MIX - EVOLVED]
@@ -50,7 +57,7 @@ package org.gbxteam.physis.mixins;
 //$$            level.playSound(null, canopyPos, SoundEvents.MOSS_STEP, SoundSource.BLOCKS, volume * 0.7f, pitch + 0.4f);
 //$$
 //$$            // ٤. الطبقة السحرية (رنين خفيف يعطي إيحاءً بالحيوية)
-//$$            level.playSound(null, pos, SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.BLOCKS, volume * 0.4f, 2.0f); 
+//$$            level.playSound(null, pos, SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.BLOCKS, volume * 0.3f, 2.0f); 
 //$$
 //$$            // [BIOME FILL & TRACKING]
 //$$            if (data.isModPlanted(pos)) {
