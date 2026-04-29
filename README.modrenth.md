@@ -4,7 +4,9 @@
 
 ![PHYSIS](https://cdn.modrinth.com/data/cached_images/db5faeade782f5804349a61311c6a6194cde14df.png)
 
-[![Available on Modrinth](https://img.shields.io/badge/Available_on-Modrinth-E0E0E0?style=for-the-badge&logo=modrinth&logoColor=white&labelColor=1c1c1c)](https://modrinth.com/mod/physis)
+[![Modrinth](https://img.shields.io/badge/Modrinth-E0E0E0?style=for-the-badge&logo=modrinth&logoColor=white&labelColor=1c1c1c)](https://modrinth.com/mod/physis)
+[![Source Code](https://img.shields.io/badge/Source-Code-E0E0E0?style=for-the-badge&logo=github&logoColor=white&labelColor=1c1c1c)](https://github.com/DevGBX9/Physis)
+[![Issues](https://img.shields.io/badge/Report-Issues-E0E0E0?style=for-the-badge&logo=github&logoColor=white&labelColor=1c1c1c)](https://github.com/DevGBX9/Physis/issues)
 
 </div>
 
@@ -99,12 +101,6 @@ Expansion is active across most overworld biomes but is intentionally restricted
 *   **The Nether, The End, & Caves:** Growth is strictly disabled.
 *   **Swamps:** Tree expansion is completely disabled to prevent naturally dense areas from becoming entirely impassable.
 *   **Plains & Meadows:** Open biomes allow tree growth, but at a severely reduced rate (30% success chance, strictly adjacent to existing trees). This preserves their identity as wide-open landscapes while permitting extremely slow, natural forest encroachment.
-
-## Links
-
-[![Modrinth](https://img.shields.io/badge/Modrinth-E0E0E0?style=for-the-badge&logo=modrinth&logoColor=white&labelColor=1c1c1c)](https://modrinth.com/mod/physis)
-[![GitHub](https://img.shields.io/badge/GitHub-E0E0E0?style=for-the-badge&logo=github&logoColor=white&labelColor=1c1c1c)](https://github.com/DevGBX9/Physis)
-[![License](https://img.shields.io/github/license/DevGBX9/Physis?style=for-the-badge&color=E0E0E0&labelColor=1c1c1c)](https://github.com/DevGBX9/Physis/blob/main/LICENSE)
 
 ## License
 
