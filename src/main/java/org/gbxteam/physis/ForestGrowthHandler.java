@@ -658,11 +658,11 @@ public class ForestGrowthHandler {
     // ╔══════════════════════════════════════════════════════════════════╗
 //$$    // ╔══════════════════════════════════════════════════════════════════╗
 //$$    // ║             القسم ٧: نظام توسع الغابات (الشتلات)               ║
-//$$    // ║   الهدف: توسيع الغابات من حوافها وتأسيس غابات جديدة           ║
-//$$    // ║   ● شجرة داخلية (٦+ اتجاهات مغطاة) → لا تنشر شيئاً          ║
-//$$    // ║   ● شجرة حافة (٢-٥ اتجاهات) → تنشر للخارج فقط               ║
-//$$    // ║   ● شجرة رائدة (٠-١ اتجاه) → تؤسس غابة جديدة حولها          ║
-//$$    // ║   معدل: ١-٣ شتلات في اليوم الماينكرافتي الواحد               ║
+//$$    // ║   الهدف: توسيع الغابات بنمط مطابق للفانيلا لكل بيئة حيوية     ║
+//$$    // ║   يستخدم BiomeForestProfile لتحديد المسافات والاحتمالات        ║
+//$$    // ║   ● شجرة داخلية → لا تنشر (حد يتغير حسب البيئة)              ║
+//$$    // ║   ● شجرة حافة → تنشر للخارج بمسافة خاصة بالبيئة              ║
+//$$    // ║   ● شجرة رائدة → تؤسس غابة جديدة بكثافة البيئة               ║
 //$$    // ╚══════════════════════════════════════════════════════════════════╝
 //$$    private static void processEdgeExpansion(ServerLevel level, BlockPos searchPos) {
 //$$        if (!level.isLoaded(searchPos)) return;
@@ -671,16 +671,15 @@ public class ForestGrowthHandler {
 //$$        String dim = level.dimension().toString();
 //$$        if (dim.contains("nether") || dim.contains("end")) return;
 //$$        
-//$$        // رفع searchPos لمستوى السطح الحقيقي
-//$$        // لأن getMiddleBlockPosition(0) يعيد Y=0 وهو تحت الأرض في العوالم العادية
 //$$        searchPos = level.getHeightmapPos(Heightmap.Types.WORLD_SURFACE, searchPos);
-//$$        
-//$$        // منع النمو تحت الأرض (كهوف)
 //$$        if (!level.canSeeSky(searchPos)) return;
 //$$
 //$$        // --- تعطيل المستنقعات كلياً ---
 //$$        Holder<Biome> currentBiome = level.getBiome(searchPos);
 //$$        if (currentBiome.is(Biomes.SWAMP) || currentBiome.is(Biomes.MANGROVE_SWAMP)) return;
+//$$
+//$$        // [BIOME PROFILE] جلب ملف الغابة المُعايَر للبيئة الحالية
+//$$        BiomeForestProfile profile = BiomeForestProfile.getProfile(level, searchPos);
 //$$
 //$$        RandomSource random = level.getRandom();
 //$$        
@@ -691,15 +690,16 @@ public class ForestGrowthHandler {
 //$$        // ميزة: تساقط بتلات الكرز
 //$$        tryCherryPetalDrop(level, treePos);
 //$$
-//$$        // === الخطوة ٢: تصنيف الشجرة ===
-//$$        // نفحص ٨ اتجاهات حول الشجرة لنعرف: داخلية / حافة / رائدة
-//$$        int scanRadius = 10;
+//$$        // [DENSITY CAP] فحص تشبع المنطقة - إذا وصلت الكثافة للحد الأقصى نتوقف
+//$$        if (profile.isLocalAreaSaturated(level, treePos)) return;
+//$$
+//$$        // === الخطوة ٢: تصنيف الشجرة حسب ملف البيئة ===
 //$$        int forestedDirs = 0;
 //$$        List<int[]> openDirections = new ArrayList<>();
 //$$
 //$$        for (int[] dir : DIRECTIONS) {
 //$$            boolean hasForest = false;
-//$$            for (int dist = 3; dist <= scanRadius; dist += 3) {
+//$$            for (int dist = 3; dist <= profile.scanRadius; dist += 3) {
 //$$                BlockPos checkPos = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING, 
 //$$                    treePos.offset(dir[0] * dist, 0, dir[1] * dist)).below();
 //$$                BlockState state = level.getBlockState(checkPos);
@@ -716,21 +716,15 @@ public class ForestGrowthHandler {
 //$$            }
 //$$        }
 //$$
-//$$        // ╔═══════════════════════════════════════════════╗
-//$$        // ║  شجرة داخلية: ٦+ اتجاهات مغطاة → لا شيء   ║
-//$$        // ║  الغابة ممتلئة أصلاً، لا حاجة لشتلات جديدة ║
-//$$        // ╚═══════════════════════════════════════════════╝
-//$$        if (forestedDirs >= 6) return;
+//$$        // شجرة داخلية: وصلت لحد البيئة → لا تنشر
+//$$        // (الغابة المظلمة تحتاج ٧ اتجاهات، السافانا ٣ فقط)
+//$$        if (forestedDirs >= profile.interiorThreshold) return;
 //$$
-//$$        // ╔═══════════════════════════════════════════════╗
-//$$        // ║  شجرة رائدة: ٠-١ اتجاه فيه أشجار           ║
-//$$        // ║  شجرة وحيدة تحاول تأسيس غابة جديدة حولها   ║
-//$$        // ╚═══════════════════════════════════════════════╝
+//$$        // شجرة رائدة: ٠-١ اتجاه → تؤسس غابة جديدة
 //$$        if (forestedDirs <= 1) {
-//$$            // احتمال ٣٪ لكل محاولة ≈ ١-٣ شتلات في اليوم
-//$$            if (random.nextFloat() < 0.03f) {
+//$$            if (random.nextFloat() < profile.pioneerChance) {
 //$$                double angle = random.nextDouble() * 2 * Math.PI;
-//$$                int dist = 3 + random.nextInt(5); // 3-7 بلوكات
+//$$                int dist = profile.randomSpreadDist(random);
 //$$                int ox = (int) (Math.cos(angle) * dist);
 //$$                int oz = (int) (Math.sin(angle) * dist);
 //$$                int groundY = findActualGroundY(level, treePos.offset(ox, 0, oz));
@@ -740,14 +734,9 @@ public class ForestGrowthHandler {
 //$$            return;
 //$$        }
 //$$
-//$$        // ╔═══════════════════════════════════════════════╗
-//$$        // ║  شجرة حافة: ٢-٥ اتجاهات مغطاة              ║
-//$$        // ║  على حدود الغابة، تنشر للخارج فقط           ║
-//$$        // ╚═══════════════════════════════════════════════╝
+//$$        // شجرة حافة: تنشر للخارج بمسافة مخصصة للبيئة
 //$$        if (openDirections.isEmpty()) return;
-//$$
-//$$        // احتمال ٢٪ لكل محاولة ≈ ١-٢ شتلات في اليوم
-//$$        if (random.nextFloat() >= 0.02f) return;
+//$$        if (random.nextFloat() >= profile.edgeChance) return;
 //$$
 //$$        // اختيار اتجاه مفتوح (مع تأثير الرياح للانجراف الطبيعي)
 //$$        int[] chosenDir;
@@ -763,14 +752,13 @@ public class ForestGrowthHandler {
 //$$            chosenDir = openDirections.get(random.nextInt(openDirections.size()));
 //$$        }
 //$$
-//$$        // حساب موقع الشتلة (خارج حدود الغابة)
-//$$        int spreadDist = 3 + random.nextInt(5); // 3-7 بلوكات
+//$$        // حساب موقع الشتلة بمسافة مخصصة للبيئة
+//$$        int spreadDist = profile.randomSpreadDist(random);
 //$$        int perpX = (int) ((random.nextFloat() - 0.5f) * 4);
 //$$        int perpZ = (int) ((random.nextFloat() - 0.5f) * 4);
 //$$        int groundY = findActualGroundY(level, treePos.offset(chosenDir[0] * spreadDist + perpX, 0, chosenDir[1] * spreadDist + perpZ));
 //$$        BlockPos targetPos = new BlockPos(treePos.getX() + chosenDir[0] * spreadDist + perpX, groundY + 1, treePos.getZ() + chosenDir[1] * spreadDist + perpZ);
 //$$
-//$$        // زراعة الشتلة في الاتجاه المفتوح
 //$$        plantAtPosition(level, targetPos, treePos);
 //$$    }
 //$$
@@ -811,17 +799,14 @@ public class ForestGrowthHandler {
 //$$        Holder<Biome> targetBiome = level.getBiome(targetPos);
 //$$        if (targetBiome.is(Biomes.SWAMP) || targetBiome.is(Biomes.MANGROVE_SWAMP)) return;
 //$$
-//$$        // [4] TERRAIN CHECK
-//$$        if (!isTerrainFlat(level, targetPos)) {
-//$$            // System.out.println("[Physis Debug] Planting failed: Terrain not flat at " + targetPos);
-//$$            return;
-//$$        }
+//$$        // [BIOME PROFILE] جلب ملف الغابة المُعايَر للبيئة المستهدفة
+//$$        BiomeForestProfile profile = BiomeForestProfile.getProfile(level, targetPos);
 //$$
-//$$        // [5] CANOPY DENSITY
-//$$        if (hasHeavyCanopy(level, targetPos)) {
-//$$            // System.out.println("[Physis Debug] Planting failed: Heavy canopy at " + targetPos);
-//$$            return;
-//$$        }
+//$$        // [4] TERRAIN CHECK
+//$$        if (!isTerrainFlat(level, targetPos)) return;
+//$$
+//$$        // [5] CANOPY DENSITY - حد مخصص للبيئة (الغابة المظلمة تتحمل 6 طبقات، السافانا 1 فقط)
+//$$        if (hasHeavyCanopy(level, targetPos, profile.canopyTolerance)) return;
 //$$
 //$$        // Determine sapling type from the source edge tree
 //$$        BlockState sourceState = level.getBlockState(sourceTreePos);
@@ -838,20 +823,11 @@ public class ForestGrowthHandler {
 //$$        // --- حماية نهائية: منع زراعة الشجيرات الميتة نهائياً كشتلة ---
 //$$        if (sapling == Blocks.DEAD_BUSH || BuiltInRegistries.BLOCK.getKey(sapling).getPath().contains("dead_bush")) return;
 //$$
+//$$        // [BIOME-AWARE SPACING] مسافة مخصصة للبيئة بدلاً من القيمة العامة
+//$$        int spacing = profile.randomSpacing(level.getRandom());
 //$$
-//$$        // [1] DYNAMIC BIOME INVASION: Trees are now allowed to invade any biome.
-//$$        // The strict biome check has been removed.
-//$$        int spacing = getRequiredSpacing(sapling);
-//$$        boolean needs2x2 = (sapling == Blocks.DARK_OAK_SAPLING || sapling == Blocks.PALE_OAK_SAPLING);
-//$$        
-//$$        // [Giant Spruce] فرصة ٢٠٪ لزراعة شتلات الصنوبر بنمط 2x2 لتصبح شجرة ضخمة
-//$$        if (sapling == Blocks.SPRUCE_SAPLING && level.getRandom().nextFloat() < 0.20f) {
-//$$            needs2x2 = true;
-//$$        }
-//$$        // [Giant Jungle] فرصة ١٥٪ لزراعة شتلات الأدغال بنمط 2x2 لتصبح شجرة عملاقة
-//$$        if (sapling == Blocks.JUNGLE_SAPLING && level.getRandom().nextFloat() < 0.15f) {
-//$$            needs2x2 = true;
-//$$        }
+//$$        // [BIOME-AWARE 2x2] فرصة الشتلات العملاقة حسب ملف البيئة
+//$$        boolean needs2x2 = profile.shouldPlant2x2(sapling, level.getRandom());
 //$$
 //$$        long currentTime = level.getGameTime();
 //$$
@@ -862,7 +838,6 @@ public class ForestGrowthHandler {
 //$$        float fertilityBonus = getSoilFertility(level, targetPos);
 //$$        if (level.getRandom().nextFloat() > fertilityBonus) return;
 //$$        // [BARRIER CHECK] منع الأشجار من الانتشار داخل المناطق المسورة
-//$$        // الأشجار تحتاج لمساحة أكبر (2 بلوك طولاً) لضمان عدم مرورها عبر الثقوب الصغيرة جداً
 //$$        if (isSpreadBlocked(level, sourceTreePos, targetPos, 2)) return;
 //$$
 //$$        if (needs2x2) {
@@ -1160,6 +1135,18 @@ public class ForestGrowthHandler {
 //$$            }
 //$$        }
 //$$        return leafCount >= 3; // Too many leaves above = too dense
+//$$    }
+//$$
+//$$    /** نسخة مخصصة مع حد تحمّل متغير حسب البيئة */
+//$$    private static boolean hasHeavyCanopy(ServerLevel level, BlockPos pos, int tolerance) {
+//$$        int leafCount = 0;
+//$$        for (int y = 1; y <= 8; y++) {
+//$$            BlockState above = level.getBlockState(pos.above(y));
+//$$            if (above.getBlock() instanceof LeavesBlock) {
+//$$                leafCount++;
+//$$            }
+//$$        }
+//$$        return leafCount >= tolerance;
 //$$    }
 
     // ==================== [9] SOIL FERTILITY ====================
