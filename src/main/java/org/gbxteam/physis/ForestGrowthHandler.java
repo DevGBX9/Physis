@@ -690,9 +690,6 @@ public class ForestGrowthHandler {
 //$$        // ميزة: تساقط بتلات الكرز
 //$$        tryCherryPetalDrop(level, treePos);
 //$$
-//$$        // [DENSITY CAP] فحص تشبع المنطقة - إذا وصلت الكثافة للحد الأقصى نتوقف
-//$$        if (profile.isLocalAreaSaturated(level, treePos)) return;
-//$$
 //$$        // === الخطوة ٢: تصنيف الشجرة حسب ملف البيئة ===
 //$$        int forestedDirs = 0;
 //$$        List<int[]> openDirections = new ArrayList<>();

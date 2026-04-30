@@ -86,47 +86,47 @@ public class BiomeForestProfile {
     // غابة عادية: كثافة متوسطة، خليط بلوط وبيرش
     // Vanilla: count=10, ~6-8 trees/chunk after failures
 //$$    public static final BiomeForestProfile FOREST = new BiomeForestProfile(
-//$$        "forest", 4, 7, 6, 0.025f, 0.03f, 4, 7, 10, 0.0f, 3, 10);
+//$$        "forest", 4, 6, 6, 0.025f, 0.03f, 5, 8, 10, 0.0f, 3, 10);
 
     // غابة أزهار: أقل كثافة لإفساح المجال للأزهار
     // Vanilla: count=10 with extra_chance=2, ~4-6 trees/chunk
 //$$    public static final BiomeForestProfile FLOWER_FOREST = new BiomeForestProfile(
-//$$        "flower_forest", 6, 9, 5, 0.02f, 0.025f, 5, 9, 10, 0.0f, 3, 7);
+//$$        "flower_forest", 5, 7, 5, 0.02f, 0.025f, 6, 10, 10, 0.0f, 3, 7);
 
     // غابة بيرش: توزيع منتظم جداً
     // Vanilla: count=10, ~6-8 trees/chunk
 //$$    public static final BiomeForestProfile BIRCH_FOREST = new BiomeForestProfile(
-//$$        "birch_forest", 5, 7, 6, 0.02f, 0.025f, 5, 8, 10, 0.0f, 3, 8);
+//$$        "birch_forest", 5, 6, 6, 0.02f, 0.025f, 6, 9, 10, 0.0f, 3, 8);
 
     // الغابة المظلمة: كثيفة جداً، أشجار بلوط مظلم 2x2 دائماً، تاج متصل
     // Vanilla: count=16, ~12-18 trees/chunk, massive canopy
 //$$    public static final BiomeForestProfile DARK_FOREST = new BiomeForestProfile(
-//$$        "dark_forest", 2, 4, 7, 0.045f, 0.06f, 2, 4, 8, 1.0f, 6, 25);
+//$$        "dark_forest", 2, 3, 7, 0.045f, 0.06f, 3, 5, 8, 1.0f, 6, 25);
 
     // تايغا: مجموعات صنوبر مع فجوات
     // Vanilla: count=10, ~8-10 trees/chunk
 //$$    public static final BiomeForestProfile TAIGA = new BiomeForestProfile(
-//$$        "taiga", 4, 6, 5, 0.025f, 0.035f, 3, 6, 10, 0.20f, 3, 12);
+//$$        "taiga", 4, 5, 5, 0.025f, 0.035f, 5, 7, 10, 0.20f, 3, 12);
 
     // تايغا صنوبر عملاق: أشجار عملاقة سائدة
     // Vanilla: count=10, mega spruce dominant, ~5-8 trees/chunk
 //$$    public static final BiomeForestProfile OLD_GROWTH_SPRUCE = new BiomeForestProfile(
-//$$        "old_growth_spruce", 5, 8, 5, 0.02f, 0.02f, 5, 8, 12, 0.50f, 4, 10);
+//$$        "old_growth_spruce", 5, 7, 5, 0.02f, 0.02f, 6, 9, 12, 0.50f, 4, 10);
 
     // تايغا صنوبر قديم
     // Vanilla: similar to spruce but slightly different mix
 //$$    public static final BiomeForestProfile OLD_GROWTH_PINE = new BiomeForestProfile(
-//$$        "old_growth_pine", 5, 8, 5, 0.02f, 0.02f, 5, 8, 12, 0.40f, 4, 9);
+//$$        "old_growth_pine", 5, 7, 5, 0.02f, 0.02f, 6, 9, 12, 0.40f, 4, 9);
 
     // أدغال: كثيفة جداً، متعددة الطبقات، بعض الأشجار العملاقة
     // Vanilla: count=50!, ~20-30 trees/chunk
 //$$    public static final BiomeForestProfile JUNGLE = new BiomeForestProfile(
-//$$        "jungle", 3, 5, 6, 0.04f, 0.05f, 3, 6, 10, 0.15f, 5, 20);
+//$$        "jungle", 3, 4, 6, 0.04f, 0.05f, 4, 7, 10, 0.15f, 5, 20);
 
     // أدغال متفرقة
     // Vanilla: count=10, ~4-6 trees/chunk
 //$$    public static final BiomeForestProfile SPARSE_JUNGLE = new BiomeForestProfile(
-//$$        "sparse_jungle", 6, 10, 4, 0.015f, 0.02f, 6, 10, 12, 0.05f, 3, 6);
+//$$        "sparse_jungle", 5, 8, 4, 0.015f, 0.02f, 7, 11, 12, 0.05f, 3, 6);
 
     // سافانا: متفرقة جداً، أشجار أكاسيا معزولة
     // Vanilla: count=2, ~1-2 trees/chunk
@@ -136,12 +136,12 @@ public class BiomeForestProfile {
     // بستان الكرز: مفتوح، مسافات واسعة
     // Vanilla: count=10 with extra_chance=3, ~3-5 trees/chunk
 //$$    public static final BiomeForestProfile CHERRY_GROVE = new BiomeForestProfile(
-//$$        "cherry_grove", 7, 10, 5, 0.015f, 0.02f, 6, 10, 12, 0.0f, 2, 5);
+//$$        "cherry_grove", 6, 8, 5, 0.015f, 0.02f, 7, 11, 12, 0.0f, 2, 5);
 
     // الحديقة الشاحبة: كثيفة ومظلمة، بلوط شاحب 2x2 دائماً
     // Vanilla: count=16, ~12-15 trees/chunk
 //$$    public static final BiomeForestProfile PALE_GARDEN = new BiomeForestProfile(
-//$$        "pale_garden", 3, 5, 7, 0.035f, 0.045f, 3, 5, 8, 1.0f, 6, 18);
+//$$        "pale_garden", 3, 4, 7, 0.035f, 0.045f, 4, 6, 8, 1.0f, 6, 18);
 
     // سهول ومروج: نادر جداً، فقط بجوار أشجار موجودة
     // Vanilla: count=0, extra_chance=0.05, ~0-1 trees/chunk
@@ -151,20 +151,20 @@ public class BiomeForestProfile {
     // تايغا ثلجية
     // Vanilla: count=10, ~6-8 trees/chunk
 //$$    public static final BiomeForestProfile SNOWY_TAIGA = new BiomeForestProfile(
-//$$        "snowy_taiga", 4, 7, 5, 0.02f, 0.03f, 4, 7, 10, 0.15f, 3, 10);
+//$$        "snowy_taiga", 4, 5, 5, 0.02f, 0.03f, 5, 8, 10, 0.15f, 3, 10);
 
     // بستان جبلي: صنوبر متوسط الكثافة
     // Vanilla: count=10 with chance=2, ~5-6 trees/chunk
 //$$    public static final BiomeForestProfile GROVE = new BiomeForestProfile(
-//$$        "grove", 5, 8, 5, 0.015f, 0.02f, 5, 8, 10, 0.10f, 3, 7);
+//$$        "grove", 5, 6, 5, 0.015f, 0.02f, 6, 9, 10, 0.10f, 3, 7);
 
     // غابة عاصفة: كثافة متوسطة
 //$$    public static final BiomeForestProfile WINDSWEPT = new BiomeForestProfile(
-//$$        "windswept", 5, 8, 5, 0.02f, 0.025f, 5, 8, 10, 0.0f, 3, 7);
+//$$        "windswept", 5, 6, 5, 0.02f, 0.025f, 6, 9, 10, 0.0f, 3, 7);
 
     // ملف افتراضي لأي بيئة غير معرّفة
 //$$    public static final BiomeForestProfile DEFAULT = new BiomeForestProfile(
-//$$        "default", 5, 8, 6, 0.02f, 0.03f, 4, 7, 10, 0.0f, 3, 8);
+//$$        "default", 5, 6, 6, 0.02f, 0.03f, 6, 8, 10, 0.0f, 3, 8);
 
     // ═══════════════════════════════════════════════════════════════
     //  البحث عن الملف المناسب حسب البيئة الحيوية
@@ -201,7 +201,7 @@ public class BiomeForestProfile {
 
     /** يولد مسافة عشوائية بين الأشجار ضمن نطاق الملف */
 //$$    public int randomSpacing(RandomSource random) {
-//$$        return minTreeSpacing + random.nextInt(maxTreeSpacing - minTreeSpacing + 1);
+//$$        return minTreeSpacing;
 //$$    }
 
     /** يولد مسافة انتشار عشوائية ضمن نطاق الملف */
