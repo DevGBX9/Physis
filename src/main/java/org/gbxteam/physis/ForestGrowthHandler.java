@@ -726,7 +726,7 @@ public class ForestGrowthHandler {
 //$$                int oz = (int) (Math.sin(angle) * dist);
 //$$                int groundY = findActualGroundY(level, treePos.offset(ox, 0, oz));
 //$$                BlockPos targetPos = new BlockPos(treePos.getX() + ox, groundY + 1, treePos.getZ() + oz);
-//$$                plantAtPosition(level, targetPos, treePos);
+//$$                plantAtPosition(level, targetPos, treePos, profile);
 //$$            }
 //$$            return;
 //$$        }
@@ -756,7 +756,7 @@ public class ForestGrowthHandler {
 //$$        int groundY = findActualGroundY(level, treePos.offset(chosenDir[0] * spreadDist + perpX, 0, chosenDir[1] * spreadDist + perpZ));
 //$$        BlockPos targetPos = new BlockPos(treePos.getX() + chosenDir[0] * spreadDist + perpX, groundY + 1, treePos.getZ() + chosenDir[1] * spreadDist + perpZ);
 //$$
-//$$        plantAtPosition(level, targetPos, treePos);
+//$$        plantAtPosition(level, targetPos, treePos, profile);
 //$$    }
 //$$
 //$$    /**
@@ -789,21 +789,23 @@ public class ForestGrowthHandler {
 //$$        return null;
 //$$    }
 //$$
-//$$    private static void plantAtPosition(ServerLevel level, BlockPos targetPos, BlockPos sourceTreePos) {
+//$$    private static void plantAtPosition(ServerLevel level, BlockPos targetPos, BlockPos sourceTreePos, BiomeForestProfile sourceProfile) {
 //$$        if (!level.isLoaded(targetPos)) return;
 //$$
 //$$        // --- حظر كامل وشامل للمستنقعات ---
 //$$        Holder<Biome> targetBiome = level.getBiome(targetPos);
 //$$        if (targetBiome.is(Biomes.SWAMP) || targetBiome.is(Biomes.MANGROVE_SWAMP)) return;
 //$$
-//$$        // [BIOME PROFILE] جلب ملف الغابة المُعايَر للبيئة المستهدفة
-//$$        BiomeForestProfile profile = BiomeForestProfile.getProfile(level, targetPos);
+//$$        // [BIOME PROFILE] نستخدم ملف الشجرة المصدر (ليس الهدف)
+//$$        // هذا يسمح للغابات بالزحف نحو السهول والمروج بمسافاتها الأصلية
+//$$        BiomeForestProfile profile = sourceProfile;
 //$$
 //$$        // [4] TERRAIN CHECK
 //$$        if (!isTerrainFlat(level, targetPos)) return;
 //$$
-//$$        // [5] CANOPY DENSITY - حد مخصص للبيئة (الغابة المظلمة تتحمل 6 طبقات، السافانا 1 فقط)
-//$$        if (hasHeavyCanopy(level, targetPos, profile.canopyTolerance)) return;
+//$$        // [5] CANOPY DENSITY - نستخدم حد بيئة الهدف لأن التاج فعلياً يعتمد على المكان
+//$$        BiomeForestProfile targetProfile = BiomeForestProfile.getProfile(level, targetPos);
+//$$        if (hasHeavyCanopy(level, targetPos, targetProfile.canopyTolerance)) return;
 //$$
 //$$        // Determine sapling type from the source edge tree
 //$$        BlockState sourceState = level.getBlockState(sourceTreePos);
