@@ -39,6 +39,8 @@ public class PhysisCommand {
 //$$                    .executes(context -> setSpeed(context.getSource(), 1.0f, "Normal (1x)")))
 //$$                .then(Commands.literal("fast")
 //$$                    .executes(context -> setSpeed(context.getSource(), 5.0f, "Fast (5x)")))
+//$$                .then(Commands.literal("ultrafast")
+//$$                    .executes(context -> setSpeed(context.getSource(), 50.0f, "Ultra Fast (50x)")))
 //$$                .then(Commands.literal("slow")
 //$$                    .executes(context -> setSpeed(context.getSource(), 0.2f, "Slow (0.2x)")))
 //$$                .then(Commands.literal("pause")
