@@ -110,49 +110,52 @@ public class ForestGrowthHandler {
 //$$        if (speedMultiplier <= 0 && fastForwardTicks <= 0) return;
 //$$        
 //$$        float tps = level.getServer().tickRateManager().tickrate();
-//$$        float serverSpeedRatio = tps / 20.0f; // e.g., 5.0 if tick rate is 100
+//$$        float serverSpeedRatio = tps / 20.0f;
 //$$        if (serverSpeedRatio <= 0.01f) serverSpeedRatio = 1.0f;
 //$$        
 //$$        float currentSpeed = speedMultiplier;
-//$$        if (fastForwardTicks > 0) currentSpeed = 50.0f; // 50x speed when skipping days
+//$$        if (fastForwardTicks > 0) currentSpeed = Math.max(currentSpeed, 50.0f);
 //$$        
-//$$        // effectiveSpeed controls how many times the mod runs relative to a standard 20 TPS server
+//$$        // فصل السرعة عن tick rate ماينكرافت
 //$$        float effectiveSpeed = currentSpeed / serverSpeedRatio;
 //$$        
-//$$        int cycles = 1;
-//$$        if (effectiveSpeed > 10.0f) {
-//$$            cycles = (int)(effectiveSpeed / 10.0f);
-//$$            effectiveSpeed = 10.0f;
-//$$        }
+//$$        // === المنطق الجديد: بدل آلاف الدورات، نزيد المحاولات ونضمن التشغيل ===
+//$$        // cycles: عدد مرات تشغيل المنطق الكامل (محدود عشان ما يسبب لاق)
+//$$        int cycles = Math.min(50, Math.max(1, (int)(effectiveSpeed / 5.0f)));
+//$$        // attemptMultiplier: مضاعف المحاولات داخل كل دورة
+//$$        int attemptMultiplier = Math.max(1, (int)(effectiveSpeed / cycles));
+//$$        attemptMultiplier = Math.min(attemptMultiplier, 30);
 //$$        
 //$$        for (int c = 0; c < cycles; c++) {
-//$$            // Thunder strikes randomly globally per chunk (very rare, approx 1 strike per 5 seconds per 1000 chunks)
-//$$            int baseThunderChance = 100000;
-//$$            int thunderChance = Math.max(1, (int)(baseThunderChance / effectiveSpeed));
-//$$            if (level.isThundering() && level.getRandom().nextInt(thunderChance) == 0) {
+//$$            // رعد
+//$$            if (level.isThundering() && level.getRandom().nextInt(Math.max(1, (int)(100000 / effectiveSpeed))) == 0) {
 //$$                BlockPos strikePos = chunk.getPos().getMiddleBlockPosition(0).offset(level.getRandom().nextInt(16) - 8, 0, level.getRandom().nextInt(16) - 8);
 //$$                strikePos = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING, strikePos);
 //$$                applyThunderDamage(level, strikePos);
 //$$            }
 //$$            
-//$$            // 1/200 chance per tick means a chunk runs every 10 seconds on average (1/100 in rain = 5 seconds)
-//$$            int runChance = isRaining ? 100 : 200;
-//$$            runChance = Math.max(1, (int)(runChance / effectiveSpeed));
+//$$            // فحص الاحتمال: عند سرعة عالية (>=10) نتخطى الفحص ونشغل دائماً
+//$$            boolean shouldRun;
+//$$            if (effectiveSpeed >= 10.0f) {
+//$$                shouldRun = true;
+//$$            } else {
+//$$                int runChance = isRaining ? 100 : 200;
+//$$                runChance = Math.max(1, (int)(runChance / effectiveSpeed));
+//$$                shouldRun = level.getRandom().nextInt(runChance) == 0;
+//$$            }
 //$$            
-//$$            if (level.getRandom().nextInt(runChance) == 0) {
+//$$            if (shouldRun) {
 //$$            net.minecraft.world.level.ChunkPos pos = chunk.getPos();
 //$$            BlockPos center = pos.getMiddleBlockPosition(0);
 //$$            
-//$$            // [NIGHT SLOWDOWN] تباطؤ النمو في الليل (شبه توقف بنسبة ٩٠٪)
-//$$            // النباتات تحتاج لضوء الشمس للنمو النشط، لذا تتباطأ العملية جداً في الليل
-//$$            long dayTime = level.getGameTime();
+//$$            // [NIGHT SLOWDOWN] - يتعطل أثناء التسريع الزمني
+//$$            if (fastForwardTicks <= 0) {
+//$$                long dayTime = level.getGameTime();
+//$$                boolean isDayTime = (dayTime % 24000) < 12000;
+//$$                if (!isDayTime && level.getRandom().nextFloat() > 0.01f) continue;
+//$$            }
 //$$
-//$$            // وقت النهار في ماينكرافت يكون بين 0 و 12000
-//$$            boolean isDayTime = (dayTime % 24000) < 12000;
-//$$            if (!isDayTime && level.getRandom().nextFloat() > 0.01f) return;
-//$$
-//$$            // We run few attempts per chunk, because this fires for EVERY chunk globally.
-//$$            int attempts = isRaining ? 2 : 1;
+//$$            int attempts = (isRaining ? 2 : 1) * attemptMultiplier;
 //$$            
 //$$            // Trees
 //$$            for (int i = 0; i < attempts; i++) {
@@ -168,22 +171,16 @@ public class ForestGrowthHandler {
 //$$                processVegetationExpansion(level, center.offset(ox, 0, oz));
 //$$            }
 //$$            
-//$$            // نظام مراقبة: يعمل بشكل دوري لضبط توزيع الشجيرات والأعشاب النادرة
+//$$            // نظام مراقبة
 //$$            if (level.getRandom().nextInt(3) == 0) {
 //$$                int ox2 = level.getRandom().nextInt(16) - 8;
 //$$                int oz2 = level.getRandom().nextInt(16) - 8;
 //$$                BlockPos monitorPos = center.offset(ox2, 0, oz2);
 //$$                
-//$$                // نظام المراقبة: ضبط الكثافات لمطابقة توزيع الفانيلا
-//$$                // العشب: حد أقصى ٦ في المجموعة، مسافة ٢ بلوكات بين المجموعات (مع بقع كثيفة)
 //$$                monitorPlantDistribution(level, monitorPos, "minecraft:short_grass", 6, 2.0,  5,  10, 3);
-//$$                // البوش: حد أقصى ٢ في المجموعة، مسافة ٨ بلوكات بين المجموعات (نادرة نسبياً)
 //$$                monitorPlantDistribution(level, monitorPos, "minecraft:bush",        2, 8.0,  12, 30, 8);
-//$$                // الفيرن: حد أقصى ٢ في المجموعة، مسافة ١٠ بلوكات بين المجموعات (نادرة)
 //$$                monitorPlantDistribution(level, monitorPos, "minecraft:fern",         2, 10.0, 15, 35, 8);
-//$$                // العشب الطويل: حد أقصى ٢ في المجموعة، مسافة ٦ بلوكات
 //$$                monitorPlantDistribution(level, monitorPos, "minecraft:tall_grass",   2, 6.0,  8,  20, 5);
-//$$                // السرخس الكبير: حد أقصى ١ في المجموعة (نادر جداً)
 //$$                monitorPlantDistribution(level, monitorPos, "minecraft:large_fern",   1, 12.0, 15, 35, 8);
 //$$            }
 //$$        }
