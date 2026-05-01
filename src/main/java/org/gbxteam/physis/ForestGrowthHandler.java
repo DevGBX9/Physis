@@ -388,6 +388,17 @@ public class ForestGrowthHandler {
 //$$        // كل نبتة لها قواعد انتشار مختلفة، لذلك نصنفها هنا
 //$$        int density = 0;
 //$$        boolean isGrass = name.equals("grass") || name.equals("short_grass");  // أعشاب قصيرة
+//$$        
+//$$        // ترقية العشب القصير إلى عشب طويل إذا كان قرب الماء (ضمن بلوكة واحدة)
+//$$        if (isGrass && name.equals("short_grass") && isNearWater(level, sourcePos, 1)) {
+//$$            if (random.nextFloat() < 0.15f && level.getBlockState(sourcePos.above()).isAir()) {
+//$$                BlockState tallGrassState = net.minecraft.world.level.block.Blocks.TALL_GRASS.defaultBlockState();
+//$$                level.setBlock(sourcePos, tallGrassState.setValue(net.minecraft.world.level.block.state.properties.BlockStateProperties.DOUBLE_BLOCK_HALF, net.minecraft.world.level.block.state.properties.DoubleBlockHalf.LOWER), 3);
+//$$                level.setBlock(sourcePos.above(), tallGrassState.setValue(net.minecraft.world.level.block.state.properties.BlockStateProperties.DOUBLE_BLOCK_HALF, net.minecraft.world.level.block.state.properties.DoubleBlockHalf.UPPER), 3);
+//$$                return;
+//$$            }
+//$$        }
+//$$
 //$$        boolean isFern = name.equals("fern");                  // سرخس
 //$$        boolean isPlainBush = name.equals("bush");              // شجيرة minecraft:bush الزخرفية فقط
 //$$        boolean isFireflyBush = name.contains("firefly_bush");  // شجيرة اليراعات (قرب الماء فقط)
@@ -442,13 +453,13 @@ public class ForestGrowthHandler {
 //$$                    @SuppressWarnings("unchecked")
 //$$                    net.minecraft.world.level.block.state.properties.Property<Integer> intProp = (net.minecraft.world.level.block.state.properties.Property<Integer>) prop;
 //$$                    int currentAmount = state.getValue(intProp);
-//$$                    // 50% chance to grow in place instead of spreading to a new block
-//$$                    if (currentAmount < 4 && random.nextBoolean()) {
+//$$                    // 15% chance to grow in place, but stop at level 2 or 3 so it's not fully filled
+//$$                    if (currentAmount < 3 && random.nextFloat() < 0.15f) {
 //$$                        level.setBlock(sourcePos, state.setValue(intProp, currentAmount + 1), 3);
 //$$                        return; // Successfully grew in place!
 //$$                    }
-//$$                    // If we spread, randomize the new block's amount instead of forcing level 1
-//$$                    state = state.setValue(intProp, 1 + random.nextInt(4));
+//$$                    // If we spread, randomize the new block's amount to just 1 or 2 max
+//$$                    state = state.setValue(intProp, 1 + random.nextInt(2));
 //$$                } else if (pName.contains("facing") || pName.contains("direction")) {
 //$$                    @SuppressWarnings("unchecked")
 //$$                    net.minecraft.world.level.block.state.properties.Property<net.minecraft.core.Direction> dirProp = (net.minecraft.world.level.block.state.properties.Property<net.minecraft.core.Direction>) prop;
@@ -616,8 +627,9 @@ public class ForestGrowthHandler {
 //$$            }
 //$$        }
 //$$        
-//$$        // حد الكثافة: إذا وجدنا أكثر من ١٠ مجموعات بتلات في المحيط، نتوقف عن الزيادة
-//$$        if (petalBlockCount >= 10) return;
+//$$        // حد الكثافة: لتكون مثالية وغير ممتلئة (٥ إلى ٧ مجموعات فقط في المحيط)
+//$$        int maxPetals = 5 + level.getRandom().nextInt(3);
+//$$        if (petalBlockCount >= maxPetals) return;
 //$$
 //$$        RandomSource random = level.getRandom();
 //$$        // فرصة ضئيلة لتساقط البتلات لضمان نمو بطيء وطبيعي (١٠٪ فرصة في كل دورة فحص)
@@ -634,8 +646,8 @@ public class ForestGrowthHandler {
 //$$            if (targetState.canBeReplaced() || targetState.isAir()) {
 //$$                BlockState soil = level.getBlockState(target.below());
 //$$                if (soil.is(net.minecraft.world.level.block.Blocks.GRASS_BLOCK) || soil.is(net.minecraft.world.level.block.Blocks.DIRT) || soil.is(net.minecraft.world.level.block.Blocks.PODZOL)) {
-//$$                    // تنويع الكميات: غالباً ما تكون بتلة واحدة أو اثنتين، ونادراً ما تصل لـ ٣
-//$$                    int amount = 1 + (random.nextFloat() < 0.2f ? random.nextInt(3) : random.nextInt(2));
+//$$                    // تنويع الكميات: غالباً ١ أو ٢ كحد أقصى للحفاظ على شكل متناثر وجميل
+//$$                    int amount = 1 + random.nextInt(2);
 //$$                    BlockState petalState = net.minecraft.world.level.block.Blocks.PINK_PETALS.defaultBlockState();
 //$$                    for (net.minecraft.world.level.block.state.properties.Property<?> prop : petalState.getProperties()) {
 //$$                        String pName = prop.getName().toLowerCase();
