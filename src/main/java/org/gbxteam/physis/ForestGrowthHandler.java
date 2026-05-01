@@ -702,14 +702,17 @@ public class ForestGrowthHandler {
 //$$        Holder<Biome> currentBiome = level.getBiome(searchPos);
 //$$        if (currentBiome.is(Biomes.SWAMP) || currentBiome.is(Biomes.MANGROVE_SWAMP)) return;
 //$$
-//$$        // [BIOME PROFILE] جلب ملف الغابة المُعايَر للبيئة الحالية
-//$$        BiomeForestProfile profile = BiomeForestProfile.getProfile(level, searchPos);
+//$$        // [BIOME PROFILE] جلب ملف الغابة من موقع **الشجرة** وليس موقع البحث
+//$$        // هذا يضمن أن شجرة الغابة على حافة البلينز تحتفظ بسلوكها الأصلي
+//$$        // بينما شجرة Oak الأصلية في البلينز تستخدم ملف البلينز البطيء
 //$$
 //$$        RandomSource random = level.getRandom();
 //$$        
 //$$        // === الخطوة ١: البحث عن شجرة قريبة ===
 //$$        BlockPos treePos = findNearbyTree(level, searchPos, 16);
 //$$        if (treePos == null) return;
+//$$
+//$$        BiomeForestProfile profile = BiomeForestProfile.getProfile(level, treePos);
 //$$
 //$$        // ميزة: تساقط بتلات الكرز
 //$$        tryCherryPetalDrop(level, treePos);
