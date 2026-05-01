@@ -165,6 +165,16 @@ public class BiomeForestProfile {
 //$$    public static final BiomeForestProfile WINDSWEPT = new BiomeForestProfile(
 //$$        "windswept", 5, 6, 5, 0.02f, 0.025f, 6, 9, 10, 0.0f, 3, 7, true);
 
+    // مستنقع عادي: بطيء جداً، بلوط متفرق
+    // Vanilla: count=2, ~1-2 trees/chunk
+//$$    public static final BiomeForestProfile SWAMP = new BiomeForestProfile(
+//$$        "swamp", 10, 16, 3, 0.01f, 0.012f, 8, 14, 12, 0.0f, 2, 4, false);
+
+    // مستنقع المانغروف: كثيف، أشجار مانغروف متقاربة
+    // Vanilla: count=25, ~15-20 trees/chunk
+//$$    public static final BiomeForestProfile MANGROVE_SWAMP = new BiomeForestProfile(
+//$$        "mangrove_swamp", 3, 5, 6, 0.03f, 0.04f, 4, 7, 10, 0.0f, 4, 15, true);
+
     // ملف افتراضي لأي بيئة غير معرّفة
 //$$    public static final BiomeForestProfile DEFAULT = new BiomeForestProfile(
 //$$        "default", 5, 6, 6, 0.02f, 0.03f, 6, 8, 10, 0.0f, 3, 8, true);
@@ -194,6 +204,8 @@ public class BiomeForestProfile {
 //$$        if (key == Biomes.CHERRY_GROVE) return CHERRY_GROVE;
 //$$        if (key == Biomes.PALE_GARDEN) return PALE_GARDEN;
 //$$        if (key == Biomes.PLAINS || key == Biomes.MEADOW || key == Biomes.SUNFLOWER_PLAINS) return PLAINS;
+//$$        if (key == Biomes.SWAMP) return SWAMP;
+//$$        if (key == Biomes.MANGROVE_SWAMP) return MANGROVE_SWAMP;
 //$$        if (key == Biomes.WINDSWEPT_FOREST || key == Biomes.WINDSWEPT_HILLS || key == Biomes.WINDSWEPT_GRAVELLY_HILLS) return WINDSWEPT;
 //$$        return DEFAULT;
 //$$    }

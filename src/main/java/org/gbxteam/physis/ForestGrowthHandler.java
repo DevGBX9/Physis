@@ -698,9 +698,7 @@ public class ForestGrowthHandler {
 //$$        searchPos = level.getHeightmapPos(Heightmap.Types.WORLD_SURFACE, searchPos);
 //$$        if (!level.canSeeSky(searchPos)) return;
 //$$
-//$$        // --- تعطيل المستنقعات كلياً ---
-//$$        Holder<Biome> currentBiome = level.getBiome(searchPos);
-//$$        if (currentBiome.is(Biomes.SWAMP) || currentBiome.is(Biomes.MANGROVE_SWAMP)) return;
+//$$        // --- لا تعطيل بيئات: كل الغابات تعمل بالنظام الجديد ---
 //$$
 //$$        // [BIOME PROFILE] جلب ملف الغابة من موقع **الشجرة** وليس موقع البحث
 //$$        // هذا يضمن أن شجرة الغابة على حافة البلينز تحتفظ بسلوكها الأصلي
@@ -819,9 +817,7 @@ public class ForestGrowthHandler {
 //$$    private static void plantAtPosition(ServerLevel level, BlockPos targetPos, BlockPos sourceTreePos, BiomeForestProfile sourceProfile) {
 //$$        if (!level.isLoaded(targetPos)) return;
 //$$
-//$$        // --- حظر كامل وشامل للمستنقعات ---
-//$$        Holder<Biome> targetBiome = level.getBiome(targetPos);
-//$$        if (targetBiome.is(Biomes.SWAMP) || targetBiome.is(Biomes.MANGROVE_SWAMP)) return;
+//$$        // --- لا حظر بيئات: كل الغابات تستخدم ملفها الخاص ---
 //$$
 //$$        // [BIOME PROFILE] نستخدم ملف الشجرة المصدر (ليس الهدف)
 //$$        // هذا يسمح للغابات بالزحف نحو السهول والمروج بمسافاتها الأصلية
