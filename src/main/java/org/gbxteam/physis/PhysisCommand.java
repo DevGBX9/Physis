@@ -33,8 +33,11 @@ package org.gbxteam.physis;
 public class PhysisCommand {
 //#if MC >= 260100
 //$$    public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
-//$$        dispatcher.register(Commands.literal("physis")
-//$$            .requires(source -> source.hasPermission(2))
+//$$        com.mojang.brigadier.builder.LiteralArgumentBuilder<CommandSourceStack> physisNode = Commands.literal("physis");
+//#if MC < 260000
+//$$        physisNode = physisNode.requires(source -> source.hasPermission(2));
+//#endif
+//$$        dispatcher.register(physisNode
 //$$            .then(Commands.literal("speed")
 //$$                .then(Commands.literal("normal")
 //$$                    .executes(context -> setSpeed(context.getSource(), 1.0f, "Normal (1x)")))
