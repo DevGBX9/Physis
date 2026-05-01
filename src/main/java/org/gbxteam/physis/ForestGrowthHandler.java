@@ -712,8 +712,8 @@ public class ForestGrowthHandler {
 //$$
 //$$        // فحص البيئة عند مستوى الأرض تحت الشجرة (ليس القمة)
 //$$        // لأن findNearbyTree يرجع موقع الأوراق العلوية، والبيئة قد تختلف بسبب 3D biomes
-//$$        int groundY = findActualGroundY(level, treePos);
-//$$        BlockPos groundPos = new BlockPos(treePos.getX(), groundY, treePos.getZ());
+//$$        int biomeCheckY = findActualGroundY(level, treePos);
+//$$        BlockPos groundPos = new BlockPos(treePos.getX(), biomeCheckY, treePos.getZ());
 //$$        BiomeForestProfile profile = BiomeForestProfile.getProfile(level, groundPos);
 //$$
 //$$        // ميزة: تساقط بتلات الكرز
