@@ -840,11 +840,11 @@ public class ForestGrowthHandler {
 //$$        if (isSpreadBlocked(level, sourceTreePos, targetPos, 2)) return;
 //$$
 //$$        if (needs2x2) {
-//$$            place2x2Saplings(level, targetPos, sapling, spacing, currentTime);
+//$$            place2x2Saplings(level, targetPos, sapling, spacing, currentTime, profile.shouldTerraform);
 //$$        } else {
 //$$            if (isSuitableForSapling(level, targetPos) && isAreaClear(level, targetPos, spacing)) {
 //$$                level.setBlock(targetPos, sapling.defaultBlockState(), 3);
-//$$                ForestGrowthData.get(level).addSapling(targetPos, currentTime);
+//$$                ForestGrowthData.get(level).addSapling(targetPos, currentTime, profile.shouldTerraform);
 //$$            }
 //$$        }
 //$$    }
@@ -1174,7 +1174,7 @@ public class ForestGrowthHandler {
 //$$    }
 
     // ==================== 2x2 PLACEMENT ====================
-//$$    private static void place2x2Saplings(ServerLevel level, BlockPos targetPos, Block sapling, int spacing, long currentTime) {
+//$$    private static void place2x2Saplings(ServerLevel level, BlockPos targetPos, Block sapling, int spacing, long currentTime, boolean shouldTerraform) {
 //$$        boolean clear = true;
 //$$        for (int x = 0; x < 2; x++) {
 //$$            for (int z = 0; z < 2; z++) {
@@ -1192,7 +1192,7 @@ public class ForestGrowthHandler {
 //$$                for (int z = 0; z < 2; z++) {
 //$$                    BlockPos subPos = targetPos.offset(x, 0, z);
 //$$                    level.setBlock(subPos, sapling.defaultBlockState(), 3);
-//$$                    ForestGrowthData.get(level).addSapling(subPos, currentTime);
+//$$                    ForestGrowthData.get(level).addSapling(subPos, currentTime, shouldTerraform);
 //$$                }
 //$$            }
 //$$        }

@@ -17,6 +17,7 @@ package org.gbxteam.physis;
 //$$ public class ForestGrowthData {
 //$$    private static final Map<ServerLevel, ForestGrowthData> instances = new HashMap<>();
 //$$    private final Map<Long, Long> modPlantedSaplings = new HashMap<>();
+//$$    private final Set<Long> noTerraformSaplings = new HashSet<>();
 //$$    private final Map<Long, Long> deadBushes = new HashMap<>();
 //$$    private final File saveFile;
 //$$
@@ -29,8 +30,11 @@ package org.gbxteam.physis;
 //$$        return instances.computeIfAbsent(level, ForestGrowthData::new);
 //$$    }
 //$$
-//$$    public void addSapling(BlockPos pos, long gameTime) {
+//$$    public void addSapling(BlockPos pos, long gameTime, boolean shouldTerraform) {
 //$$        modPlantedSaplings.put(pos.asLong(), gameTime);
+//$$        if (!shouldTerraform) {
+//$$            noTerraformSaplings.add(pos.asLong());
+//$$        }
 //$$        save();
 //$$    }
 //$$
@@ -43,6 +47,10 @@ package org.gbxteam.physis;
 //$$        return modPlantedSaplings.containsKey(pos.asLong());
 //$$    }
 //$$
+//$$    public boolean shouldTerraform(BlockPos pos) {
+//$$        return !noTerraformSaplings.contains(pos.asLong());
+//$$    }
+//$$
 //$$    public Map<Long, Long> getAllTrackedSaplings() {
 //$$        return new HashMap<>(modPlantedSaplings);
 //$$    }
@@ -53,6 +61,7 @@ package org.gbxteam.physis;
 //$$
 //$$    public void removeSapling(BlockPos pos) {
 //$$        if (modPlantedSaplings.remove(pos.asLong()) != null) {
+//$$            noTerraformSaplings.remove(pos.asLong());
 //$$            save();
 //$$        }
 //$$    }
@@ -75,6 +84,9 @@ package org.gbxteam.physis;
 //$$            if (nbt != null) {
 //$$                loadMap(nbt, "saplings", "times", modPlantedSaplings);
 //$$                loadMap(nbt, "dead_bushes", "death_times", deadBushes);
+//$$                noTerraformSaplings.clear();
+//$$                long[] noTf = nbt.getLongArray("no_terraform").orElse(new long[0]);
+//$$                for (long p : noTf) noTerraformSaplings.add(p);
 //$$            }
 //$$        } catch (IOException e) {
 //$$            e.printStackTrace();
@@ -95,6 +107,12 @@ package org.gbxteam.physis;
 //$$            CompoundTag nbt = new CompoundTag();
 //$$            saveMap(nbt, "saplings", "times", modPlantedSaplings);
 //$$            saveMap(nbt, "dead_bushes", "death_times", deadBushes);
+//$$            
+//$$            long[] noTf = new long[noTerraformSaplings.size()];
+//$$            int i = 0;
+//$$            for (Long p : noTerraformSaplings) noTf[i++] = p;
+//$$            nbt.putLongArray("no_terraform", noTf);
+//$$            
 //$$            NbtIo.write(nbt, saveFile.toPath());
 //$$        } catch (IOException e) {
 //$$            e.printStackTrace();

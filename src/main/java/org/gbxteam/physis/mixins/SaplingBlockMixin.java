@@ -61,9 +61,11 @@ package org.gbxteam.physis.mixins;
 //$$
 //$$            // [BIOME FILL & TRACKING]
 //$$            if (data.isModPlanted(pos)) {
-//$$                ForestGrowthHandler.getRelatedBiomeKey(level, pos, saplingBlock).ifPresent(biomeKey -> {
-//$$                    ForestGrowthHandler.executeFillBiome(level, pos, biomeKey);
-//$$                });
+//$$                if (data.shouldTerraform(pos)) {
+//$$                    ForestGrowthHandler.getRelatedBiomeKey(level, pos, saplingBlock).ifPresent(biomeKey -> {
+//$$                        ForestGrowthHandler.executeFillBiome(level, pos, biomeKey);
+//$$                    });
+//$$                }
 //$$                data.removeSapling(pos);
 //$$            }
 //$$        }
