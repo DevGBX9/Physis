@@ -710,7 +710,11 @@ public class ForestGrowthHandler {
 //$$        BlockPos treePos = findNearbyTree(level, searchPos, 16);
 //$$        if (treePos == null) return;
 //$$
-//$$        BiomeForestProfile profile = BiomeForestProfile.getProfile(level, treePos);
+//$$        // فحص البيئة عند مستوى الأرض تحت الشجرة (ليس القمة)
+//$$        // لأن findNearbyTree يرجع موقع الأوراق العلوية، والبيئة قد تختلف بسبب 3D biomes
+//$$        int groundY = findActualGroundY(level, treePos);
+//$$        BlockPos groundPos = new BlockPos(treePos.getX(), groundY, treePos.getZ());
+//$$        BiomeForestProfile profile = BiomeForestProfile.getProfile(level, groundPos);
 //$$
 //$$        // ميزة: تساقط بتلات الكرز
 //$$        tryCherryPetalDrop(level, treePos);
