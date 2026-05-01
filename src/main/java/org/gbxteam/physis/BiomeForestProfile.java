@@ -146,10 +146,10 @@ public class BiomeForestProfile {
 //$$    public static final BiomeForestProfile PALE_GARDEN = new BiomeForestProfile(
 //$$        "pale_garden", 3, 4, 7, 0.035f, 0.045f, 4, 6, 8, 1.0f, 6, 18, true);
 
-    // سهول ومروج: انتشار بطيء جداً لكن الشتلات تُزرع بعيداً جداً
+    // سهول ومروج: انتشار بطيء جداً لكن الشتلات تُزرع بعيداً جداً (للحفاظ على مساحات شاسعة فارغة)
     // Vanilla: count=0, extra_chance=0.05, ~0-1 trees/chunk
 //$$    public static final BiomeForestProfile PLAINS = new BiomeForestProfile(
-//$$        "plains", 15, 25, 2, 0.008f, 0.01f, 25, 45, 16, 0.0f, 1, 2, false);
+//$$        "plains", 30, 45, 2, 0.008f, 0.01f, 35, 65, 16, 0.0f, 1, 2, false);
 
     // تايغا ثلجية
     // Vanilla: count=10, ~6-8 trees/chunk
