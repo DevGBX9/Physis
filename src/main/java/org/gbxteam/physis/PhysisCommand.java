@@ -33,11 +33,7 @@ package org.gbxteam.physis;
 public class PhysisCommand {
 //#if MC >= 260100
 //$$    public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
-//$$        com.mojang.brigadier.builder.LiteralArgumentBuilder<CommandSourceStack> physisNode = Commands.literal("physis");
-//#if MC < 260000
-//$$        physisNode = physisNode.requires(source -> source.hasPermission(2));
-//#endif
-//$$        dispatcher.register(physisNode
+//$$        dispatcher.register(Commands.literal("physis")
 //$$            .then(Commands.literal("speed")
 //$$                .then(Commands.literal("normal")
 //$$                    .executes(context -> setSpeed(context.getSource(), 1.0f, "Normal (1x)")))
@@ -48,7 +44,7 @@ public class PhysisCommand {
 //$$                .then(Commands.literal("pause")
 //$$                    .executes(context -> setSpeed(context.getSource(), 0.0f, "Paused (0x)")))
 //$$                .then(Commands.literal("set")
-//$$                    .then(Commands.argument("value", FloatArgumentType.floatArg(0.0f, 100.0f))
+//$$                    .then(Commands.argument("value", FloatArgumentType.floatArg(0.0f, 99999.0f))
 //$$                        .executes(context -> {
 //$$                            float speed = FloatArgumentType.getFloat(context, "value");
 //$$                            return setSpeed(context.getSource(), speed, "Custom (" + speed + "x)");
@@ -75,7 +71,7 @@ public class PhysisCommand {
 //$$
 //$$    private static int skipDays(CommandSourceStack source, int days) {
 //$$        // 24000 ticks per day
-//$$        ForestGrowthHandler.fastForwardTicks += days * 24000;
+//$$        ForestGrowthHandler.fastForwardTicks += (long) days * 24000L;
 //$$        source.sendSuccess(() -> Component.literal("§e[Physis] Fast-forwarding simulation for " + days + " days..."), true);
 //$$        return 1;
 //$$    }

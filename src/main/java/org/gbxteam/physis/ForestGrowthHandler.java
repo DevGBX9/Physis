@@ -79,20 +79,23 @@ public class ForestGrowthHandler {
 //$$            lastWindUpdate = gameTime;
 //$$        }
 //$$
-//$$        // [10] WEATHER IMPACT
-//$$        boolean isRaining = level.isRaining();
-//$$        boolean isThundering = level.isThundering();
-//$$        // 8. صحة الشتلات وتسميد التربة (كل 200 تيك لتخفيف الحمل)
-//$$        if (level.getGameTime() % 200 == 0) {
+//$$        // إذا المود متوقف وما فيه تسريع، لا تسوي شي
+//$$        if (speedMultiplier <= 0 && fastForwardTicks <= 0) return;
+//$$
+//$$        if (fastForwardTicks > 0) fastForwardTicks--;
+//$$
+//$$        // صحة الشتلات وتسميد التربة - تتأثر بسرعة المود
+//$$        // عادي: كل 200 تيك | سريع: أقل | تسريع زمني: كل 4 تيكات
+//$$        int lifecycleInterval;
+//$$        if (fastForwardTicks > 0) {
+//$$            lifecycleInterval = 4;
+//$$        } else {
+//$$            lifecycleInterval = Math.max(1, (int)(200 / speedMultiplier));
+//$$        }
+//$$        if (gameTime % lifecycleInterval == 0) {
 //$$            SaplingLifecycleManager.runHealthChecks(level);
 //$$            SaplingLifecycleManager.runCompostChecks(level);
 //$$        }
-//$$        if (fastForwardTicks > 0) fastForwardTicks--;
-//$$        // Logic moved to tickChunk to be independent of player proximity
-//$$
-
-//$$
-//$$        // Thunder damage is now handled globally in tickChunk()
 //$$    }
 //$$
     // ╔══════════════════════════════════════════════════════════════════╗
