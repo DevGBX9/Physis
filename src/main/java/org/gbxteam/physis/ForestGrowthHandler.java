@@ -52,6 +52,10 @@ public class ForestGrowthHandler {
     // ║  هنا نخزن المتغيرات العامة مثل اتجاه الرياح والاتجاهات الثمانية  ║
     // ╚══════════════════════════════════════════════════════════════════╝
     
+    // --- متغيرات التحكم في سرعة المود والتسريع الزمني ---
+//$$    public static float speedMultiplier = 1.0f;
+//$$    public static long fastForwardTicks = 0;
+
     // --- نظام الرياح: يتغير اتجاه الرياح كل ٥ دقائق لعبة ---
 //$$    private static double windAngle = 0;
 //$$    private static long lastWindUpdate = 0;
@@ -83,19 +87,8 @@ public class ForestGrowthHandler {
 //$$            SaplingLifecycleManager.runHealthChecks(level);
 //$$            SaplingLifecycleManager.runCompostChecks(level);
 //$$        }
-//$$        float tps = level.getServer().tickRateManager().tickrate();
-//$$
-//$$        // Multiplier based on /tick rate. Standard is 20.
-//$$        int speedMultiplier = Math.max(1, (int)(tps / 20.0f)); 
-//$$        
-//$$        // Natural growth interval: ~10 seconds normally, ~5 seconds in rain
-//$$        int growthInterval = isRaining ? (100 / speedMultiplier) : (200 / speedMultiplier);
-//$$        growthInterval = Math.max(1, growthInterval);
-//$$
-//$$        if (gameTime % growthInterval == 0) {
-//$$            // Player-centric loop has been removed!
-//$$            // Growth is now globally managed by tickChunk() for every loaded chunk.
-//$$        }
+//$$        if (fastForwardTicks > 0) fastForwardTicks--;
+//$$        // Logic moved to tickChunk to be independent of player proximity
 //$$
 
 //$$
@@ -111,21 +104,39 @@ public class ForestGrowthHandler {
 //$$        if (!level.isLoaded(chunk.getPos().getMiddleBlockPosition(0))) return;
 //$$        
 //$$        boolean isRaining = level.isRaining();
-//$$        float tps = level.getServer().tickRateManager().tickrate();
-//$$        int speedMultiplier = Math.max(1, (int)(tps / 20.0f)); 
+//$$        if (speedMultiplier <= 0 && fastForwardTicks <= 0) return;
 //$$        
-//$$        // Thunder strikes randomly globally per chunk (very rare, approx 1 strike per 5 seconds per 1000 chunks)
-//$$        if (level.isThundering() && level.getRandom().nextInt(100000 / speedMultiplier) == 0) {
-//$$            BlockPos strikePos = chunk.getPos().getMiddleBlockPosition(0).offset(level.getRandom().nextInt(16) - 8, 0, level.getRandom().nextInt(16) - 8);
-//$$            strikePos = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING, strikePos);
-//$$            applyThunderDamage(level, strikePos);
+//$$        float tps = level.getServer().tickRateManager().tickrate();
+//$$        float serverSpeedRatio = tps / 20.0f; // e.g., 5.0 if tick rate is 100
+//$$        if (serverSpeedRatio <= 0.01f) serverSpeedRatio = 1.0f;
+//$$        
+//$$        float currentSpeed = speedMultiplier;
+//$$        if (fastForwardTicks > 0) currentSpeed = 50.0f; // 50x speed when skipping days
+//$$        
+//$$        // effectiveSpeed controls how many times the mod runs relative to a standard 20 TPS server
+//$$        float effectiveSpeed = currentSpeed / serverSpeedRatio;
+//$$        
+//$$        int cycles = 1;
+//$$        if (effectiveSpeed > 10.0f) {
+//$$            cycles = (int)(effectiveSpeed / 10.0f);
+//$$            effectiveSpeed = 10.0f;
 //$$        }
 //$$        
-//$$        // 1/200 chance per tick means a chunk runs every 10 seconds on average (1/100 in rain = 5 seconds)
-//$$        int runChance = isRaining ? 100 : 200;
-//$$        runChance = Math.max(1, runChance / speedMultiplier);
-//$$        
-//$$        if (level.getRandom().nextInt(runChance) == 0) {
+//$$        for (int c = 0; c < cycles; c++) {
+//$$            // Thunder strikes randomly globally per chunk (very rare, approx 1 strike per 5 seconds per 1000 chunks)
+//$$            int baseThunderChance = 100000;
+//$$            int thunderChance = Math.max(1, (int)(baseThunderChance / effectiveSpeed));
+//$$            if (level.isThundering() && level.getRandom().nextInt(thunderChance) == 0) {
+//$$                BlockPos strikePos = chunk.getPos().getMiddleBlockPosition(0).offset(level.getRandom().nextInt(16) - 8, 0, level.getRandom().nextInt(16) - 8);
+//$$                strikePos = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING, strikePos);
+//$$                applyThunderDamage(level, strikePos);
+//$$            }
+//$$            
+//$$            // 1/200 chance per tick means a chunk runs every 10 seconds on average (1/100 in rain = 5 seconds)
+//$$            int runChance = isRaining ? 100 : 200;
+//$$            runChance = Math.max(1, (int)(runChance / effectiveSpeed));
+//$$            
+//$$            if (level.getRandom().nextInt(runChance) == 0) {
 //$$            net.minecraft.world.level.ChunkPos pos = chunk.getPos();
 //$$            BlockPos center = pos.getMiddleBlockPosition(0);
 //$$            
@@ -173,6 +184,7 @@ public class ForestGrowthHandler {
 //$$                monitorPlantDistribution(level, monitorPos, "minecraft:large_fern",   1, 12.0, 15, 35, 8);
 //$$            }
 //$$        }
+//$$        } // end of cycles loop
 //$$    }
 
     // ╔══════════════════════════════════════════════════════════════════╗

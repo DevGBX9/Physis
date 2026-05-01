@@ -6,7 +6,8 @@
   "mixins": [
     "MinecraftServerMixin",
     "ServerLevelMixin",
-    "SaplingBlockMixin"
+    "SaplingBlockMixin",
+    "CommandsMixin"
   ],
   "client": [
   ],
