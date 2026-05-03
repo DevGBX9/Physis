@@ -101,8 +101,13 @@ public class ForestGrowthHandler {
 //$$            applyThunderDamage(level, strikePos);
 //$$        }
 //$$        
-//$$        // الأرقام المنطقية الجديدة: فرصة أكبر لتشغيل الانتشار (أسرع 4 مرات من قبل)
-//$$        int runChance = isRaining ? 20 : 50;
+//$$        // استرجاع السرعة الافتراضية البطيئة والطبيعية جداً
+//$$        float tps = level.getServer().tickRateManager().tickrate();
+//$$        float speedRatio = Math.max(1.0f, tps / 20.0f); // إذا كان تيك ريت 20، النسبة 1. إذا كان 9999، النسبة 500
+//$$
+//$$        // نقوم بزيادة فرص التشغيل بشكل هائل فقط إذا استخدم اللاعب أمر /tick rate برقم كبير
+//$$        int baseChance = isRaining ? 100 : 200;
+//$$        int runChance = Math.max(1, (int)(baseChance / speedRatio));
 //$$        boolean shouldRun = level.getRandom().nextInt(runChance) == 0;
 //$$        
 //$$        if (shouldRun) {
@@ -112,10 +117,15 @@ public class ForestGrowthHandler {
 //$$            // [NIGHT SLOWDOWN]
 //$$            long dayTime = level.getGameTime();
 //$$            boolean isDayTime = (dayTime % 24000) < 12000;
-//$$            if (!isDayTime && level.getRandom().nextFloat() > 0.1f) return; // 10% chance at night instead of 1%
+//$$            // تعطيل حاجز الليل فقط إذا كان هناك تسريع زمني مقصود
+//$$            if (!isDayTime && speedRatio <= 1.0f && level.getRandom().nextFloat() > 0.01f) return;
 //$$
-//$$            // عدد محاولات الزراعة في كل مرة (مضاعفة لزيادة الملاحظة)
-//$$            int attempts = isRaining ? 4 : 2;
+//$$            // مضاعفة عدد المحاولات لكسر حدود المعالج عند كتابة أرقام خيالية مثل 9999
+//$$            int attempts = isRaining ? 2 : 1;
+//$$            if (speedRatio > 10.0f) {
+//$$                attempts = (int)(attempts * (speedRatio / 5.0f)); // مضاعفة المحاولات بشكل متوحش لتعويض عدم قدرة المعالج على الوصول لـ 9999 تيك فعلياً
+//$$                attempts = Math.min(attempts, 100); // حد أقصى لتفادي الكراش
+//$$            }
 //$$            
 //$$            // Trees
 //$$            for (int i = 0; i < attempts; i++) {
