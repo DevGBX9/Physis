@@ -109,6 +109,6 @@ Expansion is active across most overworld biomes but is intentionally restricted
 
 ## License
 
-Physis is open source software released under the MIT License. You are free to use, modify, and distribute it, provided proper credit is given to the original project and the GBX Team.
+Physis is open source software released under the MIT License. You are free to use, modify, and distribute it, provided proper credit is given to the original project and DevGBX9.
 
-*Developed by the GBX Team*
+*Developed by DevGBX9*
