@@ -52,9 +52,7 @@ public class ForestGrowthHandler {
     // ║  هنا نخزن المتغيرات العامة مثل اتجاه الرياح والاتجاهات الثمانية  ║
     // ╚══════════════════════════════════════════════════════════════════╝
     
-    // --- متغيرات التحكم في سرعة المود والتسريع الزمني ---
-//$$    public static float speedMultiplier = 1.0f;
-//$$    public static long fastForwardTicks = 0;
+    // --- لم يعد هناك متغيرات سرعة مخصصة، نعتمد على /tick rate الخاص باللعبة ---
 
     // --- نظام الرياح: يتغير اتجاه الرياح كل ٥ دقائق لعبة ---
 //$$    private static double windAngle = 0;
@@ -79,20 +77,9 @@ public class ForestGrowthHandler {
 //$$            lastWindUpdate = gameTime;
 //$$        }
 //$$
-//$$        // إذا المود متوقف وما فيه تسريع، لا تسوي شي
-//$$        if (speedMultiplier <= 0 && fastForwardTicks <= 0) return;
-//$$
-//$$        if (fastForwardTicks > 0) fastForwardTicks--;
-//$$
-//$$        // صحة الشتلات وتسميد التربة - تتأثر بسرعة المود
-//$$        // عادي: كل 200 تيك | سريع: أقل | تسريع زمني: كل 4 تيكات
-//$$        int lifecycleInterval;
-//$$        if (fastForwardTicks > 0) {
-//$$            lifecycleInterval = 4;
-//$$        } else {
-//$$            lifecycleInterval = Math.max(1, (int)(200 / speedMultiplier));
-//$$        }
-//$$        if (gameTime % lifecycleInterval == 0) {
+//$$        // صحة الشتلات وتسميد التربة - يتم فحصها كل 200 تيك (ثابت)
+//$$        // السرعة الكلية تتأثر تلقائياً بأوامر اللعبة الأساسية (/tick rate)
+//$$        if (gameTime % 200 == 0) {
 //$$            SaplingLifecycleManager.runHealthChecks(level);
 //$$            SaplingLifecycleManager.runCompostChecks(level);
 //$$        }
@@ -107,52 +94,26 @@ public class ForestGrowthHandler {
 //$$        if (!level.isLoaded(chunk.getPos().getMiddleBlockPosition(0))) return;
 //$$        
 //$$        boolean isRaining = level.isRaining();
-//$$        if (speedMultiplier <= 0 && fastForwardTicks <= 0) return;
+//$$        // رعد
+//$$        if (level.isThundering() && level.getRandom().nextInt(100000) == 0) {
+//$$            BlockPos strikePos = chunk.getPos().getMiddleBlockPosition(0).offset(level.getRandom().nextInt(16) - 8, 0, level.getRandom().nextInt(16) - 8);
+//$$            strikePos = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING, strikePos);
+//$$            applyThunderDamage(level, strikePos);
+//$$        }
 //$$        
-//$$        float currentSpeed = speedMultiplier;
-//$$        if (fastForwardTicks > 0) currentSpeed = Math.max(currentSpeed, 50.0f);
+//$$        int runChance = isRaining ? 100 : 200;
+//$$        boolean shouldRun = level.getRandom().nextInt(runChance) == 0;
 //$$        
-//$$        // ربط السرعة مع tick rate ماينكرافت (تم إلغاء الفصل)
-//$$        // بما أن السيرفر يستدعي هذا الكود أكثر عند زيادة الـ TPS، السرعة ستتضاعف تلقائياً بشكل طبيعي
-//$$        float effectiveSpeed = currentSpeed;
-//$$        
-//$$        // === المنطق الجديد: بدل آلاف الدورات، نزيد المحاولات ونضمن التشغيل ===
-//$$        // cycles: عدد مرات تشغيل المنطق الكامل (محدود عشان ما يسبب لاق)
-//$$        int cycles = Math.min(50, Math.max(1, (int)(effectiveSpeed / 5.0f)));
-//$$        // attemptMultiplier: مضاعف المحاولات داخل كل دورة
-//$$        int attemptMultiplier = Math.max(1, (int)(effectiveSpeed / cycles));
-//$$        attemptMultiplier = Math.min(attemptMultiplier, 30);
-//$$        
-//$$        for (int c = 0; c < cycles; c++) {
-//$$            // رعد
-//$$            if (level.isThundering() && level.getRandom().nextInt(Math.max(1, (int)(100000 / effectiveSpeed))) == 0) {
-//$$                BlockPos strikePos = chunk.getPos().getMiddleBlockPosition(0).offset(level.getRandom().nextInt(16) - 8, 0, level.getRandom().nextInt(16) - 8);
-//$$                strikePos = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING, strikePos);
-//$$                applyThunderDamage(level, strikePos);
-//$$            }
-//$$            
-//$$            // فحص الاحتمال: عند سرعة عالية (>=10) نتخطى الفحص ونشغل دائماً
-//$$            boolean shouldRun;
-//$$            if (effectiveSpeed >= 10.0f) {
-//$$                shouldRun = true;
-//$$            } else {
-//$$                int runChance = isRaining ? 100 : 200;
-//$$                runChance = Math.max(1, (int)(runChance / effectiveSpeed));
-//$$                shouldRun = level.getRandom().nextInt(runChance) == 0;
-//$$            }
-//$$            
-//$$            if (shouldRun) {
+//$$        if (shouldRun) {
 //$$            net.minecraft.world.level.ChunkPos pos = chunk.getPos();
 //$$            BlockPos center = pos.getMiddleBlockPosition(0);
 //$$            
-//$$            // [NIGHT SLOWDOWN] - يتعطل أثناء التسريع الزمني
-//$$            if (fastForwardTicks <= 0) {
-//$$                long dayTime = level.getGameTime();
-//$$                boolean isDayTime = (dayTime % 24000) < 12000;
-//$$                if (!isDayTime && level.getRandom().nextFloat() > 0.01f) continue;
-//$$            }
+//$$            // [NIGHT SLOWDOWN]
+//$$            long dayTime = level.getGameTime();
+//$$            boolean isDayTime = (dayTime % 24000) < 12000;
+//$$            if (!isDayTime && level.getRandom().nextFloat() > 0.01f) return;
 //$$
-//$$            int attempts = (isRaining ? 2 : 1) * attemptMultiplier;
+//$$            int attempts = isRaining ? 2 : 1;
 //$$            
 //$$            // Trees
 //$$            for (int i = 0; i < attempts; i++) {
@@ -181,7 +142,6 @@ public class ForestGrowthHandler {
 //$$                monitorPlantDistribution(level, monitorPos, "minecraft:large_fern",   1, 12.0, 15, 35, 8);
 //$$            }
 //$$        }
-//$$        } // end of cycles loop
 //$$    }
 
     // ╔══════════════════════════════════════════════════════════════════╗
