@@ -109,15 +109,12 @@ public class ForestGrowthHandler {
 //$$        boolean isRaining = level.isRaining();
 //$$        if (speedMultiplier <= 0 && fastForwardTicks <= 0) return;
 //$$        
-//$$        float tps = level.getServer().tickRateManager().tickrate();
-//$$        float serverSpeedRatio = tps / 20.0f;
-//$$        if (serverSpeedRatio <= 0.01f) serverSpeedRatio = 1.0f;
-//$$        
 //$$        float currentSpeed = speedMultiplier;
 //$$        if (fastForwardTicks > 0) currentSpeed = Math.max(currentSpeed, 50.0f);
 //$$        
-//$$        // فصل السرعة عن tick rate ماينكرافت
-//$$        float effectiveSpeed = currentSpeed / serverSpeedRatio;
+//$$        // ربط السرعة مع tick rate ماينكرافت (تم إلغاء الفصل)
+//$$        // بما أن السيرفر يستدعي هذا الكود أكثر عند زيادة الـ TPS، السرعة ستتضاعف تلقائياً بشكل طبيعي
+//$$        float effectiveSpeed = currentSpeed;
 //$$        
 //$$        // === المنطق الجديد: بدل آلاف الدورات، نزيد المحاولات ونضمن التشغيل ===
 //$$        // cycles: عدد مرات تشغيل المنطق الكامل (محدود عشان ما يسبب لاق)
