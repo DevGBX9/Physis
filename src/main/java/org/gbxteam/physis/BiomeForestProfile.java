@@ -1,7 +1,7 @@
 /*
  * This file is part of the Physis project, licensed under the MIT License.
  *
- * Copyright (C) 2026 GBX Team and contributors
+ * Copyright (C) 2026 DevGBX9 and contributors
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
