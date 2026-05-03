@@ -101,7 +101,8 @@ public class ForestGrowthHandler {
 //$$            applyThunderDamage(level, strikePos);
 //$$        }
 //$$        
-//$$        int runChance = isRaining ? 100 : 200;
+//$$        // الأرقام المنطقية الجديدة: فرصة أكبر لتشغيل الانتشار (أسرع 4 مرات من قبل)
+//$$        int runChance = isRaining ? 20 : 50;
 //$$        boolean shouldRun = level.getRandom().nextInt(runChance) == 0;
 //$$        
 //$$        if (shouldRun) {
@@ -111,9 +112,10 @@ public class ForestGrowthHandler {
 //$$            // [NIGHT SLOWDOWN]
 //$$            long dayTime = level.getGameTime();
 //$$            boolean isDayTime = (dayTime % 24000) < 12000;
-//$$            if (!isDayTime && level.getRandom().nextFloat() > 0.01f) return;
+//$$            if (!isDayTime && level.getRandom().nextFloat() > 0.1f) return; // 10% chance at night instead of 1%
 //$$
-//$$            int attempts = isRaining ? 2 : 1;
+//$$            // عدد محاولات الزراعة في كل مرة (مضاعفة لزيادة الملاحظة)
+//$$            int attempts = isRaining ? 4 : 2;
 //$$            
 //$$            // Trees
 //$$            for (int i = 0; i < attempts; i++) {
