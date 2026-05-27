@@ -24,7 +24,7 @@
 
 package org.gbxteam.physis;
 
-//#if MC >= 11700
+//#if MC >= 11400
 //$$ import net.minecraft.core.BlockPos;
 //$$ import net.minecraft.server.level.ServerLevel;
 //$$ import net.minecraft.world.level.block.Block;
@@ -36,7 +36,7 @@ package org.gbxteam.physis;
 
 public class FloraGrowthHandler {
     
-    //#if MC >= 11700
+    //#if MC >= 11400
     
     // ╔══════════════════════════════════════════════════════════════════╗
     // ║         القسم ١: التحديث العالمي للتشونكات (tickChunk)          ║
