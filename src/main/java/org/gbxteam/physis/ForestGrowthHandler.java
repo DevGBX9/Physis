@@ -302,11 +302,11 @@ public class ForestGrowthHandler {
 //$$        float srcNoise = isPlainBush
 //$$            ? bushNoise(wSeed, sourcePos.getX(), sourcePos.getZ())
 //$$            : vegetationNoise(wSeed, sourcePos.getX(), sourcePos.getZ());
-//$$        float srcMin = isPlainBush ? 0.35f : 0.15f;
+//$$        float srcMin = isPlainBush ? 0.35f : 0.08f;
 //$$        if (srcNoise < srcMin && random.nextFloat() > srcNoise * 2.5f) return;
 //$$
 //$$        if (isGrass) {
-//$$            if (random.nextFloat() > 0.12f * waterBoost) return;
+//$$            if (random.nextFloat() > 0.30f * waterBoost) return;
 //$$        } else if (isFern) {
 //$$            if (random.nextFloat() > 0.015f * waterBoost) return;
 //$$        } else if (isPlainBush) {
@@ -360,17 +360,17 @@ public class ForestGrowthHandler {
 //$$            
 //$$            float pioneerChance = isPlainBush ? 0.40f : (isFlower ? 0.15f : 0.05f);
 //$$            if (random.nextFloat() < pioneerChance) {
-//$$                searchSpread = isPlainBush ? 12 : (isFlower ? 24 : 8);
+//$$                searchSpread = isPlainBush ? 16 : (isFlower ? 32 : 12);
 //$$            } else {
 //$$                return;
 //$$            }
 //$$        } else {
-//$$            searchSpread = isFlower ? 2 : (isPlainBush ? 4 : (isGrass ? 5 : 4));
+//$$            searchSpread = isFlower ? 4 : (isPlainBush ? 6 : (isGrass ? 8 : 6));
 //$$        }
 //$$        
 //$$        BlockPos bestTarget = null;
 //$$        int bestScore = -1;
-//$$        for (int i = 0; i < (isGrass ? 8 : ((isPlainBush || isFlower) ? 8 : 4)); i++) {
+//$$        for (int i = 0; i < (isGrass ? 12 : ((isPlainBush || isFlower) ? 8 : 4)); i++) {
 //$$            int ox = random.nextInt(searchSpread * 2 + 1) - searchSpread;
 //$$            int oz = random.nextInt(searchSpread * 2 + 1) - searchSpread;
 //$$            if (ox == 0 && oz == 0) continue;
@@ -433,7 +433,7 @@ public class ForestGrowthHandler {
 //$$                ? bushNoise(worldSeed, target.getX(), target.getZ())
 //$$                : vegetationNoise(worldSeed, target.getX(), target.getZ());
 //$$            // حد أدنى للنويس بحسب نوع النبتة — يحاكي توزيع الفانيلا
-//$$            float noiseMin = isGrass ? 0.20f : (isPlainBush ? 0.42f : (isFern ? 0.38f : 0.25f));
+//$$            float noiseMin = isGrass ? 0.12f : (isPlainBush ? 0.42f : (isFern ? 0.38f : 0.25f));
 //$$            if (targetNoise < noiseMin) continue;
 //$$
 //$$            int score = 0;
