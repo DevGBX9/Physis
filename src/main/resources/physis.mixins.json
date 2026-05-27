@@ -5,8 +5,7 @@
   "compatibilityLevel": "{{COMPATIBILITY_LEVEL}}",
   "mixins": [
     "MinecraftServerMixin",
-    "ServerLevelMixin",
-    "SaplingBlockMixin"
+    "ServerLevelMixin"
   ],
   "client": [
   ],

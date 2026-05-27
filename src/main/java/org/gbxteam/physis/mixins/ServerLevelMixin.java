@@ -32,15 +32,9 @@ package org.gbxteam.physis.mixins;
 //$$ import org.spongepowered.asm.mixin.injection.At;
 //$$ import org.spongepowered.asm.mixin.injection.Inject;
 //$$ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-//$$ import java.util.function.BooleanSupplier;
 //$$ 
 //$$ @Mixin(ServerLevel.class)
 //$$ public abstract class ServerLevelMixin {
-//$$     @Inject(method = "tick", at = @At("TAIL"))
-//$$     private void onTick(BooleanSupplier shouldKeepTicking, CallbackInfo ci) {
-//$$         ForestGrowthHandler.tick((ServerLevel)(Object)this);
-//$$     }
-//$$ 
 //$$     @Inject(method = "tickChunk", at = @At("TAIL"))
 //$$     private void onTickChunk(LevelChunk chunk, int randomTickSpeed, CallbackInfo ci) {
 //$$         ForestGrowthHandler.tickChunk(chunk, (ServerLevel)(Object)this);

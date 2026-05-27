@@ -24,7 +24,6 @@
 
 package org.gbxteam.physis.mixins;
 
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.MinecraftServer;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -49,9 +48,5 @@ public abstract class MinecraftServerMixin
 		//#elseif MC >= 1.14.0
 		//$$ System.err.println("Physis initialized.");
 		//#endif
-
-		CompoundTag nbt = new CompoundTag();
-		nbt.putString("key", "value");
-		System.err.println("nbt: " + nbt);
 	}
 }
