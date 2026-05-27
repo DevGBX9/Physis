@@ -295,7 +295,16 @@ public class ForestGrowthHandler {
 //$$        
 //$$        boolean nearWaterSource = isNearWater(level, sourcePos, 6);
 //$$        float waterBoost = nearWaterSource ? 2.5f : 1.0f;
-//$$        
+//$$
+//$$        // ══════ NOISE SOURCE CHECK: فحص نويس منطقة المصدر ══════
+//$$        // النباتات في مناطق النويس المنخفض تنتشر ببطء شديد (تحاكي حدود biomes)
+//$$        long wSeed = level.getSeed();
+//$$        float srcNoise = isPlainBush
+//$$            ? bushNoise(wSeed, sourcePos.getX(), sourcePos.getZ())
+//$$            : vegetationNoise(wSeed, sourcePos.getX(), sourcePos.getZ());
+//$$        float srcMin = isPlainBush ? 0.35f : 0.15f;
+//$$        if (srcNoise < srcMin && random.nextFloat() > srcNoise * 2.5f) return;
+//$$
 //$$        if (isGrass) {
 //$$            if (random.nextFloat() > 0.12f * waterBoost) return;
 //$$        } else if (isFern) {
@@ -418,13 +427,24 @@ public class ForestGrowthHandler {
 //$$            }
 //$$            if (tooClose) continue;
 //$$            
+//$$            // ══════ NOISE GATE: الموضع الهدف يجب أن يكون في منطقة نويس مناسبة ══════
+//$$            long worldSeed = level.getSeed();
+//$$            float targetNoise = isPlainBush
+//$$                ? bushNoise(worldSeed, target.getX(), target.getZ())
+//$$                : vegetationNoise(worldSeed, target.getX(), target.getZ());
+//$$            // حد أدنى للنويس بحسب نوع النبتة — يحاكي توزيع الفانيلا
+//$$            float noiseMin = isGrass ? 0.20f : (isPlainBush ? 0.42f : (isFern ? 0.38f : 0.25f));
+//$$            if (targetNoise < noiseMin) continue;
+//$$
 //$$            int score = 0;
+//$$            // نويس يعطي أولوية عالية للمناطق الكثيفة (مثل patches الفانيلا)
+//$$            score += (int)(targetNoise * 14f);
 //$$            if (isNearWater(level, target, (isGrass || isPlainBush) ? 8 : 4)) score += (isGrass || isPlainBush) ? 10 : 5;
 //$$            if ((isGrass || isPlainBush) && hasHeavyCanopy(level, target)) score += 6;
 //$$            if (!(isGrass || isPlainBush) && hasHeavyCanopy(level, target)) score += 2;
 //$$            if (isFireflyBush && isNearWater(level, target, 1)) score += 15;
 //$$            score += random.nextInt(4);
-//$$            
+//$$
 //$$            if (score > bestScore) {
 //$$                bestScore = score;
 //$$                bestTarget = target;
@@ -495,6 +515,63 @@ public class ForestGrowthHandler {
 //$$            }
 //$$        }
 //$$        return false;
+//$$    }
+
+    // ==================== [4] VEGETATION NOISE (multi-octave value noise, seeded by world seed) ====================
+//$$    /**
+//$$     * دالة هاش سريعة وحتمية لنقطة (x, z) مع seed
+//$$     * تُنتج قيمة عائمة بين 0.0 و 1.0
+//$$     */
+//$$    private static float hashFloat(long seed, int x, int z) {
+//$$        long h = seed ^ ((long)x * 0x9e3779b97f4a7c15L) ^ ((long)z * 0x6c62272e07bb0142L);
+//$$        h ^= h >>> 33;
+//$$        h *= 0xff51afd7ed558ccdL;
+//$$        h ^= h >>> 33;
+//$$        h *= 0xc4ceb9fe1a85ec53L;
+//$$        h ^= h >>> 33;
+//$$        return (float)((h & 0x7FFFFFFFL) / (double)0x7FFFFFFFL);
+//$$    }
+//$$
+//$$    /**
+//$$     * أوكتاف نويس واحدة بإنترپولاسيون cubic smoothstep (Perlin-style value noise)
+//$$     * scale = حجم الخلية بالبلوكات
+//$$     */
+//$$    private static float valueNoise(long seed, int x, int z, int scale) {
+//$$        int ix = Math.floorDiv(x, scale);
+//$$        int iz = Math.floorDiv(z, scale);
+//$$        float fx = (float)Math.floorMod(x, scale) / scale;
+//$$        float fz = (float)Math.floorMod(z, scale) / scale;
+//$$        // Cubic smoothstep: يجعل الانتقال ناعماً بين النقاط
+//$$        fx = fx * fx * (3f - 2f * fx);
+//$$        fz = fz * fz * (3f - 2f * fz);
+//$$        float v00 = hashFloat(seed,          ix,   iz);
+//$$        float v10 = hashFloat(seed,          ix+1, iz);
+//$$        float v01 = hashFloat(seed,          ix,   iz+1);
+//$$        float v11 = hashFloat(seed,          ix+1, iz+1);
+//$$        float top    = v00 * (1f - fx) + v10 * fx;
+//$$        float bottom = v01 * (1f - fx) + v11 * fx;
+//$$        return top * (1f - fz) + bottom * fz;
+//$$    }
+//$$
+//$$    /**
+//$$     * نويس متعدد الأكتاف للنباتات العامة (عشب، سراخس، أزهار)
+//$$     * 3 أكتاف: منطقة عريضة (بيوم) + مجموعة + تكستر ناعم
+//$$     * النتيجة: 0.0 (فارغ) → 1.0 (كثيف) — مثل الفانيلا بالضبط
+//$$     */
+//$$    private static float vegetationNoise(long seed, int x, int z) {
+//$$        float n1 = valueNoise(seed,                          x, z, 40); // نطاق عريض (بيوم)
+//$$        float n2 = valueNoise(seed * 6364136223L + 1442695L, x, z, 14); // مجموعة محلية
+//$$        float n3 = valueNoise(seed * 1442695040L + 6364136L, x, z,  5); // تكستر ناعم
+//$$        return n1 * 0.50f + n2 * 0.35f + n3 * 0.15f;
+//$$    }
+//$$
+//$$    /**
+//$$     * نويس مخصص للبوش — patches أكبر وأكثر تجمعاً كالفانيلا
+//$$     */
+//$$    private static float bushNoise(long seed, int x, int z) {
+//$$        float n1 = valueNoise(seed ^ 0xDEADBEEFL,  x, z, 28); // patch عريض
+//$$        float n2 = valueNoise(seed ^ 0xCAFEBABEL,  x, z,  9); // clustering محلي
+//$$        return n1 * 0.60f + n2 * 0.40f;
 //$$    }
 
     // ==================== [5] CANOPY DENSITY ====================
