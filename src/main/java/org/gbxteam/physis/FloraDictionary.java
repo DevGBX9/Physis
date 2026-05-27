@@ -52,7 +52,7 @@ public class FloraDictionary {
 //$$        if (name.contains("sunflower") || name.contains("lilac") || name.contains("rose_bush") || 
 //$$            name.contains("peony") || name.contains("tall") || name.contains("large") || 
 //$$            name.contains("pitcher") || name.contains("dead_bush") || name.contains("berry_bush") ||
-//$$            name.contains("lily")) {
+//$$            name.contains("lily") || name.contains("petal")) {
 //$$            return VegetationType.INVALID;
 //$$        }
 //$$        
@@ -63,7 +63,6 @@ public class FloraDictionary {
 //$$        if (name.equals("fern")) return VegetationType.FERN;
 //$$        if (name.equals("bush")) return VegetationType.PLAIN_BUSH;
 //$$        if (name.contains("firefly_bush")) return VegetationType.FIREFLY_BUSH;
-//$$        if (name.contains("petal")) return VegetationType.PETAL;
 //$$        
 //$$        // الباقي يعتبر أزهار
 //$$        if (name.contains("flower") || name.contains("allium") || name.contains("orchid") || name.contains("tulip") || name.contains("bluet") || name.contains("daisy") || name.contains("cornflower") || name.contains("lily_of_the_valley")) {
@@ -79,7 +78,6 @@ public class FloraDictionary {
 //$$            case FIREFLY_BUSH: return 1;
 //$$            case PLAIN_BUSH: return isDensePatch ? 7 : 3;
 //$$            case FERN: return 2;
-//$$            case PETAL: return 3;
 //$$            case FLOWER: return 2;
 //$$            default: return 2;
 //$$        }

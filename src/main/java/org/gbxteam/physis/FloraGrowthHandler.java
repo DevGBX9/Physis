@@ -236,7 +236,7 @@ public class FloraGrowthHandler {
 //$$                                   name.contains("sugar_cane") || (name.contains("bush") && !name.contains("dead")) || name.contains("moss") || 
 //$$                                   name.contains("azalea") || name.contains("spore") || name.contains("dripleaf") || 
 //$$                                   name.contains("cave_vines") || name.contains("hanging_roots") || name.contains("glow_berries") ||
-//$$                                   name.contains("petal") || name.contains("nether_wart") || name.contains("roots") || name.contains("sprouts"));
+//$$                                   name.contains("nether_wart") || name.contains("roots") || name.contains("sprouts"));
 //$$                    
 //$$                    if (isVegetation) {
 //$$                        state = s;
@@ -277,21 +277,9 @@ public class FloraGrowthHandler {
 //$$        boolean isFern = (type == FloraDictionary.VegetationType.FERN);
 //$$        boolean isPlainBush = (type == FloraDictionary.VegetationType.PLAIN_BUSH);
 //$$        boolean isFireflyBush = (type == FloraDictionary.VegetationType.FIREFLY_BUSH);
-//$$        boolean isPetal = (type == FloraDictionary.VegetationType.PETAL);
 //$$        boolean isFlower = (type == FloraDictionary.VegetationType.FLOWER);
 //$$        
 //$$        if (isFireflyBush && !isNearWater(level, sourcePos, 2)) return;
-//$$        
-//$$        if (isPetal) {
-//$$            boolean hasCherryTree = false;
-//$$            for (BlockPos cp : BlockPos.betweenClosed(sourcePos.offset(-8, 0, -8), sourcePos.offset(8, 15, 8))) {
-//$$                if (net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(level.getBlockState(cp).getBlock()).getPath().contains("cherry_leaves")) {
-//$$                    hasCherryTree = true;
-//$$                    break;
-//$$                }
-//$$            }
-//$$            if (!hasCherryTree) return;
-//$$        }
 //$$        
 //$$        boolean nearWaterSource = isNearWater(level, sourcePos, 6);
 //$$        float waterBoost = nearWaterSource ? 1.5f : 1.0f;
@@ -313,30 +301,8 @@ public class FloraGrowthHandler {
 //$$            if (random.nextFloat() > 0.11f * waterBoost) return;
 //$$        } else if (isFireflyBush) {
 //$$            if (random.nextFloat() > 0.07f * waterBoost) return;
-//$$        } else if (isPetal) {
-//$$            if (random.nextFloat() > 0.11f * waterBoost) return;
 //$$        } else {
 //$$            if (random.nextFloat() > 0.015f * waterBoost) return;
-//$$        }
-//$$        
-//$$        if (isPetal) {
-//$$            for (net.minecraft.world.level.block.state.properties.Property<?> prop : state.getProperties()) {
-//$$                String pName = prop.getName().toLowerCase();
-//$$                if (pName.contains("amount") || pName.contains("flower")) {
-//$$                    @SuppressWarnings("unchecked")
-//$$                    net.minecraft.world.level.block.state.properties.Property<Integer> intProp = (net.minecraft.world.level.block.state.properties.Property<Integer>) prop;
-//$$                    int currentAmount = state.getValue(intProp);
-//$$                    if (currentAmount < 3 && random.nextFloat() < 0.15f) {
-//$$                        level.setBlock(sourcePos, state.setValue(intProp, currentAmount + 1), 3);
-//$$                        return;
-//$$                    }
-//$$                    state = state.setValue(intProp, 1 + random.nextInt(2));
-//$$                } else if (pName.contains("facing") || pName.contains("direction")) {
-//$$                    @SuppressWarnings("unchecked")
-//$$                    net.minecraft.world.level.block.state.properties.Property<net.minecraft.core.Direction> dirProp = (net.minecraft.world.level.block.state.properties.Property<net.minecraft.core.Direction>) prop;
-//$$                    state = state.setValue(dirProp, net.minecraft.core.Direction.Plane.HORIZONTAL.getRandomDirection(random));
-//$$                }
-//$$            }
 //$$        }
 //$$        
 //$$        int checkRadius = (isFireflyBush) ? 3 : 2;

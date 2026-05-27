@@ -33,11 +33,10 @@ Every plant has its own growth rate, density limit, and required spacing. When a
 
 | Plant Type | Spread Rate | Max Local Density | Spacing Rules | Ecological Role |
 | :--- | :--- | :--- | :--- | :--- |
-| **Grass** | 30% | 10 to 18 per 5x5 area | Tolerates clustering | The primary ground cover, spreading quickly across open terrain. |
+| **Grass** | 30% | 7 to 12 per 5x5 area | Tolerates clustering | The primary ground cover, spreading quickly across open terrain. |
 | **Bushes** | 8% | 3 to 7 per 5x5 area | Can cluster tightly | Forms dense, cozy thickets in the landscape. |
 | **Ferns** | 1.5% | 2 per 5x5 area | Requires 20-30 block separation | Spreads slowly and jumps to distant spots to form new patches. |
 | **Flowers** | 1% | 2 per 5x5 area | Requires 10+ block separation | Rare and precious, forming small, isolated clusters. |
-| **Cherry Petals**| 8% | 3 per 5x5 area | Restricted to Cherry canopy | Drops from cherry leaves. If a tree has 0 petals beneath it, the mod kickstarts the process by dropping 3-6 clusters simultaneously. |
 | **Fireflies** | 5% | 1 per 7x7 area | Requires 4+ block separation | Highly specialized bushes restricted entirely to the immediate edge of water sources. |
 
 ### Water and Shade Preference
