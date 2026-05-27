@@ -24,9 +24,8 @@
 
 package org.gbxteam.physis;
 
-//#if MC >= 12001
+//#if MC >= 11904
 //$$ import net.minecraft.core.BlockPos;
-//$$ import net.minecraft.core.registries.BuiltInRegistries;
 //$$ import net.minecraft.server.level.ServerLevel;
 //$$ import net.minecraft.util.RandomSource;
 //$$ import net.minecraft.world.level.block.Block;
@@ -38,7 +37,7 @@ package org.gbxteam.physis;
 
 public class FloraGrowthHandler {
     
-    //#if MC >= 12001
+    //#if MC >= 11904
     
     // ╔══════════════════════════════════════════════════════════════════╗
     // ║         القسم ١: التحديث العالمي للتشونكات (tickChunk)          ║
@@ -97,10 +96,7 @@ public class FloraGrowthHandler {
 //$$            int clearRadius       // نصف قطر المنطقة الخالية للمكان الجديد
 //$$    ) {
 //$$        RandomSource random = level.getRandom();
-//$$        Block targetBlock = net.minecraft.core.registries.BuiltInRegistries.BLOCK.stream()
-//$$            .filter(b -> net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(b).toString().equals(blockId))
-//$$            .findFirst()
-//$$            .orElse(null);
+//$$        Block targetBlock = getBlockById(blockId);
 //$$        if (targetBlock == null || targetBlock == net.minecraft.world.level.block.Blocks.AIR) return;
 //$$        
 //$$        BlockPos surfaceStart = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, searchPos);
@@ -224,7 +220,7 @@ public class FloraGrowthHandler {
 //$$                    Block b = s.getBlock();
 //$$                    if (b == Blocks.AIR || b == Blocks.WATER) { mut.move(0, -1, 0); continue; }
 //$$                    
-//$$                    name = net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(b).getPath();
+//$$                    name = getBlockPathString(b);
 //$$                    if (b == Blocks.GRASS_BLOCK || b == Blocks.MOSS_BLOCK || b == Blocks.DIRT || b == Blocks.SAND ||
 //$$                        name.endsWith("grass_block") || name.contains("leaves") || name.contains("log") || name.contains("wood")) {
 //$$                        break;
@@ -577,6 +573,66 @@ public class FloraGrowthHandler {
 //$$            }
 //$$        }
 //$$        return 20.0f;
+//$$    }
+//$$
+//$$    private static java.lang.reflect.Method getKeyMethod = null;
+//$$    private static Object blockRegistry = null;
+//$$    private static boolean registryInitialized = false;
+//$$
+//$$    private static void initRegistryReflection() {
+//$$        if (registryInitialized) return;
+//$$        try {
+//$$            Class<?> birClass = Class.forName("net.minecraft.core.registries.BuiltInRegistries");
+//$$            blockRegistry = birClass.getField("BLOCK").get(null);
+//$$        } catch (Exception e) {
+//$$            try {
+//$$                Class<?> regClass = Class.forName("net.minecraft.core.Registry");
+//$$                blockRegistry = regClass.getField("BLOCK").get(null);
+//$$            } catch (Exception ex) {
+//$$                // fallback
+//$$            }
+//$$        }
+//$$        if (blockRegistry != null) {
+//$$            try {
+//$$                getKeyMethod = blockRegistry.getClass().getMethod("getKey", Object.class);
+//$$            } catch (Exception e) {
+//$$                // fallback
+//$$            }
+//$$        }
+//$$        registryInitialized = true;
+//$$    }
+//$$
+//$$    private static String getBlockPathString(Block block) {
+//$$        initRegistryReflection();
+//$$        if (getKeyMethod != null && blockRegistry != null) {
+//$$            try {
+//$$                Object resourceLocation = getKeyMethod.invoke(blockRegistry, block);
+//$$                return (String) resourceLocation.getClass().getMethod("getPath").invoke(resourceLocation);
+//$$            } catch (Exception e) {
+//$$                // fallback
+//$$            }
+//$$        }
+//$$        return "";
+//$$    }
+//$$
+//$$    private static Block getBlockById(String id) {
+//$$        initRegistryReflection();
+//$$        if (blockRegistry != null) {
+//$$            try {
+//$$                Class<?> rlClass;
+//$$                try {
+//$$                    rlClass = Class.forName("net.minecraft.resources.ResourceLocation");
+//$$                } catch (ClassNotFoundException e) {
+//$$                    rlClass = Class.forName("net.minecraft.util.Identifier");
+//$$                }
+//$$                Object rl = rlClass.getConstructor(String.class).newInstance(id);
+//$$                java.lang.reflect.Method getMethod = blockRegistry.getClass().getMethod("get", rlClass);
+//$$                return (Block) getMethod.invoke(blockRegistry, rl);
+//$$            } catch (Exception e) {
+//$$                // fallback
+//$$            }
+//$$        }
+//$$        return null;
 //$$    }
 
     //#else
