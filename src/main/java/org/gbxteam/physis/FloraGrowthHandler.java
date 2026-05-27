@@ -24,10 +24,9 @@
 
 package org.gbxteam.physis;
 
-//#if MC >= 11904
+//#if MC >= 11802
 //$$ import net.minecraft.core.BlockPos;
 //$$ import net.minecraft.server.level.ServerLevel;
-//$$ import net.minecraft.util.RandomSource;
 //$$ import net.minecraft.world.level.block.Block;
 //$$ import net.minecraft.world.level.block.Blocks;
 //$$ import net.minecraft.world.level.block.LeavesBlock;
@@ -37,7 +36,7 @@ package org.gbxteam.physis;
 
 public class FloraGrowthHandler {
     
-    //#if MC >= 11904
+    //#if MC >= 11802
     
     // ╔══════════════════════════════════════════════════════════════════╗
     // ║         القسم ١: التحديث العالمي للتشونكات (tickChunk)          ║
@@ -55,20 +54,21 @@ public class FloraGrowthHandler {
 //$$
 //$$        int baseChance = isRaining ? 300 : 600;
 //$$        int runChance = Math.max(1, (int)(baseChance / speedRatio));
-//$$        if (level.getRandom().nextInt(runChance) != 0) return;
+//$$        CompatibleRandom random = new CompatibleRandom(level.getRandom());
+//$$        if (random.nextInt(runChance) != 0) return;
 //$$
 //$$        net.minecraft.world.level.ChunkPos pos = chunk.getPos();
 //$$        BlockPos center = pos.getMiddleBlockPosition(0);
 //$$
 //$$        // محاولة انتشار واحدة لكل تشغيل — هادئة وطبيعية تماماً كالفانيلا
-//$$        int ox = level.getRandom().nextInt(16) - 8;
-//$$        int oz = level.getRandom().nextInt(16) - 8;
+//$$        int ox = random.nextInt(16) - 8;
+//$$        int oz = random.nextInt(16) - 8;
 //$$        processVegetationExpansion(level, center.offset(ox, 0, oz));
 //$$
 //$$        // نظام مراقبة التوزيع (يعمل بشكل أحيائي نادر)
-//$$        if (level.getRandom().nextInt(5) == 0) {
-//$$            int ox2 = level.getRandom().nextInt(16) - 8;
-//$$            int oz2 = level.getRandom().nextInt(16) - 8;
+//$$        if (random.nextInt(5) == 0) {
+//$$            int ox2 = random.nextInt(16) - 8;
+//$$            int oz2 = random.nextInt(16) - 8;
 //$$            BlockPos monitorPos = center.offset(ox2, 0, oz2);
 //$$
 //$$            monitorPlantDistribution(level, monitorPos, "minecraft:short_grass", 6, 2.0,  5,  10, 3);
@@ -95,7 +95,7 @@ public class FloraGrowthHandler {
 //$$            int relocateMax,      // أقصى مسافة نقل للمنفرد
 //$$            int clearRadius       // نصف قطر المنطقة الخالية للمكان الجديد
 //$$    ) {
-//$$        RandomSource random = level.getRandom();
+//$$        CompatibleRandom random = new CompatibleRandom(level.getRandom());
 //$$        Block targetBlock = getBlockById(blockId);
 //$$        if (targetBlock == null || targetBlock == net.minecraft.world.level.block.Blocks.AIR) return;
 //$$        
@@ -179,7 +179,7 @@ public class FloraGrowthHandler {
     // ║   يفحص كثافة الأعشاب ويزيل الزائد منها للحفاظ على منظر طبيعي   ║
     // ║   يُستدعى عندما تصل الكثافة للحد الأقصى في منطقة معينة         ║
     // ╚══════════════════════════════════════════════════════════════════╝
-//$$    private static boolean manageVegetationBalance(ServerLevel level, BlockPos pos, int density, boolean isGrass, boolean isPlainBush, boolean isFlower, RandomSource random) {
+//$$    private static boolean manageVegetationBalance(ServerLevel level, BlockPos pos, int density, boolean isGrass, boolean isPlainBush, boolean isFlower, CompatibleRandom random) {
 //$$        if (isGrass && density > 5 && random.nextFloat() < 0.70f) {
 //$$            level.setBlock(pos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 3);
 //$$            return true;
@@ -202,7 +202,7 @@ public class FloraGrowthHandler {
     // ╚══════════════════════════════════════════════════════════════════╝
 //$$    private static void processVegetationExpansion(ServerLevel level, BlockPos searchPos) {
 //$$        if (!level.isLoaded(searchPos)) return;
-//$$        RandomSource random = level.getRandom();
+//$$        CompatibleRandom random = new CompatibleRandom(level.getRandom());
 //$$        
 //$$        BlockPos surfaceStart = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, searchPos);
 //$$        BlockPos.MutableBlockPos mut = new BlockPos.MutableBlockPos();
@@ -573,6 +573,52 @@ public class FloraGrowthHandler {
 //$$            }
 //$$        }
 //$$        return 20.0f;
+//$$    }
+//$$
+//$$    public static class CompatibleRandom {
+//$$        private final Object obj;
+//$$        private final boolean isRandomSource;
+//$$
+//$$        public CompatibleRandom(Object obj) {
+//$$            this.obj = obj;
+//$$            this.isRandomSource = !(obj instanceof java.util.Random);
+//$$        }
+//$$
+//$$        public int nextInt(int bound) {
+//$$            if (isRandomSource) {
+//$$                try {
+//$$                    return ((Number) obj.getClass().getMethod("nextInt", int.class).invoke(obj, bound)).intValue();
+//$$                } catch (Exception e) {
+//$$                    return 0;
+//$$                }
+//$$            } else {
+//$$                return ((java.util.Random) obj).nextInt(bound);
+//$$            }
+//$$        }
+//$$
+//$$        public float nextFloat() {
+//$$            if (isRandomSource) {
+//$$                try {
+//$$                    return ((Number) obj.getClass().getMethod("nextFloat").invoke(obj)).floatValue();
+//$$                } catch (Exception e) {
+//$$                    return 0.0f;
+//$$                }
+//$$            } else {
+//$$                return ((java.util.Random) obj).nextFloat();
+//$$            }
+//$$        }
+//$$
+//$$        public double nextDouble() {
+//$$            if (isRandomSource) {
+//$$                try {
+//$$                    return ((Number) obj.getClass().getMethod("nextDouble").invoke(obj)).doubleValue();
+//$$                } catch (Exception e) {
+//$$                    return 0.0;
+//$$                }
+//$$            } else {
+//$$                return ((java.util.Random) obj).nextDouble();
+//$$            }
+//$$        }
 //$$    }
 //$$
 //$$    private static java.lang.reflect.Method getKeyMethod = null;
