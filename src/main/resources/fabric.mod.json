@@ -4,7 +4,7 @@
   "version": "${version}",
 
   "name": "${name}",
-  "description": "A Minecraft mod dedicated to the dynamic growth and expansion of forests.",
+  "description": "Simulates natural, vanilla-like propagation of grass, flowers, and bushes.",
   "authors": [
     "DevGBX9"
   ],

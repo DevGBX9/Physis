@@ -36,7 +36,7 @@ package org.gbxteam.physis;
 //$$ import net.minecraft.world.level.levelgen.Heightmap;
 //#endif
 
-public class ForestGrowthHandler {
+public class FloraGrowthHandler {
     
     //#if MC >= 260100
     
