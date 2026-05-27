@@ -54,7 +54,7 @@ public class FloraGrowthHandler {
 //$$        float tps = level.getServer().tickRateManager().tickrate();
 //$$        float speedRatio = Math.max(1.0f, tps / 20.0f);
 //$$
-//$$        int baseChance = isRaining ? 400 : 800;
+//$$        int baseChance = isRaining ? 300 : 600;
 //$$        int runChance = Math.max(1, (int)(baseChance / speedRatio));
 //$$        if (level.getRandom().nextInt(runChance) != 0) return;
 //$$
@@ -184,7 +184,7 @@ public class FloraGrowthHandler {
     // ║   يُستدعى عندما تصل الكثافة للحد الأقصى في منطقة معينة         ║
     // ╚══════════════════════════════════════════════════════════════════╝
 //$$    private static boolean manageVegetationBalance(ServerLevel level, BlockPos pos, int density, boolean isGrass, boolean isPlainBush, boolean isFlower, RandomSource random) {
-//$$        if (isGrass && density > 5 && random.nextFloat() < 0.6f) {
+//$$        if (isGrass && density > 5 && random.nextFloat() < 0.70f) {
 //$$            level.setBlock(pos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 3);
 //$$            return true;
 //$$        }
@@ -294,7 +294,7 @@ public class FloraGrowthHandler {
 //$$        }
 //$$        
 //$$        boolean nearWaterSource = isNearWater(level, sourcePos, 6);
-//$$        float waterBoost = nearWaterSource ? 2.5f : 1.0f;
+//$$        float waterBoost = nearWaterSource ? 1.5f : 1.0f;
 //$$
 //$$        // ══════ NOISE SOURCE CHECK: فحص نويس منطقة المصدر ══════
 //$$        // النباتات في مناطق النويس المنخفض تنتشر ببطء شديد (تحاكي حدود biomes)
@@ -306,17 +306,17 @@ public class FloraGrowthHandler {
 //$$        if (srcNoise < srcMin && random.nextFloat() > srcNoise * 2.5f) return;
 //$$
 //$$        if (isGrass) {
-//$$            if (random.nextFloat() > 0.30f * waterBoost) return;
+//$$            if (random.nextFloat() > 0.38f * waterBoost) return;
 //$$        } else if (isFern) {
-//$$            if (random.nextFloat() > 0.015f * waterBoost) return;
+//$$            if (random.nextFloat() > 0.02f * waterBoost) return;
 //$$        } else if (isPlainBush) {
-//$$            if (random.nextFloat() > 0.08f * waterBoost) return;
+//$$            if (random.nextFloat() > 0.11f * waterBoost) return;
 //$$        } else if (isFireflyBush) {
-//$$            if (random.nextFloat() > 0.05f * waterBoost) return;
+//$$            if (random.nextFloat() > 0.07f * waterBoost) return;
 //$$        } else if (isPetal) {
-//$$            if (random.nextFloat() > 0.08f * waterBoost) return;
+//$$            if (random.nextFloat() > 0.11f * waterBoost) return;
 //$$        } else {
-//$$            if (random.nextFloat() > 0.01f * waterBoost) return;
+//$$            if (random.nextFloat() > 0.015f * waterBoost) return;
 //$$        }
 //$$        
 //$$        if (isPetal) {
@@ -439,7 +439,7 @@ public class FloraGrowthHandler {
 //$$            int score = 0;
 //$$            // نويس يعطي أولوية عالية للمناطق الكثيفة (مثل patches الفانيلا)
 //$$            score += (int)(targetNoise * 14f);
-//$$            if (isNearWater(level, target, (isGrass || isPlainBush) ? 8 : 4)) score += (isGrass || isPlainBush) ? 10 : 5;
+//$$            if (isNearWater(level, target, (isGrass || isPlainBush) ? 6 : 4)) score += (isGrass || isPlainBush) ? 4 : 3;
 //$$            if ((isGrass || isPlainBush) && hasHeavyCanopy(level, target)) score += 6;
 //$$            if (!(isGrass || isPlainBush) && hasHeavyCanopy(level, target)) score += 2;
 //$$            if (isFireflyBush && isNearWater(level, target, 1)) score += 15;
