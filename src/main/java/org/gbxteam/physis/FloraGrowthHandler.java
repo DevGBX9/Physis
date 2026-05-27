@@ -449,7 +449,7 @@ public class FloraGrowthHandler {
 //$$        if (state.isAir()) return false;
 //$$        
 //$$        Block block = state.getBlock();
-//$$        String name = net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(block).getPath();
+//$$        String name = getBlockPathString(block);
 //$$        if (name.contains("fence") || name.contains("wall") || name.contains("gate") || 
 //$$            name.contains("door") || name.contains("pane") || name.contains("bars") ||
 //$$            name.contains("slab") || name.contains("stairs")) return true;
