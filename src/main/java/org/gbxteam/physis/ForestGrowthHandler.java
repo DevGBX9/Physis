@@ -47,51 +47,36 @@ public class ForestGrowthHandler {
     // ╚══════════════════════════════════════════════════════════════════╝
 //$$    public static void tickChunk(net.minecraft.world.level.chunk.LevelChunk chunk, ServerLevel level) {
 //$$        if (!level.isLoaded(chunk.getPos().getMiddleBlockPosition(0))) return;
-//$$        
+//$$
 //$$        boolean isRaining = level.isRaining();
-//$$        
-//$$        // استرجاع السرعة الافتراضية البطيئة وطبيعية جداً
+//$$
+//$$        // سرعة انتشار طبيعية مطابقة للفانيلا (بدون مطر: ~40ث، مع مطر: ~20ث للتشونك)
 //$$        float tps = level.getServer().tickRateManager().tickrate();
 //$$        float speedRatio = Math.max(1.0f, tps / 20.0f);
 //$$
-//$$        int baseChance = isRaining ? 100 : 200;
+//$$        int baseChance = isRaining ? 400 : 800;
 //$$        int runChance = Math.max(1, (int)(baseChance / speedRatio));
-//$$        boolean shouldRun = level.getRandom().nextInt(runChance) == 0;
-//$$        
-//$$        if (shouldRun) {
-//$$            net.minecraft.world.level.ChunkPos pos = chunk.getPos();
-//$$            BlockPos center = pos.getMiddleBlockPosition(0);
-//$$            
-//$$            // [NIGHT SLOWDOWN]
-//$$            long dayTime = level.getGameTime();
-//$$            boolean isDayTime = (dayTime % 24000) < 12000;
-//$$            if (!isDayTime && speedRatio <= 1.0f && level.getRandom().nextFloat() > 0.01f) return;
+//$$        if (level.getRandom().nextInt(runChance) != 0) return;
 //$$
-//$$            int attempts = isRaining ? 2 : 1;
-//$$            if (speedRatio > 10.0f) {
-//$$                attempts = (int)(attempts * (speedRatio / 5.0f));
-//$$                attempts = Math.min(attempts, 100);
-//$$            }
-//$$            
-//$$            // Vegetation
-//$$            for (int i = 0; i < attempts * 3; i++) {
-//$$                int ox = level.getRandom().nextInt(16) - 8;
-//$$                int oz = level.getRandom().nextInt(16) - 8;
-//$$                processVegetationExpansion(level, center.offset(ox, 0, oz));
-//$$            }
-//$$            
-//$$            // نظام مراقبة
-//$$            if (level.getRandom().nextInt(3) == 0) {
-//$$                int ox2 = level.getRandom().nextInt(16) - 8;
-//$$                int oz2 = level.getRandom().nextInt(16) - 8;
-//$$                BlockPos monitorPos = center.offset(ox2, 0, oz2);
-//$$                
-//$$                monitorPlantDistribution(level, monitorPos, "minecraft:short_grass", 6, 2.0,  5,  10, 3);
-//$$                monitorPlantDistribution(level, monitorPos, "minecraft:bush",        2, 8.0,  12, 30, 8);
-//$$                monitorPlantDistribution(level, monitorPos, "minecraft:fern",         2, 10.0, 15, 35, 8);
-//$$                monitorPlantDistribution(level, monitorPos, "minecraft:tall_grass",   2, 6.0,  8,  20, 5);
-//$$                monitorPlantDistribution(level, monitorPos, "minecraft:large_fern",   1, 12.0, 15, 35, 8);
-//$$            }
+//$$        net.minecraft.world.level.ChunkPos pos = chunk.getPos();
+//$$        BlockPos center = pos.getMiddleBlockPosition(0);
+//$$
+//$$        // محاولة انتشار واحدة لكل تشغيل — هادئة وطبيعية تماماً كالفانيلا
+//$$        int ox = level.getRandom().nextInt(16) - 8;
+//$$        int oz = level.getRandom().nextInt(16) - 8;
+//$$        processVegetationExpansion(level, center.offset(ox, 0, oz));
+//$$
+//$$        // نظام مراقبة التوزيع (يعمل بشكل أحيائي نادر)
+//$$        if (level.getRandom().nextInt(5) == 0) {
+//$$            int ox2 = level.getRandom().nextInt(16) - 8;
+//$$            int oz2 = level.getRandom().nextInt(16) - 8;
+//$$            BlockPos monitorPos = center.offset(ox2, 0, oz2);
+//$$
+//$$            monitorPlantDistribution(level, monitorPos, "minecraft:short_grass", 6, 2.0,  5,  10, 3);
+//$$            monitorPlantDistribution(level, monitorPos, "minecraft:bush",        5, 6.0,  10, 25, 6);
+//$$            monitorPlantDistribution(level, monitorPos, "minecraft:fern",         2, 10.0, 15, 35, 8);
+//$$            monitorPlantDistribution(level, monitorPos, "minecraft:tall_grass",   2, 6.0,  8,  20, 5);
+//$$            monitorPlantDistribution(level, monitorPos, "minecraft:large_fern",   1, 12.0, 15, 35, 8);
 //$$        }
 //$$    }
 
@@ -240,7 +225,8 @@ public class ForestGrowthHandler {
 //$$                    if (b == Blocks.AIR || b == Blocks.WATER) { mut.move(0, -1, 0); continue; }
 //$$                    
 //$$                    name = net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(b).getPath();
-//$$                    if (b == Blocks.GRASS_BLOCK || b == Blocks.MOSS_BLOCK || b == Blocks.DIRT || b == Blocks.SAND || name.contains("leaves") || name.contains("log") || name.contains("wood")) {
+//$$                    if (b == Blocks.GRASS_BLOCK || b == Blocks.MOSS_BLOCK || b == Blocks.DIRT || b == Blocks.SAND ||
+//$$                        name.endsWith("grass_block") || name.contains("leaves") || name.contains("log") || name.contains("wood")) {
 //$$                        break;
 //$$                    }
 //$$                    
@@ -315,7 +301,7 @@ public class ForestGrowthHandler {
 //$$        } else if (isFern) {
 //$$            if (random.nextFloat() > 0.015f * waterBoost) return;
 //$$        } else if (isPlainBush) {
-//$$            if (random.nextFloat() > 0.03f * waterBoost) return;
+//$$            if (random.nextFloat() > 0.08f * waterBoost) return;
 //$$        } else if (isFireflyBush) {
 //$$            if (random.nextFloat() > 0.05f * waterBoost) return;
 //$$        } else if (isPetal) {
@@ -370,7 +356,7 @@ public class ForestGrowthHandler {
 //$$                return;
 //$$            }
 //$$        } else {
-//$$            searchSpread = (isPlainBush || isFlower) ? 2 : (isGrass ? 5 : 4);
+//$$            searchSpread = isFlower ? 2 : (isPlainBush ? 4 : (isGrass ? 5 : 4));
 //$$        }
 //$$        
 //$$        BlockPos bestTarget = null;
