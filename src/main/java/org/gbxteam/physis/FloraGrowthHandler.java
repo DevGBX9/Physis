@@ -51,11 +51,7 @@ public class FloraGrowthHandler {
 //$$        boolean isRaining = level.isRaining();
 //$$
 //$$        // سرعة انتشار طبيعية مطابقة للفانيلا (بدون مطر: ~40ث، مع مطر: ~20ث للتشونك)
-        //#if MC >= 12003
-//$$        float tps = level.getServer().tickRateManager().tickrate();
-        //#else
-//$$        float tps = 20.0f;
-        //#endif
+//$$        float tps = getTickRate(level);
 //$$        float speedRatio = Math.max(1.0f, tps / 20.0f);
 //$$
 //$$        int baseChance = isRaining ? 300 : 600;
@@ -554,6 +550,33 @@ public class FloraGrowthHandler {
 //$$            }
 //$$        }
 //$$        return leafCount >= 3;
+//$$    }
+//$$
+//$$    private static java.lang.reflect.Method tickRateManagerMethod = null;
+//$$    private static java.lang.reflect.Method tickrateMethod = null;
+//$$    private static boolean reflectionInitialized = false;
+//$$
+//$$    private static float getTickRate(ServerLevel level) {
+//$$        if (!reflectionInitialized) {
+//$$            try {
+//$$                tickRateManagerMethod = level.getServer().getClass().getMethod("tickRateManager");
+//$$                reflectionInitialized = true;
+//$$            } catch (Exception e) {
+//$$                reflectionInitialized = true;
+//$$            }
+//$$        }
+//$$        if (tickRateManagerMethod != null) {
+//$$            try {
+//$$                Object trm = tickRateManagerMethod.invoke(level.getServer());
+//$$                if (tickrateMethod == null) {
+//$$                    tickrateMethod = trm.getClass().getMethod("tickrate");
+//$$                }
+//$$                return ((Number) tickrateMethod.invoke(trm)).floatValue();
+//$$            } catch (Exception e) {
+//$$                // fallback
+//$$            }
+//$$        }
+//$$        return 20.0f;
 //$$    }
 
     //#else
