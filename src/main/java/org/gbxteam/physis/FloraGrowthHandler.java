@@ -51,11 +51,11 @@ public class FloraGrowthHandler {
 //$$        boolean isRaining = level.isRaining();
 //$$
 //$$        // سرعة انتشار طبيعية مطابقة للفانيلا (بدون مطر: ~40ث، مع مطر: ~20ث للتشونك)
-//$$        //#if MC >= 12003
+        //#if MC >= 12003
 //$$        float tps = level.getServer().tickRateManager().tickrate();
-//$$        //#else
-//$$        //$$ float tps = 20.0f;
-//$$        //#endif
+        //#else
+//$$        float tps = 20.0f;
+        //#endif
 //$$        float speedRatio = Math.max(1.0f, tps / 20.0f);
 //$$
 //$$        int baseChance = isRaining ? 300 : 600;
