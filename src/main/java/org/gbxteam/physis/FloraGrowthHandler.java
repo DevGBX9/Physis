@@ -371,14 +371,18 @@ public class FloraGrowthHandler {
 //$$            // [GRASS BLOCK ONLY]
 //$$            {
 //$$                BlockState below = level.getBlockState(target.below());
+//#if MC >= 11800
 //$$                if (!below.is(net.minecraft.world.level.block.Blocks.GRASS_BLOCK)) continue;
+//#else
+//$$                if (below.getBlock() != net.minecraft.world.level.block.Blocks.GRASS_BLOCK) continue;
+//#endif
 //$$            }
 //$$
 //$$            // [BARRIER CHECK]
 //$$            if (isSpreadBlocked(level, sourcePos, target, 1)) continue;
 //$$
 //$$            // [DESTINATION CHECK]
-//#if MC >= 11700
+//#if MC >= 11800
 //$$            if (level.getFluidState(target).is(net.minecraft.world.level.material.Fluids.WATER)) continue;
 //#else
 //$$            if (level.getFluidState(target).getType() == net.minecraft.world.level.material.Fluids.WATER) continue;
@@ -492,7 +496,11 @@ public class FloraGrowthHandler {
 //$$
 //$$    private static boolean isNearWater(ServerLevel level, BlockPos pos, int radius) {
 //$$        for (BlockPos p : BlockPos.betweenClosed(pos.offset(-radius, -2, -radius), pos.offset(radius, 1, radius))) {
+//#if MC >= 11800
 //$$            if (level.getBlockState(p).is(Blocks.WATER)) {
+//#else
+//$$            if (level.getBlockState(p).getBlock() == Blocks.WATER) {
+//#endif
 //$$                return true;
 //$$            }
 //$$        }
