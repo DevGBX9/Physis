@@ -24,7 +24,7 @@
 
 package org.gbxteam.physis;
 
-//#if MC >= 11400
+//#if MC >= 11600
 //$$ import net.minecraft.core.BlockPos;
 //$$ import net.minecraft.server.level.ServerLevel;
 //$$ import net.minecraft.world.level.block.Block;
@@ -36,7 +36,7 @@ package org.gbxteam.physis;
 
 public class FloraGrowthHandler {
     
-    //#if MC >= 11400
+    //#if MC >= 11600
     
     // ╔══════════════════════════════════════════════════════════════════╗
     // ║         القسم ١: التحديث العالمي للتشونكات (tickChunk)          ║
@@ -44,7 +44,11 @@ public class FloraGrowthHandler {
     // ║   المهام: انتشار نباتات                                        ║
     // ╚══════════════════════════════════════════════════════════════════╝
 //$$    public static void tickChunk(net.minecraft.world.level.chunk.LevelChunk chunk, ServerLevel level) {
+//#if MC >= 11700
 //$$        if (!level.isLoaded(chunk.getPos().getMiddleBlockPosition(0))) return;
+//#else
+//$$        if (!level.isLoaded(new BlockPos(chunk.getPos().x * 16 + 8, 0, chunk.getPos().z * 16 + 8))) return;
+//#endif
 //$$
 //$$        boolean isRaining = level.isRaining();
 //$$
@@ -58,7 +62,11 @@ public class FloraGrowthHandler {
 //$$        if (random.nextInt(runChance) != 0) return;
 //$$
 //$$        net.minecraft.world.level.ChunkPos pos = chunk.getPos();
+//#if MC >= 11700
 //$$        BlockPos center = pos.getMiddleBlockPosition(0);
+//#else
+//$$        BlockPos center = new BlockPos(pos.x * 16 + 8, 0, pos.z * 16 + 8);
+//#endif
 //$$
 //$$        // محاولة انتشار واحدة لكل تشغيل — هادئة وطبيعية تماماً كالفانيلا
 //$$        int ox = random.nextInt(16) - 8;
@@ -214,14 +222,22 @@ public class FloraGrowthHandler {
 //$$        searchLoop:
 //$$        for (int ox = -2; ox <= 2; ox++) {
 //$$            for (int oz = -2; oz <= 2; oz++) {
+//#if MC >= 11700
 //$$                mut.setWithOffset(surfaceStart, ox, 2, oz);
+//#else
+//$$                mut.set(surfaceStart.getX() + ox, surfaceStart.getY() + 2, surfaceStart.getZ() + oz);
+//#endif
 //$$                for (int y = 0; y < 8; y++) {
 //$$                    BlockState s = level.getBlockState(mut);
 //$$                    Block b = s.getBlock();
 //$$                    if (b == Blocks.AIR || b == Blocks.WATER) { mut.move(0, -1, 0); continue; }
 //$$                    
 //$$                    name = getBlockPathString(b);
+//#if MC >= 11700
 //$$                    if (b == Blocks.GRASS_BLOCK || b == Blocks.MOSS_BLOCK || b == Blocks.DIRT || b == Blocks.SAND ||
+//#else
+//$$                    if (b == Blocks.GRASS_BLOCK || b == Blocks.DIRT || b == Blocks.SAND ||
+//#endif
 //$$                        name.endsWith("grass_block") || name.contains("leaves") || name.contains("log") || name.contains("wood")) {
 //$$                        break;
 //$$                    }

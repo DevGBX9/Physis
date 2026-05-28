@@ -24,7 +24,7 @@
 
 package org.gbxteam.physis.mixins;
 
-//#if MC >= 11400
+//#if MC >= 11600
 //$$ import net.minecraft.server.level.ServerLevel;
 //$$ import net.minecraft.world.level.chunk.LevelChunk;
 //$$ import org.gbxteam.physis.FloraGrowthHandler;
