@@ -378,7 +378,11 @@ public class FloraGrowthHandler {
 //$$            if (isSpreadBlocked(level, sourcePos, target, 1)) continue;
 //$$
 //$$            // [DESTINATION CHECK]
+//#if MC >= 11700
 //$$            if (level.getFluidState(target).is(net.minecraft.world.level.material.Fluids.WATER)) continue;
+//#else
+//$$            if (level.getFluidState(target).getType() == net.minecraft.world.level.material.Fluids.WATER) continue;
+//#endif
 //$$            if (!level.canSeeSky(target) && level.getHeightmapPos(net.minecraft.world.level.levelgen.Heightmap.Types.WORLD_SURFACE, target).getY() > target.getY() + 25) continue;
 //$$            
 //$$            if (isFireflyBush && !isNearWater(level, target, 2)) continue;
