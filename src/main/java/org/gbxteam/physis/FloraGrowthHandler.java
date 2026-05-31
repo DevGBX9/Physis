@@ -296,15 +296,16 @@ public class FloraGrowthHandler {
 //$$        float srcNoise = isPlainBush
 //$$            ? bushNoise(wSeed, sourcePos.getX(), sourcePos.getZ())
 //$$            : vegetationNoise(wSeed, sourcePos.getX(), sourcePos.getZ());
-//$$        float srcMin = isPlainBush ? 0.55f : 0.08f;
-//$$        if (srcNoise < srcMin && random.nextFloat() > srcNoise * 1.5f) return;
+//$$        // البوش يستخدم نظام خلوي: أي قيمة > 0 تعني داخل مجموعة
+//$$        float srcMin = isPlainBush ? 0.05f : 0.08f;
+//$$        if (srcNoise < srcMin) return;
 //$$
 //$$        if (isGrass) {
 //$$            if (random.nextFloat() > 0.38f * waterBoost) return;
 //$$        } else if (isFern) {
 //$$            if (random.nextFloat() > 0.02f * waterBoost) return;
 //$$        } else if (isPlainBush) {
-//$$            if (random.nextFloat() > 0.08f * waterBoost) return;
+//$$            if (random.nextFloat() > 0.10f * waterBoost) return;
 //$$        } else if (isFireflyBush) {
 //$$            if (random.nextFloat() > 0.07f * waterBoost) return;
 //$$        } else {
@@ -330,9 +331,9 @@ public class FloraGrowthHandler {
 //$$        if (density >= maxDensity) {
 //$$            manageVegetationBalance(level, sourcePos, density, isGrass, isPlainBush, isFlower, random);
 //$$            
-//$$            float pioneerChance = isPlainBush ? 0.40f : (isFlower ? 0.15f : 0.05f);
+//$$            float pioneerChance = isPlainBush ? 0.08f : (isFlower ? 0.15f : 0.05f);
 //$$            if (random.nextFloat() < pioneerChance) {
-//$$                searchSpread = isPlainBush ? 6 : (isFlower ? 8 : 5);
+//$$                searchSpread = isPlainBush ? 4 : (isFlower ? 8 : 5);
 //$$            } else {
 //$$                return;
 //$$            }
@@ -386,13 +387,14 @@ public class FloraGrowthHandler {
 //$$            if (isFireflyBush && !isNearWater(level, target, 2)) continue;
 //$$            
 //$$            boolean tooClose = false;
-//$$            int minSpacing = isFireflyBush ? 4 : (isPlainBush ? 2 : 0);
+//$$            // البوش داخل المجموعة يكون قريب (minSpacing=0)، النويس الخلوي يتكفل بالفصل بين المجموعات
+//$$            int minSpacing = isFireflyBush ? 4 : 0;
 //$$            
 //$$            if ((isPlainBush || isFlower || isFern) && density >= maxDensity) {
 //$$                if (isFern) {
 //$$                    minSpacing = 20 + random.nextInt(11);
 //$$                } else if (isPlainBush) {
-//$$                    minSpacing = 14 + random.nextInt(8);
+//$$                    minSpacing = 18 + random.nextInt(10);
 //$$                } else {
 //$$                    minSpacing = 10 + random.nextInt(11);
 //$$                }
@@ -414,8 +416,8 @@ public class FloraGrowthHandler {
 //$$            float targetNoise = isPlainBush
 //$$                ? bushNoise(worldSeed, target.getX(), target.getZ())
 //$$                : vegetationNoise(worldSeed, target.getX(), target.getZ());
-//$$            // حد أدنى للنويس بحسب نوع النبتة — يحاكي توزيع الفانيلا
-//$$            float noiseMin = isGrass ? 0.12f : (isPlainBush ? 0.58f : (isFern ? 0.38f : 0.25f));
+//$$            // حد أدنى للنويس — البوش يستخدم نظام خلوي (أي قيمة > 0 = داخل مجموعة)
+//$$            float noiseMin = isGrass ? 0.12f : (isPlainBush ? 0.05f : (isFern ? 0.38f : 0.25f));
 //$$            if (targetNoise < noiseMin) continue;
 //$$
 //$$            int score = 0;
@@ -552,23 +554,48 @@ public class FloraGrowthHandler {
 //$$    }
 //$$
 //$$    /**
-//$$     * نويس مخصص للبوش — جُزر صغيرة متباعدة كالفانيلا
-//$$     * يُنشئ مناطق نويس عالية (جُزر) مفصولة بمساحات واسعة فارغة
-//$$     * كل جزيرة تسمح بمجموعة من 1 إلى 7 بوش
+//$$     * نويس خلوي للبوش — نظام جُزر مضمون التباعد
+//$$     * العالم مقسم لخلايا كبيرة (48×48)، فقط ~12% منها نشطة
+//$$     * كل خلية نشطة فيها نقطة مركزية عشوائية بنصف قطر 2-4.5 بلوك
+//$$     * النتيجة: مجموعات صغيرة (1-7 بوش) متباعدة بمسافات كبيرة مضمونة
 //$$     */
 //$$    private static float bushNoise(long seed, int x, int z) {
-//$$        // الطبقة الأولى: نطاق عريض جداً — تحدد المناطق النادرة التي تظهر فيها البوش
-//$$        float n1 = valueNoise(seed ^ 0xDEADBEEFL,  x, z, 64);
-//$$        // الطبقة الثانية: حجم المجموعة — patches صغيرة داخل المنطقة المسموحة
-//$$        float n2 = valueNoise(seed ^ 0xCAFEBABEL,  x, z, 12);
-//$$        // الطبقة الثالثة: تكستر ناعم — يعطي تنوع داخل كل patch
-//$$        float n3 = valueNoise(seed ^ 0xBAADF00DL,  x, z,  4);
-//$$        // دمج مع أولوية كبيرة للنطاق العريض لإنشاء جزر متباعدة
-//$$        float combined = n1 * 0.55f + n2 * 0.30f + n3 * 0.15f;
-//$$        // تحويل حاد: يجعل القيم المنخفضة تنخفض أكثر والعالية ترتفع (جزر واضحة)
-//$$        combined = combined * combined * combined;
-//$$        // إعادة تطبيع لتكون بين 0 و 1
-//$$        return Math.min(1.0f, combined * 4.0f);
+//$$        int cellSize = 48;
+//$$        int cellX = Math.floorDiv(x, cellSize);
+//$$        int cellZ = Math.floorDiv(z, cellSize);
+//$$        
+//$$        float bestValue = 0.0f;
+//$$        
+//$$        // فحص الخلية الحالية والـ 8 المجاورة لمعالجة الحدود
+//$$        for (int dx = -1; dx <= 1; dx++) {
+//$$            for (int dz = -1; dz <= 1; dz++) {
+//$$                int cx = cellX + dx;
+//$$                int cz = cellZ + dz;
+//$$                
+//$$                // هل الخلية نشطة؟ ~12% فقط من الخلايا تحتوي بوش
+//$$                float activity = hashFloat(seed ^ 0xDEADBEEFL, cx, cz);
+//$$                if (activity > 0.12f) continue;
+//$$                
+//$$                // مركز المجموعة داخل الخلية (عشوائي)
+//$$                float px = cx * cellSize + hashFloat(seed ^ 0xCAFEBABEL, cx, cz) * cellSize;
+//$$                float pz = cz * cellSize + hashFloat(seed ^ 0xBAADF00DL, cx, cz) * cellSize;
+//$$                
+//$$                // المسافة من مركز المجموعة
+//$$                float distX = x - px;
+//$$                float distZ = z - pz;
+//$$                float dist = (float)Math.sqrt(distX * distX + distZ * distZ);
+//$$                
+//$$                // نصف قطر المجموعة: 2-4.5 بلوك (تكفي لـ 1-7 بوشات)
+//$$                float radius = 2.0f + hashFloat(seed ^ 0xFEEDFACEL, cx, cz) * 2.5f;
+//$$                
+//$$                if (dist <= radius) {
+//$$                    float t = 1.0f - (dist / radius);
+//$$                    float value = t * t; // تدرج تربيعي ناعم من المركز
+//$$                    if (value > bestValue) bestValue = value;
+//$$                }
+//$$            }
+//$$        }
+//$$        return bestValue;
 //$$    }
 
     // ==================== [5] CANOPY DENSITY ====================
