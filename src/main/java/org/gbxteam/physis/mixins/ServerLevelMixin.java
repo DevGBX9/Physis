@@ -37,7 +37,7 @@ package org.gbxteam.physis.mixins;
 //$$ public abstract class ServerLevelMixin {
 //$$     @Inject(method = "tickChunk", at = @At("TAIL"))
 //$$     private void onTickChunk(LevelChunk chunk, int randomTickSpeed, CallbackInfo ci) {
-//$$         FloraGrowthHandler.tickChunk(chunk, (ServerLevel)(Object)this);
+//$$         FloraGrowthHandler.tickChunk(chunk, (ServerLevel)(Object)this, randomTickSpeed);
 //$$     }
 //$$ }
 //#endif

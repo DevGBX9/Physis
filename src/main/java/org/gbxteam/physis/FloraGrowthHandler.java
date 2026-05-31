@@ -43,24 +43,15 @@ public class FloraGrowthHandler {
     // ║   يعمل على كل تشونك محمّل في العالم بشكل مستقل عن اللاعبين    ║
     // ║   المهام: انتشار نباتات                                        ║
     // ╚══════════════════════════════════════════════════════════════════╝
-//$$    public static void tickChunk(net.minecraft.world.level.chunk.LevelChunk chunk, ServerLevel level) {
+//$$    public static void tickChunk(net.minecraft.world.level.chunk.LevelChunk chunk, ServerLevel level, int randomTickSpeed) {
+//$$        if (randomTickSpeed <= 0) return;
 //#if MC >= 11700
 //$$        if (!level.isLoaded(chunk.getPos().getMiddleBlockPosition(0))) return;
 //#else
 //$$        if (!level.isLoaded(new BlockPos(chunk.getPos().x * 16 + 8, 0, chunk.getPos().z * 16 + 8))) return;
 //#endif
 //$$
-//$$        boolean isRaining = level.isRaining();
-//$$
-//$$        // سرعة انتشار طبيعية مطابقة للفانيلا (بدون مطر: ~40ث، مع مطر: ~20ث للتشونك)
-//$$        float tps = getTickRate(level);
-//$$        float speedRatio = Math.max(1.0f, tps / 20.0f);
-//$$
-//$$        int baseChance = isRaining ? 300 : 600;
-//$$        int runChance = Math.max(1, (int)(baseChance / speedRatio));
 //$$        CompatibleRandom random = new CompatibleRandom(level.getRandom());
-//$$        if (random.nextInt(runChance) != 0) return;
-//$$
 //$$        net.minecraft.world.level.ChunkPos pos = chunk.getPos();
 //#if MC >= 11700
 //$$        BlockPos center = pos.getMiddleBlockPosition(0);
@@ -68,13 +59,20 @@ public class FloraGrowthHandler {
 //$$        BlockPos center = new BlockPos(pos.x * 16 + 8, 0, pos.z * 16 + 8);
 //#endif
 //$$
-//$$        // محاولة انتشار واحدة لكل تشغيل — هادئة وطبيعية تماماً كالفانيلا
-//$$        int ox = random.nextInt(16) - 8;
-//$$        int oz = random.nextInt(16) - 8;
-//$$        processVegetationExpansion(level, center.offset(ox, 0, oz));
+//$$        // محاكاة سرعة انتشار فانيلا ماينكرافت بناءً على randomTickSpeed الجيم رول
+//$$        // احتمال إصابة كل عمود هو randomTickSpeed / 4096 لكل جيم تيك.
+//$$        // في الشنك بالكامل (256 عمود)، هذا يعادل اختيار عمود عشوائي بعدد randomTickSpeed محاولة،
+//$$        // مع وجود فرصة 1/16 لكل محاولة لتفعيل عمود عشوائي.
+//$$        for (int i = 0; i < randomTickSpeed; i++) {
+//$$            if (random.nextInt(16) == 0) {
+//$$                int ox = random.nextInt(16) - 8;
+//$$                int oz = random.nextInt(16) - 8;
+//$$                processVegetationExpansion(level, center.offset(ox, 0, oz));
+//$$            }
+//$$        }
 //$$
-//$$        // نظام مراقبة التوزيع (يعمل بشكل أحيائي نادر)
-//$$        if (random.nextInt(5) == 0) {
+//$$        // نظام مراقبة التوزيع أحيائي نادر (تأثيره خفيف جداً ومستقل لمنع انتشار الزائد)
+//$$        if (random.nextInt(15) == 0) {
 //$$            int ox2 = random.nextInt(16) - 8;
 //$$            int oz2 = random.nextInt(16) - 8;
 //$$            BlockPos monitorPos = center.offset(ox2, 0, oz2);
@@ -219,45 +217,33 @@ public class FloraGrowthHandler {
 //$$        String name = "";
 //$$        boolean isVegetation = false;
 //$$        
-//$$        searchLoop:
-//$$        for (int ox = -2; ox <= 2; ox++) {
-//$$            for (int oz = -2; oz <= 2; oz++) {
-//#if MC >= 11700
-//$$                mut.setWithOffset(surfaceStart, ox, 2, oz);
-//#else
-//$$                mut.set(surfaceStart.getX() + ox, surfaceStart.getY() + 2, surfaceStart.getZ() + oz);
-//#endif
-//$$                for (int y = 0; y < 8; y++) {
-//$$                    BlockState s = level.getBlockState(mut);
-//$$                    Block b = s.getBlock();
-//$$                    if (b == Blocks.AIR || b == Blocks.WATER) { mut.move(0, -1, 0); continue; }
-//$$                    
-//$$                    name = getBlockPathString(b);
-//#if MC >= 11700
-//$$                    if (b == Blocks.GRASS_BLOCK || b == Blocks.MOSS_BLOCK || b == Blocks.DIRT || b == Blocks.SAND ||
-//#else
-//$$                    if (b == Blocks.GRASS_BLOCK || b == Blocks.DIRT || b == Blocks.SAND ||
-//#endif
-//$$                        name.endsWith("grass_block") || name.contains("leaves") || name.contains("log") || name.contains("wood")) {
-//$$                        break;
-//$$                    }
-//$$                    
-//$$                    isVegetation = (name.contains("grass") || name.contains("fern") || name.contains("flower") || name.contains("lily") || 
-//$$                                   name.contains("mushroom") || name.contains("fungus") || name.contains("kelp") || 
-//$$                                   name.contains("seagrass") || name.contains("pickle") || name.contains("coral") ||
-//$$                                   name.contains("sugar_cane") || (name.contains("bush") && !name.contains("dead")) || name.contains("moss") || 
-//$$                                   name.contains("azalea") || name.contains("spore") || name.contains("dripleaf") || 
-//$$                                   name.contains("cave_vines") || name.contains("hanging_roots") || name.contains("glow_berries") ||
-//$$                                   name.contains("nether_wart") || name.contains("roots") || name.contains("sprouts"));
-//$$                    
-//$$                    if (isVegetation) {
-//$$                        state = s;
-//$$                        block = b;
-//$$                        break searchLoop;
-//$$                    }
-//$$                    mut.move(0, -1, 0);
-//$$                }
+//$$        // فحص العمود المحدد مباشرة أفقياً (1x1) بدلاً من البحث في مساحة 5x5، لمطابقة نظام الفانيلا بدقة
+//$$        mut.set(surfaceStart.getX(), surfaceStart.getY() + 2, surfaceStart.getZ());
+//$$        for (int y = 0; y < 8; y++) {
+//$$            BlockState s = level.getBlockState(mut);
+//$$            Block b = s.getBlock();
+//$$            if (b == Blocks.AIR || b == Blocks.WATER) { mut.move(0, -1, 0); continue; }
+//$$            
+//$$            name = getBlockPathString(b);
+//$$            if (b == Blocks.GRASS_BLOCK || b == Blocks.MOSS_BLOCK || b == Blocks.DIRT || b == Blocks.SAND ||
+//$$                name.endsWith("grass_block") || name.contains("leaves") || name.contains("log") || name.contains("wood")) {
+//$$                break;
 //$$            }
+//$$            
+//$$            isVegetation = (name.contains("grass") || name.contains("fern") || name.contains("flower") || name.contains("lily") || 
+//$$                           name.contains("mushroom") || name.contains("fungus") || name.contains("kelp") || 
+//$$                           name.contains("seagrass") || name.contains("pickle") || name.contains("coral") ||
+//$$                           name.contains("sugar_cane") || (name.contains("bush") && !name.contains("dead")) || name.contains("moss") || 
+//$$                           name.contains("azalea") || name.contains("spore") || name.contains("dripleaf") || 
+//$$                           name.contains("cave_vines") || name.contains("hanging_roots") || name.contains("glow_berries") ||
+//$$                           name.contains("nether_wart") || name.contains("roots") || name.contains("sprouts"));
+//$$            
+//$$            if (isVegetation) {
+//$$                state = s;
+//$$                block = b;
+//$$                break;
+//$$            }
+//$$            mut.move(0, -1, 0);
 //$$        }
 //$$        
 //$$        if (!isVegetation || state == null) return;
