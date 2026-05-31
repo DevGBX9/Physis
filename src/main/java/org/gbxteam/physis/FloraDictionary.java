@@ -48,38 +48,51 @@ public class FloraDictionary {
 //$$    }
 //$$
 //$$    public static VegetationType categorizeVegetation(String name) {
-//$$        // استثناء النباتات المزدوجة والميتة
+//$$        // ١. استثناء النباتات المزدوجة والميتة والزهور (تم إلغاء انتشار الزهور بالكامل بناءً على الطلب)
 //$$        if (name.contains("sunflower") || name.contains("lilac") || name.contains("rose_bush") || 
 //$$            name.contains("peony") || name.contains("tall") || name.contains("large") || 
 //$$            name.contains("pitcher") || name.contains("dead_bush") || name.contains("berry_bush") ||
-//$$            name.contains("lily") || name.contains("petal")) {
+//$$            name.contains("lily") || name.contains("petal") ||
+//$$            name.contains("flower") || name.contains("allium") || name.contains("orchid") || 
+//$$            name.contains("tulip") || name.contains("bluet") || name.contains("daisy") || 
+//$$            name.contains("cornflower") || name.contains("lily_of_the_valley")) {
 //$$            return VegetationType.INVALID;
 //$$        }
 //$$        
-//$$        if (name.contains("fungus") || name.contains("nether_wart") || name.contains("roots") || name.contains("sprouts") || name.contains("vines") || name.contains("mushroom")) return VegetationType.NETHER_FLORA;
-//$$        if (name.contains("kelp") || name.contains("seagrass") || name.contains("pickle") || name.contains("coral")) return VegetationType.WATER_FLORA;
-//$$        if (name.contains("moss") || name.contains("azalea") || name.contains("spore") || name.contains("dripleaf") || name.contains("cave_vines") || name.contains("glow_berries")) return VegetationType.CAVE_FLORA;
+//$$        // ٢. تصنيف الفطريات ونباتات النذر
+//$$        if (name.contains("fungus") || name.contains("nether_wart") || name.contains("roots") || 
+//$$            name.contains("sprouts") || name.contains("vines") || name.contains("mushroom")) {
+//$$            return VegetationType.NETHER_FLORA;
+//$$        }
+//$$        
+//$$        // ٣. تصنيف النباتات المائية
+//$$        if (name.contains("kelp") || name.contains("seagrass") || name.contains("pickle") || name.contains("coral")) {
+//$$            return VegetationType.WATER_FLORA;
+//$$        }
+//$$        
+//$$        // ٤. تصنيف نباتات الكهوف
+//$$        if (name.contains("moss") || name.contains("azalea") || name.contains("spore") || 
+//$$            name.contains("dripleaf") || name.contains("cave_vines") || name.contains("glow_berries")) {
+//$$            return VegetationType.CAVE_FLORA;
+//$$        }
+//$$        
+//$$        // ٥. تصنيف النباتات الأرضية الأساسية المدعومة للانتشار
 //$$        if (name.equals("grass") || name.equals("short_grass")) return VegetationType.GRASS;
 //$$        if (name.equals("fern")) return VegetationType.FERN;
 //$$        if (name.equals("bush")) return VegetationType.PLAIN_BUSH;
 //$$        if (name.contains("firefly_bush")) return VegetationType.FIREFLY_BUSH;
 //$$        
-//$$        // الباقي يعتبر أزهار
-//$$        if (name.contains("flower") || name.contains("allium") || name.contains("orchid") || name.contains("tulip") || name.contains("bluet") || name.contains("daisy") || name.contains("cornflower") || name.contains("lily_of_the_valley")) {
-//$$            return VegetationType.FLOWER;
-//$$        }
-//$$        
-//$$        return VegetationType.FLOWER; // افتراضي للأشياء الصغيرة الأخرى
+//$$        // ٦. أي نبات آخر غير معروف يعتبر غير قابل للانتشار افتراضياً لحماية التوازن
+//$$        return VegetationType.INVALID;
 //$$    }
 //$$
 //$$    public static int getMaxDensity(VegetationType type, boolean isDensePatch) {
 //$$        switch (type) {
-//$$            case GRASS: return isDensePatch ? 12 : 7;
+//$$            case GRASS:        return isDensePatch ? 12 : 7;
 //$$            case FIREFLY_BUSH: return 1;
-//$$            case PLAIN_BUSH: return isDensePatch ? 7 : 3;
-//$$            case FERN: return 2;
-//$$            case FLOWER: return 2;
-//$$            default: return 2;
+//$$            case PLAIN_BUSH:   return isDensePatch ? 7 : 3;
+//$$            case FERN:         return 2;
+//$$            default:           return 2;
 //$$        }
 //$$    }
     //#endif
