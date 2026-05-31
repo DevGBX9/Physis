@@ -90,7 +90,7 @@ public class FloraDictionary {
 //$$        switch (type) {
 //$$            case GRASS:        return isDensePatch ? 12 : 7;
 //$$            case FIREFLY_BUSH: return 1;
-//$$            case PLAIN_BUSH:   return isDensePatch ? 7 : 3;
+//$$            case PLAIN_BUSH:   return isDensePatch ? 7 : 4;
 //$$            case FERN:         return 2;
 //$$            default:           return 2;
 //$$        }

@@ -60,9 +60,6 @@ public class FloraGrowthHandler {
 //#endif
 //$$
 //$$        // محاكاة سرعة انتشار فانيلا ماينكرافت بناءً على randomTickSpeed الجيم رول
-//$$        // احتمال إصابة كل عمود هو randomTickSpeed / 4096 لكل جيم تيك.
-//$$        // في الشنك بالكامل (256 عمود)، هذا يعادل اختيار عمود عشوائي بعدد randomTickSpeed محاولة،
-//$$        // مع وجود فرصة 1/16 لكل محاولة لتفعيل عمود عشوائي.
 //$$        for (int i = 0; i < randomTickSpeed; i++) {
 //$$            if (random.nextInt(16) == 0) {
 //$$                int ox = random.nextInt(16) - 8;
@@ -78,7 +75,7 @@ public class FloraGrowthHandler {
 //$$            BlockPos monitorPos = center.offset(ox2, 0, oz2);
 //$$
 //$$            monitorPlantDistribution(level, monitorPos, "minecraft:short_grass", 6, 2.0,  5,  10, 3);
-//$$            monitorPlantDistribution(level, monitorPos, "minecraft:bush",        5, 6.0,  10, 25, 6);
+//$$            monitorPlantDistribution(level, monitorPos, "minecraft:bush",        7, 12.0, 18, 40, 10);
 //$$            monitorPlantDistribution(level, monitorPos, "minecraft:fern",         2, 10.0, 15, 35, 8);
 //$$            monitorPlantDistribution(level, monitorPos, "minecraft:tall_grass",   2, 6.0,  8,  20, 5);
 //$$            monitorPlantDistribution(level, monitorPos, "minecraft:large_fern",   1, 12.0, 15, 35, 8);
@@ -208,9 +205,16 @@ public class FloraGrowthHandler {
     // ╚══════════════════════════════════════════════════════════════════╝
 //$$    private static void processVegetationExpansion(ServerLevel level, BlockPos searchPos) {
 //$$        if (!level.isLoaded(searchPos)) return;
+//$$        
+//$$        // ══════ فحص الإضاءة: إيقاف النمو في الظلام أو الليل ══════
+//$$        // النباتات تحتاج ضوء كافٍ للنمو (مستوى إضاءة 9 أو أعلى)
+//$$        // هذا يشمل الليل والكهوف المظلمة والأماكن المغطاة
+//$$        BlockPos lightCheckPos = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, searchPos);
+//$$        if (level.getMaxLocalRawBrightness(lightCheckPos) < 9) return;
+//$$        
 //$$        CompatibleRandom random = new CompatibleRandom(level.getRandom());
 //$$        
-//$$        BlockPos surfaceStart = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, searchPos);
+//$$        BlockPos surfaceStart = lightCheckPos;
 //$$        BlockPos.MutableBlockPos mut = new BlockPos.MutableBlockPos();
 //$$        BlockState state = null;
 //$$        Block block = null;
@@ -292,15 +296,15 @@ public class FloraGrowthHandler {
 //$$        float srcNoise = isPlainBush
 //$$            ? bushNoise(wSeed, sourcePos.getX(), sourcePos.getZ())
 //$$            : vegetationNoise(wSeed, sourcePos.getX(), sourcePos.getZ());
-//$$        float srcMin = isPlainBush ? 0.35f : 0.08f;
-//$$        if (srcNoise < srcMin && random.nextFloat() > srcNoise * 2.5f) return;
+//$$        float srcMin = isPlainBush ? 0.55f : 0.08f;
+//$$        if (srcNoise < srcMin && random.nextFloat() > srcNoise * 1.5f) return;
 //$$
 //$$        if (isGrass) {
 //$$            if (random.nextFloat() > 0.38f * waterBoost) return;
 //$$        } else if (isFern) {
 //$$            if (random.nextFloat() > 0.02f * waterBoost) return;
 //$$        } else if (isPlainBush) {
-//$$            if (random.nextFloat() > 0.11f * waterBoost) return;
+//$$            if (random.nextFloat() > 0.08f * waterBoost) return;
 //$$        } else if (isFireflyBush) {
 //$$            if (random.nextFloat() > 0.07f * waterBoost) return;
 //$$        } else {
@@ -382,13 +386,15 @@ public class FloraGrowthHandler {
 //$$            if (isFireflyBush && !isNearWater(level, target, 2)) continue;
 //$$            
 //$$            boolean tooClose = false;
-//$$            int minSpacing = isFireflyBush ? 4 : 0;
+//$$            int minSpacing = isFireflyBush ? 4 : (isPlainBush ? 2 : 0);
 //$$            
 //$$            if ((isPlainBush || isFlower || isFern) && density >= maxDensity) {
 //$$                if (isFern) {
 //$$                    minSpacing = 20 + random.nextInt(11);
+//$$                } else if (isPlainBush) {
+//$$                    minSpacing = 14 + random.nextInt(8);
 //$$                } else {
-//$$                    minSpacing = isFlower ? (10 + random.nextInt(11)) : 10;
+//$$                    minSpacing = 10 + random.nextInt(11);
 //$$                }
 //$$            }
 //$$            
@@ -409,7 +415,7 @@ public class FloraGrowthHandler {
 //$$                ? bushNoise(worldSeed, target.getX(), target.getZ())
 //$$                : vegetationNoise(worldSeed, target.getX(), target.getZ());
 //$$            // حد أدنى للنويس بحسب نوع النبتة — يحاكي توزيع الفانيلا
-//$$            float noiseMin = isGrass ? 0.12f : (isPlainBush ? 0.42f : (isFern ? 0.38f : 0.25f));
+//$$            float noiseMin = isGrass ? 0.12f : (isPlainBush ? 0.58f : (isFern ? 0.38f : 0.25f));
 //$$            if (targetNoise < noiseMin) continue;
 //$$
 //$$            int score = 0;
@@ -546,12 +552,23 @@ public class FloraGrowthHandler {
 //$$    }
 //$$
 //$$    /**
-//$$     * نويس مخصص للبوش — patches أكبر وأكثر تجمعاً كالفانيلا
+//$$     * نويس مخصص للبوش — جُزر صغيرة متباعدة كالفانيلا
+//$$     * يُنشئ مناطق نويس عالية (جُزر) مفصولة بمساحات واسعة فارغة
+//$$     * كل جزيرة تسمح بمجموعة من 1 إلى 7 بوش
 //$$     */
 //$$    private static float bushNoise(long seed, int x, int z) {
-//$$        float n1 = valueNoise(seed ^ 0xDEADBEEFL,  x, z, 28); // patch عريض
-//$$        float n2 = valueNoise(seed ^ 0xCAFEBABEL,  x, z,  9); // clustering محلي
-//$$        return n1 * 0.60f + n2 * 0.40f;
+//$$        // الطبقة الأولى: نطاق عريض جداً — تحدد المناطق النادرة التي تظهر فيها البوش
+//$$        float n1 = valueNoise(seed ^ 0xDEADBEEFL,  x, z, 64);
+//$$        // الطبقة الثانية: حجم المجموعة — patches صغيرة داخل المنطقة المسموحة
+//$$        float n2 = valueNoise(seed ^ 0xCAFEBABEL,  x, z, 12);
+//$$        // الطبقة الثالثة: تكستر ناعم — يعطي تنوع داخل كل patch
+//$$        float n3 = valueNoise(seed ^ 0xBAADF00DL,  x, z,  4);
+//$$        // دمج مع أولوية كبيرة للنطاق العريض لإنشاء جزر متباعدة
+//$$        float combined = n1 * 0.55f + n2 * 0.30f + n3 * 0.15f;
+//$$        // تحويل حاد: يجعل القيم المنخفضة تنخفض أكثر والعالية ترتفع (جزر واضحة)
+//$$        combined = combined * combined * combined;
+//$$        // إعادة تطبيع لتكون بين 0 و 1
+//$$        return Math.min(1.0f, combined * 4.0f);
 //$$    }
 
     // ==================== [5] CANOPY DENSITY ====================
