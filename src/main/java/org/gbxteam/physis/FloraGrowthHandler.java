@@ -328,17 +328,17 @@ public class FloraGrowthHandler {
 //$$            
 //$$            float pioneerChance = isPlainBush ? 0.40f : (isFlower ? 0.15f : 0.05f);
 //$$            if (random.nextFloat() < pioneerChance) {
-//$$                searchSpread = isPlainBush ? 16 : (isFlower ? 32 : 12);
+//$$                searchSpread = isPlainBush ? 6 : (isFlower ? 8 : 5);
 //$$            } else {
 //$$                return;
 //$$            }
 //$$        } else {
-//$$            searchSpread = isFlower ? 4 : (isPlainBush ? 6 : (isGrass ? 8 : 6));
+//$$            searchSpread = isFlower ? 3 : (isPlainBush ? 3 : (isGrass ? 3 : 2));
 //$$        }
 //$$        
 //$$        BlockPos bestTarget = null;
 //$$        int bestScore = -1;
-//$$        for (int i = 0; i < (isGrass ? 12 : ((isPlainBush || isFlower) ? 8 : 4)); i++) {
+//$$        for (int i = 0; i < (isGrass ? 4 : ((isPlainBush || isFlower) ? 3 : 2)); i++) {
 //$$            int ox = random.nextInt(searchSpread * 2 + 1) - searchSpread;
 //$$            int oz = random.nextInt(searchSpread * 2 + 1) - searchSpread;
 //$$            if (ox == 0 && oz == 0) continue;
