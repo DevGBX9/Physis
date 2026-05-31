@@ -225,7 +225,11 @@ public class FloraGrowthHandler {
 //$$            if (b == Blocks.AIR || b == Blocks.WATER) { mut.move(0, -1, 0); continue; }
 //$$            
 //$$            name = getBlockPathString(b);
+//#if MC >= 11700
 //$$            if (b == Blocks.GRASS_BLOCK || b == Blocks.MOSS_BLOCK || b == Blocks.DIRT || b == Blocks.SAND ||
+//#else
+//$$            if (b == Blocks.GRASS_BLOCK || b == Blocks.DIRT || b == Blocks.SAND ||
+//#endif
 //$$                name.endsWith("grass_block") || name.contains("leaves") || name.contains("log") || name.contains("wood")) {
 //$$                break;
 //$$            }
