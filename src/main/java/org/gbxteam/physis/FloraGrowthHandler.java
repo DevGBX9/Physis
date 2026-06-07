@@ -293,12 +293,12 @@ public class FloraGrowthHandler {
 //$$        // ══════ NOISE SOURCE CHECK: فحص نويس منطقة المصدر ══════
 //$$        // النباتات في مناطق النويس المنخفض تنتشر ببطء شديد (تحاكي حدود biomes)
 //$$        long wSeed = level.getSeed();
-//$$        float srcNoise = isPlainBush
-//$$            ? bushNoise(wSeed, sourcePos.getX(), sourcePos.getZ())
-//$$            : vegetationNoise(wSeed, sourcePos.getX(), sourcePos.getZ());
-//$$        // البوش يستخدم نظام خلوي: أي قيمة > 0 تعني داخل مجموعة
-//$$        float srcMin = isPlainBush ? 0.05f : 0.08f;
-//$$        if (srcNoise < srcMin) return;
+//$$        // البوش لا يحتاج فحص نويس المصدر — النظام الخلوي يتحكم بالوجهة فقط
+//$$        // هذا يسمح للبوش خارج المناطق النشطة بالانتشار إلى داخلها
+//$$        if (!isPlainBush) {
+//$$            float srcNoise = vegetationNoise(wSeed, sourcePos.getX(), sourcePos.getZ());
+//$$            if (srcNoise < 0.08f) return;
+//$$        }
 //$$
 //$$        if (isGrass) {
 //$$            if (random.nextFloat() > 0.38f * waterBoost) return;
@@ -572,9 +572,9 @@ public class FloraGrowthHandler {
 //$$                int cx = cellX + dx;
 //$$                int cz = cellZ + dz;
 //$$                
-//$$                // هل الخلية نشطة؟ ~12% فقط من الخلايا تحتوي بوش
+//$$                // هل الخلية نشطة؟ ~25% من الخلايا تحتوي بوش
 //$$                float activity = hashFloat(seed ^ 0xDEADBEEFL, cx, cz);
-//$$                if (activity > 0.12f) continue;
+//$$                if (activity > 0.25f) continue;
 //$$                
 //$$                // مركز المجموعة داخل الخلية (عشوائي)
 //$$                float px = cx * cellSize + hashFloat(seed ^ 0xCAFEBABEL, cx, cz) * cellSize;
