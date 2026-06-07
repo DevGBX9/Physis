@@ -75,7 +75,7 @@ public class FloraGrowthHandler {
 //$$            BlockPos monitorPos = center.offset(ox2, 0, oz2);
 //$$
 //$$            monitorPlantDistribution(level, monitorPos, "minecraft:short_grass", 6, 2.0,  5,  10, 3);
-//$$            monitorPlantDistribution(level, monitorPos, "minecraft:bush",        7, 24.0, 24, 48, 8);
+//$$            monitorPlantDistribution(level, monitorPos, "minecraft:bush",        7, 35.0, 35, 70, 12);
 //$$            monitorPlantDistribution(level, monitorPos, "minecraft:fern",         2, 10.0, 15, 35, 8);
 //$$            monitorPlantDistribution(level, monitorPos, "minecraft:tall_grass",   2, 6.0,  8,  20, 5);
 //$$            monitorPlantDistribution(level, monitorPos, "minecraft:large_fern",   1, 12.0, 15, 35, 8);
@@ -305,7 +305,7 @@ public class FloraGrowthHandler {
 //$$        } else if (isFern) {
 //$$            if (random.nextFloat() > 0.02f * waterBoost) return;
 //$$        } else if (isPlainBush) {
-//$$            if (random.nextFloat() > 0.25f * waterBoost) return;
+//$$            if (random.nextFloat() > 0.04f * waterBoost) return;
 //$$        } else if (isFireflyBush) {
 //$$            if (random.nextFloat() > 0.07f * waterBoost) return;
 //$$        } else {
@@ -331,9 +331,9 @@ public class FloraGrowthHandler {
 //$$        if (density >= maxDensity) {
 //$$            manageVegetationBalance(level, sourcePos, density, isGrass, isPlainBush, isFlower, random);
 //$$            
-//$$            float pioneerChance = isPlainBush ? 0.08f : (isFlower ? 0.15f : 0.05f);
+//$$            float pioneerChance = isPlainBush ? 0.01f : (isFlower ? 0.15f : 0.05f);
 //$$            if (random.nextFloat() < pioneerChance) {
-//$$                searchSpread = isPlainBush ? 4 : (isFlower ? 8 : 5);
+//$$                searchSpread = isPlainBush ? 5 : (isFlower ? 8 : 5);
 //$$            } else {
 //$$                return;
 //$$            }
@@ -390,9 +390,11 @@ public class FloraGrowthHandler {
 //$$            // البوش داخل المجموعة يكون قريب (minSpacing=0)، النويس الخلوي يتكفل بالفصل بين المجموعات
 //$$            int minSpacing = isFireflyBush ? 4 : 0;
 //$$            
-//$$            if ((isFlower || isFern) && density >= maxDensity) {
+//$$            if ((isPlainBush || isFlower || isFern) && density >= maxDensity) {
 //$$                if (isFern) {
 //$$                    minSpacing = 20 + random.nextInt(11);
+//$$                } else if (isPlainBush) {
+//$$                    minSpacing = 35 + random.nextInt(16);
 //$$                } else {
 //$$                    minSpacing = 10 + random.nextInt(11);
 //$$                }
