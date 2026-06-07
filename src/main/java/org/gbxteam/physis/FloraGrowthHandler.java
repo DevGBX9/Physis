@@ -75,7 +75,7 @@ public class FloraGrowthHandler {
 //$$            BlockPos monitorPos = center.offset(ox2, 0, oz2);
 //$$
 //$$            monitorPlantDistribution(level, monitorPos, "minecraft:short_grass", 6, 2.0,  5,  10, 3);
-//$$            monitorPlantDistribution(level, monitorPos, "minecraft:bush",        7, 12.0, 18, 40, 10);
+//$$            monitorPlantDistribution(level, monitorPos, "minecraft:bush",        7, 24.0, 24, 48, 8);
 //$$            monitorPlantDistribution(level, monitorPos, "minecraft:fern",         2, 10.0, 15, 35, 8);
 //$$            monitorPlantDistribution(level, monitorPos, "minecraft:tall_grass",   2, 6.0,  8,  20, 5);
 //$$            monitorPlantDistribution(level, monitorPos, "minecraft:large_fern",   1, 12.0, 15, 35, 8);
@@ -412,9 +412,9 @@ public class FloraGrowthHandler {
 //$$            // ══════ NOISE GATE: الموضع الهدف يجب أن يكون في منطقة نويس مناسبة ══════
 //$$            long worldSeed = level.getSeed();
 //$$            float targetNoise = isPlainBush
-//$$                ? bushNoise(worldSeed, target.getX(), target.getZ())
+//$$                ? 1.0f // البوش لا يخضع لبوابة الضوضاء الثابتة لتمكينه من التكاثر والانتشار بحرية
 //$$                : vegetationNoise(worldSeed, target.getX(), target.getZ());
-//$$            // حد أدنى للنويس — البوش يستخدم نظام خلوي (أي قيمة > 0 = داخل مجموعة)
+//$$            // حد أدنى للنويس
 //$$            float noiseMin = isGrass ? 0.12f : (isPlainBush ? 0.01f : (isFern ? 0.38f : 0.25f));
 //$$            if (targetNoise < noiseMin) continue;
 //$$
