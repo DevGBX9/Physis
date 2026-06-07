@@ -187,7 +187,7 @@ public class FloraGrowthHandler {
 //$$            level.setBlock(pos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 3);
 //$$            return true;
 //$$        }
-//$$        if (isPlainBush && density >= 2 && random.nextFloat() < 0.8f) {
+//$$        if (isPlainBush && density >= 6 && random.nextFloat() < 0.30f) {
 //$$            level.setBlock(pos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 3);
 //$$            return true;
 //$$        }
@@ -305,7 +305,7 @@ public class FloraGrowthHandler {
 //$$        } else if (isFern) {
 //$$            if (random.nextFloat() > 0.02f * waterBoost) return;
 //$$        } else if (isPlainBush) {
-//$$            if (random.nextFloat() > 0.10f * waterBoost) return;
+//$$            if (random.nextFloat() > 0.25f * waterBoost) return;
 //$$        } else if (isFireflyBush) {
 //$$            if (random.nextFloat() > 0.07f * waterBoost) return;
 //$$        } else {
@@ -390,11 +390,9 @@ public class FloraGrowthHandler {
 //$$            // البوش داخل المجموعة يكون قريب (minSpacing=0)، النويس الخلوي يتكفل بالفصل بين المجموعات
 //$$            int minSpacing = isFireflyBush ? 4 : 0;
 //$$            
-//$$            if ((isPlainBush || isFlower || isFern) && density >= maxDensity) {
+//$$            if ((isFlower || isFern) && density >= maxDensity) {
 //$$                if (isFern) {
 //$$                    minSpacing = 20 + random.nextInt(11);
-//$$                } else if (isPlainBush) {
-//$$                    minSpacing = 18 + random.nextInt(10);
 //$$                } else {
 //$$                    minSpacing = 10 + random.nextInt(11);
 //$$                }
@@ -417,7 +415,7 @@ public class FloraGrowthHandler {
 //$$                ? bushNoise(worldSeed, target.getX(), target.getZ())
 //$$                : vegetationNoise(worldSeed, target.getX(), target.getZ());
 //$$            // حد أدنى للنويس — البوش يستخدم نظام خلوي (أي قيمة > 0 = داخل مجموعة)
-//$$            float noiseMin = isGrass ? 0.12f : (isPlainBush ? 0.05f : (isFern ? 0.38f : 0.25f));
+//$$            float noiseMin = isGrass ? 0.12f : (isPlainBush ? 0.01f : (isFern ? 0.38f : 0.25f));
 //$$            if (targetNoise < noiseMin) continue;
 //$$
 //$$            int score = 0;
