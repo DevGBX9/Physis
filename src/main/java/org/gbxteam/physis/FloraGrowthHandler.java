@@ -75,10 +75,7 @@ public class FloraGrowthHandler {
 //$$            BlockPos monitorPos = center.offset(ox2, 0, oz2);
 //$$
 //$$            monitorPlantDistribution(level, monitorPos, "minecraft:short_grass", 6, 2.0,  5,  10, 3);
-//$$            monitorPlantDistribution(level, monitorPos, "minecraft:bush",        7, 35.0, 35, 70, 12);
-//$$            monitorPlantDistribution(level, monitorPos, "minecraft:fern",         2, 10.0, 15, 35, 8);
 //$$            monitorPlantDistribution(level, monitorPos, "minecraft:tall_grass",   2, 6.0,  8,  20, 5);
-//$$            monitorPlantDistribution(level, monitorPos, "minecraft:large_fern",   1, 12.0, 15, 35, 8);
 //$$        }
 //$$    }
 
@@ -266,7 +263,7 @@ public class FloraGrowthHandler {
 //$$        BlockPos sourcePos = mut.immutable();
 //$$        
 //$$        FloraDictionary.VegetationType type = FloraDictionary.categorizeVegetation(name);
-//$$        if (type == FloraDictionary.VegetationType.INVALID || type == FloraDictionary.VegetationType.NETHER_FLORA || type == FloraDictionary.VegetationType.WATER_FLORA || type == FloraDictionary.VegetationType.CAVE_FLORA) return;
+//$$        if (type != FloraDictionary.VegetationType.GRASS) return;
 //$$        
 //$$        int density = 0;
 //$$        boolean isGrass = (type == FloraDictionary.VegetationType.GRASS);
