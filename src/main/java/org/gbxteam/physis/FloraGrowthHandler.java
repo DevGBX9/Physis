@@ -59,20 +59,27 @@ public class FloraGrowthHandler {
 //$$        BlockPos center = new BlockPos(pos.x * 16 + 8, 0, pos.z * 16 + 8);
 //#endif
 //$$
-//$$        // محاكاة سرعة انتشار فانيلا ماينكرافت بناءً على randomTickSpeed الجيم رول
-//$$        for (int i = 0; i < randomTickSpeed; i++) {
-//$$            if (random.nextInt(16) == 0) {
-//$$                int ox = random.nextInt(16) - 8;
-//$$                int oz = random.nextInt(16) - 8;
-//$$                processVegetationExpansion(level, center.offset(ox, 0, oz));
-//$$            }
+//$$        // تشغيل المحاكاة بمعدل منخفض جداً لكل تشونك لتقليل اللاغ بشكل كبير
+//$$        if (random.nextInt(30) == 0) {
+//$$            int ox = random.nextInt(16) - 8;
+//$$            int oz = random.nextInt(16) - 8;
+//#if MC >= 11700
+//$$            BlockPos targetPos = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, center.offset(ox, 0, oz));
+//#else
+//$$            BlockPos targetPos = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, new BlockPos(center.getX() + ox, 0, center.getZ() + oz));
+//#endif
+//$$            processVegetationExpansion(level, targetPos);
 //$$        }
 //$$
-//$$        // نظام مراقبة التوزيع أحيائي نادر (تأثيره خفيف جداً ومستقل لمنع انتشار الزائد)
-//$$        if (random.nextInt(15) == 0) {
+//$$        // تشغيل المراقبة والتشذيب بمعدل أقل بكثير لمنع استهلاك المعالج
+//$$        if (random.nextInt(150) == 0) {
 //$$            int ox2 = random.nextInt(16) - 8;
 //$$            int oz2 = random.nextInt(16) - 8;
+//#if MC >= 11700
 //$$            BlockPos monitorPos = center.offset(ox2, 0, oz2);
+//#else
+//$$            BlockPos monitorPos = new BlockPos(center.getX() + ox2, 0, center.getZ() + oz2);
+//#endif
 //$$
 //$$            monitorPlantDistribution(level, monitorPos, "minecraft:short_grass", 6, 2.0,  5,  10, 3);
 //$$            monitorPlantDistribution(level, monitorPos, "minecraft:tall_grass",   2, 6.0,  8,  20, 5);
@@ -197,243 +204,147 @@ public class FloraGrowthHandler {
 
     // ╔══════════════════════════════════════════════════════════════════╗
     // ║        القسم ٤: نظام انتشار الأعشاب والنباتات الأرضية          ║
-    // ║   يبحث عن نبتة موجودة ثم يحاول نشرها للأماكن القريبة           ║
-    // ║   يشمل: عشب، سراخس، أزهار، شجيرات، بتلات، فطريات              ║
+    // ║   يبحث عن الفراغات أولاً ثم يفحص الجيران لنشر النباتات إليها     ║
     // ╚══════════════════════════════════════════════════════════════════╝
-//$$    private static void processVegetationExpansion(ServerLevel level, BlockPos searchPos) {
-//$$        if (!level.isLoaded(searchPos)) return;
-//$$        
-//$$        // ══════ فحص الإضاءة: إيقاف النمو في الظلام أو الليل ══════
-//$$        // النباتات تحتاج ضوء كافٍ للنمو (مستوى إضاءة 9 أو أعلى)
-//$$        // هذا يشمل الليل والكهوف المظلمة والأماكن المغطاة
-//$$        BlockPos lightCheckPos = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, searchPos);
-//$$        if (level.getMaxLocalRawBrightness(lightCheckPos) < 9) return;
-//$$        
+//$$    private static void processVegetationExpansion(ServerLevel level, BlockPos targetPos) {
+//$$        if (!level.isLoaded(targetPos)) return;
+//$$
+//$$        // ١. التحقق من أن الموضع المستهدف فارغ وتحته بلوك عشب (grass_block)
+//$$        BlockPos blockBelow = targetPos.below();
+//$$        BlockState targetState = level.getBlockState(targetPos);
+//$$        BlockState belowState = level.getBlockState(blockBelow);
+//$$
+//$$        boolean isTargetEmpty = targetState.isAir();
+//$$        if (!isTargetEmpty) return; // خروج مبكر وسريع جداً
+//$$
+//$$        boolean isGrassBlock = false;
+//$$        Block belowBlock = belowState.getBlock();
+//#if MC >= 11800
+//$$        isGrassBlock = belowState.is(net.minecraft.world.level.block.Blocks.GRASS_BLOCK);
+//#else
+//$$        isGrassBlock = (belowBlock == net.minecraft.world.level.block.Blocks.GRASS_BLOCK);
+//#endif
+//$$        if (!isGrassBlock) return; // خروج مبكر
+//$$
+//$$        // ٢. فحص مستوى الإضاءة: تحتاج النباتات للنمو مستوى إضاءة لا يقل عن 9
+//$$        if (level.getMaxLocalRawBrightness(targetPos) < 9) return;
+//$$
 //$$        CompatibleRandom random = new CompatibleRandom(level.getRandom());
-//$$        
-//$$        BlockPos surfaceStart = lightCheckPos;
-//$$        BlockPos.MutableBlockPos mut = new BlockPos.MutableBlockPos();
-//$$        BlockState state = null;
-//$$        Block block = null;
-//$$        String name = "";
-//$$        boolean isVegetation = false;
-//$$        
-//$$        // فحص العمود المحدد مباشرة أفقياً (1x1) بدلاً من البحث في مساحة 5x5، لمطابقة نظام الفانيلا بدقة
-//$$        mut.set(surfaceStart.getX(), surfaceStart.getY() + 2, surfaceStart.getZ());
-//$$        for (int y = 0; y < 8; y++) {
-//$$            BlockState s = level.getBlockState(mut);
-//$$            Block b = s.getBlock();
-//$$            if (b == Blocks.AIR || b == Blocks.WATER) { mut.move(0, -1, 0); continue; }
-//$$            
-//$$            name = getBlockPathString(b);
-//#if MC >= 11700
-//$$            if (b == Blocks.GRASS_BLOCK || b == Blocks.MOSS_BLOCK || b == Blocks.DIRT || b == Blocks.SAND ||
-//#else
-//$$            if (b == Blocks.GRASS_BLOCK || b == Blocks.DIRT || b == Blocks.SAND ||
-//#endif
-//$$                name.endsWith("grass_block") || name.contains("leaves") || name.contains("log") || name.contains("wood")) {
-//$$                break;
-//$$            }
-//$$            
-//$$            isVegetation = (name.contains("grass") || name.contains("fern") || name.contains("flower") || name.contains("lily") || 
-//$$                           name.contains("mushroom") || name.contains("fungus") || name.contains("kelp") || 
-//$$                           name.contains("seagrass") || name.contains("pickle") || name.contains("coral") ||
-//$$                           name.contains("sugar_cane") || (name.contains("bush") && !name.contains("dead")) || name.contains("moss") || 
-//$$                           name.contains("azalea") || name.contains("spore") || name.contains("dripleaf") || 
-//$$                           name.contains("cave_vines") || name.contains("hanging_roots") || name.contains("glow_berries") ||
-//$$                           name.contains("nether_wart") || name.contains("roots") || name.contains("sprouts"));
-//$$            
-//$$            if (isVegetation) {
-//$$                state = s;
-//$$                block = b;
-//$$                break;
-//$$            }
-//$$            mut.move(0, -1, 0);
-//$$        }
-//$$        
-//$$        if (!isVegetation || state == null) return;
-//$$        
-//$$        if (name.contains("sunflower") || name.contains("lilac") || name.contains("rose_bush") || 
-//$$            name.contains("peony") || name.contains("tall") || name.contains("large") || 
-//$$            name.contains("pitcher") || name.contains("dead_bush") || name.contains("berry_bush") ||
-//$$            name.contains("lily")) {
-//$$            return;
-//$$        }
-//$$        
-//$$        BlockPos sourcePos = mut.immutable();
-//$$        
-//$$        FloraDictionary.VegetationType type = FloraDictionary.categorizeVegetation(name);
-//$$        if (type != FloraDictionary.VegetationType.GRASS) return;
-//$$        
-//$$        int density = 0;
-//$$        boolean isGrass = (type == FloraDictionary.VegetationType.GRASS);
-//$$        
-//$$        if (isGrass && name.equals("short_grass") && isNearWater(level, sourcePos, 1)) {
-//$$            if (random.nextFloat() < 0.15f && level.getBlockState(sourcePos.above()).isAir()) {
-//$$                BlockState tallGrassState = net.minecraft.world.level.block.Blocks.TALL_GRASS.defaultBlockState();
-//$$                level.setBlock(sourcePos, tallGrassState.setValue(net.minecraft.world.level.block.state.properties.BlockStateProperties.DOUBLE_BLOCK_HALF, net.minecraft.world.level.block.state.properties.DoubleBlockHalf.LOWER), 3);
-//$$                level.setBlock(sourcePos.above(), tallGrassState.setValue(net.minecraft.world.level.block.state.properties.BlockStateProperties.DOUBLE_BLOCK_HALF, net.minecraft.world.level.block.state.properties.DoubleBlockHalf.UPPER), 3);
-//$$                return;
-//$$            }
-//$$        }
 //$$
-//$$        boolean isFern = (type == FloraDictionary.VegetationType.FERN);
-//$$        boolean isPlainBush = (type == FloraDictionary.VegetationType.PLAIN_BUSH);
-//$$        boolean isFireflyBush = (type == FloraDictionary.VegetationType.FIREFLY_BUSH);
-//$$        boolean isFlower = (type == FloraDictionary.VegetationType.FLOWER);
-//$$        
-//$$        if (isFireflyBush && !isNearWater(level, sourcePos, 2)) return;
-//$$        
-//$$        boolean nearWaterSource = isNearWater(level, sourcePos, 6);
-//$$        float waterBoost = nearWaterSource ? 1.5f : 1.0f;
+//$$        // ٣. فحص الجيران المباشرين أفقياً للبحث عن نباتات مجاورة صالحة للانتشار
+//$$        BlockPos sourcePos = null;
+//$$        BlockState sourceState = null;
+//$$        FloraDictionary.VegetationType vegType = FloraDictionary.VegetationType.INVALID;
 //$$
-//$$        // ══════ NOISE SOURCE CHECK: فحص نويس منطقة المصدر ══════
-//$$        // النباتات في مناطق النويس المنخفض تنتشر ببطء شديد (تحاكي حدود biomes)
-//$$        long wSeed = level.getSeed();
-//$$        // البوش لا يحتاج فحص نويس المصدر — النظام الخلوي يتحكم بالوجهة فقط
-//$$        // هذا يسمح للبوش خارج المناطق النشطة بالانتشار إلى داخلها
-//$$        if (!isPlainBush) {
-//$$            float srcNoise = vegetationNoise(wSeed, sourcePos.getX(), sourcePos.getZ());
-//$$            if (srcNoise < 0.08f) return;
-//$$        }
+//$$        outerLoop:
+//$$        for (int dx = -2; dx <= 2; dx++) {
+//$$            for (int dz = -2; dz <= 2; dz++) {
+//$$                if (dx == 0 && dz == 0) continue;
 //$$
-//$$        if (isGrass) {
-//$$            if (random.nextFloat() > 0.38f * waterBoost) return;
-//$$        } else if (isFern) {
-//$$            if (random.nextFloat() > 0.02f * waterBoost) return;
-//$$        } else if (isPlainBush) {
-//$$            if (random.nextFloat() > 0.04f * waterBoost) return;
-//$$        } else if (isFireflyBush) {
-//$$            if (random.nextFloat() > 0.07f * waterBoost) return;
-//$$        } else {
-//$$            if (random.nextFloat() > 0.015f * waterBoost) return;
-//$$        }
-//$$        
-//$$        int checkRadius = (isFireflyBush) ? 3 : 2;
-//$$        for (BlockPos p : BlockPos.betweenClosed(sourcePos.offset(-checkRadius, -2, -checkRadius), sourcePos.offset(checkRadius, 2, checkRadius))) {
-//$$            if (p.equals(sourcePos)) continue;
-//$$            if (level.getBlockState(p).getBlock() == block) {
-//$$                density++;
-//$$            }
-//$$        }
-//$$        
-//$$        int gridX = Math.floorDiv(sourcePos.getX(), 8);
-//$$        int gridZ = Math.floorDiv(sourcePos.getZ(), 8);
-//$$        int patchHash = (gridX * 73856093) ^ (gridZ * 19349663);
-//$$        boolean isDensePatch = (Math.abs(patchHash) % 5) < 2;
-//$$        
-//$$        int maxDensity = FloraDictionary.getMaxDensity(type, isDensePatch);
-//$$        int searchSpread = (isGrass || isPlainBush) ? 5 : 4;
-//$$        
-//$$        if (density >= maxDensity) {
-//$$            manageVegetationBalance(level, sourcePos, density, isGrass, isPlainBush, isFlower, random);
-//$$            
-//$$            float pioneerChance = isPlainBush ? 0.01f : (isFlower ? 0.15f : 0.05f);
-//$$            if (random.nextFloat() < pioneerChance) {
-//$$                searchSpread = isPlainBush ? 5 : (isFlower ? 8 : 5);
-//$$            } else {
-//$$                return;
-//$$            }
-//$$        } else {
-//$$            searchSpread = isFlower ? 3 : (isPlainBush ? 3 : (isGrass ? 3 : 2));
-//$$        }
-//$$        
-//$$        BlockPos bestTarget = null;
-//$$        int bestScore = -1;
-//$$        for (int i = 0; i < (isGrass ? 4 : ((isPlainBush || isFlower) ? 3 : 2)); i++) {
-//$$            int ox = random.nextInt(searchSpread * 2 + 1) - searchSpread;
-//$$            int oz = random.nextInt(searchSpread * 2 + 1) - searchSpread;
-//$$            if (ox == 0 && oz == 0) continue;
-//$$            
-//$$            BlockPos target = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, sourcePos.offset(ox, 0, oz));
-//$$            
-//$$            if (!state.canSurvive(level, target)) {
-//$$                if (state.canSurvive(level, target.below())) {
-//$$                    target = target.below();
-//$$                } else if (state.canSurvive(level, target.above())) {
-//$$                    target = target.above();
-//$$                } else {
-//$$                    continue;
-//$$                }
-//$$            }
-//$$            
-//$$            BlockState tState = level.getBlockState(target);
-//$$            if (!tState.isAir()) continue;
+//$$                BlockPos neighborPos = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, targetPos.offset(dx, 0, dz));
+//$$                for (int dy = -1; dy <= 1; dy++) {
+//$$                    BlockPos checkPos = neighborPos.above(dy);
+//$$                    BlockState state = level.getBlockState(checkPos);
+//$$                    Block b = state.getBlock();
+//$$                    String name = getBlockPathString(b);
 //$$
-//$$            // [GRASS BLOCK ONLY]
-//$$            {
-//$$                BlockState below = level.getBlockState(target.below());
-//#if MC >= 11800
-//$$                if (!below.is(net.minecraft.world.level.block.Blocks.GRASS_BLOCK)) continue;
-//#else
-//$$                if (below.getBlock() != net.minecraft.world.level.block.Blocks.GRASS_BLOCK) continue;
-//#endif
-//$$            }
-//$$
-//$$            // [BARRIER CHECK]
-//$$            if (isSpreadBlocked(level, sourcePos, target, 1)) continue;
-//$$
-//$$            // [DESTINATION CHECK]
-//#if MC >= 11800
-//$$            if (level.getFluidState(target).is(net.minecraft.world.level.material.Fluids.WATER)) continue;
-//#else
-//$$            if (level.getFluidState(target).getType() == net.minecraft.world.level.material.Fluids.WATER) continue;
-//#endif
-//$$            if (!level.canSeeSky(target) && level.getHeightmapPos(net.minecraft.world.level.levelgen.Heightmap.Types.WORLD_SURFACE, target).getY() > target.getY() + 25) continue;
-//$$            
-//$$            if (isFireflyBush && !isNearWater(level, target, 2)) continue;
-//$$            
-//$$            boolean tooClose = false;
-//$$            // البوش داخل المجموعة يكون قريب (minSpacing=0)، النويس الخلوي يتكفل بالفصل بين المجموعات
-//$$            int minSpacing = isFireflyBush ? 4 : 0;
-//$$            
-//$$            if ((isPlainBush || isFlower || isFern) && density >= maxDensity) {
-//$$                if (isFern) {
-//$$                    minSpacing = 20 + random.nextInt(11);
-//$$                } else if (isPlainBush) {
-//$$                    minSpacing = 35 + random.nextInt(16);
-//$$                } else {
-//$$                    minSpacing = 10 + random.nextInt(11);
-//$$                }
-//$$            }
-//$$            
-//$$            if (minSpacing > 0) {
-//$$                for (BlockPos sp : BlockPos.betweenClosed(target.offset(-minSpacing, -1, -minSpacing), target.offset(minSpacing, 1, minSpacing))) {
-//$$                    if (sp.equals(sourcePos)) continue;
-//$$                    if (level.getBlockState(sp).getBlock() == block) {
-//$$                        tooClose = true;
-//$$                        break;
+//$$                    FloraDictionary.VegetationType type = FloraDictionary.categorizeVegetation(name);
+//$$                    if (type != FloraDictionary.VegetationType.INVALID) {
+//$$                        if (state.canSurvive(level, targetPos)) {
+//$$                            sourcePos = checkPos;
+//$$                            sourceState = state;
+//$$                            vegType = type;
+//$$                            break outerLoop; // العثور على جار صالح للانتشار
+//$$                        }
 //$$                    }
 //$$                }
 //$$            }
-//$$            if (tooClose) continue;
-//$$            
-//$$            // ══════ NOISE GATE: الموضع الهدف يجب أن يكون في منطقة نويس مناسبة ══════
-//$$            long worldSeed = level.getSeed();
-//$$            float targetNoise = isPlainBush
-//$$                ? 1.0f // البوش لا يخضع لبوابة الضوضاء الثابتة لتمكينه من التكاثر والانتشار بحرية
-//$$                : vegetationNoise(worldSeed, target.getX(), target.getZ());
-//$$            // حد أدنى للنويس
-//$$            float noiseMin = isGrass ? 0.12f : (isPlainBush ? 0.01f : (isFern ? 0.38f : 0.25f));
-//$$            if (targetNoise < noiseMin) continue;
+//$$        }
 //$$
-//$$            int score = 0;
-//$$            // نويس يعطي أولوية عالية للمناطق الكثيفة (مثل patches الفانيلا)
-//$$            score += (int)(targetNoise * 14f);
-//$$            if (isNearWater(level, target, (isGrass || isPlainBush) ? 6 : 4)) score += (isGrass || isPlainBush) ? 4 : 3;
-//$$            if ((isGrass || isPlainBush) && hasHeavyCanopy(level, target)) score += 6;
-//$$            if (!(isGrass || isPlainBush) && hasHeavyCanopy(level, target)) score += 2;
-//$$            if (isFireflyBush && isNearWater(level, target, 1)) score += 15;
-//$$            score += random.nextInt(4);
+//$$        if (sourcePos == null || sourceState == null || vegType == FloraDictionary.VegetationType.INVALID) return;
 //$$
-//$$            if (score > bestScore) {
-//$$                bestScore = score;
-//$$                bestTarget = target;
+//$$        // ٤. فحص حجم الفراغ حول الموضع المستهدف في مساحة 5x5 (هل يستحق العناء؟)
+//$$        int emptyCount = 0;
+//$$        for (int dx = -2; dx <= 2; dx++) {
+//$$            for (int dz = -2; dz <= 2; dz++) {
+//$$                BlockPos checkPos = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, targetPos.offset(dx, 0, dz));
+//$$                BlockState checkState = level.getBlockState(checkPos);
+//$$                BlockState checkBelowState = level.getBlockState(checkPos.below());
+//$$
+//$$                boolean isCheckGrassBlock = false;
+//#if MC >= 11800
+//$$                isCheckGrassBlock = checkBelowState.is(net.minecraft.world.level.block.Blocks.GRASS_BLOCK);
+//#else
+//$$                isCheckGrassBlock = (checkBelowState.getBlock() == net.minecraft.world.level.block.Blocks.GRASS_BLOCK);
+//#endif
+//$$
+//$$                if (isCheckGrassBlock && checkState.isAir()) {
+//$$                    emptyCount++;
+//$$                }
 //$$            }
 //$$        }
-//$$        
-//$$        if (bestTarget != null) {
-//$$            level.setBlock(bestTarget, state, 3);
+//$$
+//$$        // ٥. تطبيق قوانين حجم الفراغ بناءً على طلب المستخدم
+//$$        if (emptyCount <= 1) {
+//$$            // الفراغ صغير جداً (بلوكة واحدة معزولة) -> يتم تجاهله لتوفير الأداء ومنع الازدحام
+//$$            return;
+//$$        }
+//$$
+//$$        float spaceModifier = 1.0f;
+//$$        if (emptyCount <= 3) {
+//$$            // الفراغ صغير (٢ إلى ٣ بلوكات) -> تقليل احتمالية الانتشار لـ 10% ليمتلئ ببطء شديد
+//$$            spaceModifier = 0.1f;
+//$$        }
+//$$
+//$$        // ٦. العوامل البيئية ومحفزات النمو
+//$$        boolean isRaining = level.isRaining();
+//$$        float weatherBoost = isRaining ? 2.0f : 1.0f;
+//$$
+//$$        boolean nearWaterSource = isNearWater(level, targetPos, 6);
+//$$        float waterBoost = nearWaterSource ? 1.5f : 1.0f;
+//$$
+//$$        // ٧. التحقق من عدم وجود حواجز أو مبانٍ للاعبين (Ray-marching)
+//$$        if (isSpreadBlocked(level, sourcePos, targetPos, 1)) return;
+//$$
+//$$        // ٨. التحقق من بوابة النويس والنسب الأساسية
+//$$        long worldSeed = level.getSeed();
+//$$        float targetNoise = vegType == FloraDictionary.VegetationType.PLAIN_BUSH
+//$$            ? 1.0f
+//$$            : vegetationNoise(worldSeed, targetPos.getX(), targetPos.getZ());
+//$$
+//$$        float noiseMin = 0.0f;
+//$$        float baseChance = 0.0f;
+//$$
+//$$        switch (vegType) {
+//$$            case GRASS:
+//$$                noiseMin = 0.12f;
+//$$                baseChance = 0.38f;
+//$$                break;
+//$$            case FERN:
+//$$                noiseMin = 0.38f;
+//$$                baseChance = 0.02f;
+//$$                break;
+//$$            case PLAIN_BUSH:
+//$$                noiseMin = 0.01f;
+//$$                baseChance = 0.04f;
+//$$                break;
+//$$            case FIREFLY_BUSH:
+//$$                if (!isNearWater(level, targetPos, 2)) return;
+//$$                noiseMin = 0.25f;
+//$$                baseChance = 0.07f;
+//$$                break;
+//$$            default:
+//$$                noiseMin = 0.25f;
+//$$                baseChance = 0.015f;
+//$$                break;
+//$$        }
+//$$
+//$$        if (targetNoise < noiseMin) return;
+//$$
+//$$        // ٩. حساب النسبة النهائية والانتشار
+//$$        float finalChance = baseChance * waterBoost * weatherBoost * spaceModifier;
+//$$        if (random.nextFloat() <= finalChance) {
+//$$            level.setBlock(targetPos, sourceState, 3);
 //$$        }
 //$$    }
 
@@ -666,7 +577,7 @@ public class FloraGrowthHandler {
 //$$                return ((java.util.Random) obj).nextFloat();
 //$$            }
 //$$        }
-//$$
+//$$        
 //$$        public double nextDouble() {
 //$$            if (isRandomSource) {
 //$$                try {
@@ -726,19 +637,19 @@ public class FloraGrowthHandler {
 //$$            try {
 //$$                Class<?> rlClass;
 //$$                try {
-//$$                    rlClass = Class.forName("net.minecraft.resources.ResourceLocation");
-//$$                } catch (ClassNotFoundException e) {
-//$$                    rlClass = Class.forName("net.minecraft.util.Identifier");
-//$$                }
-//$$                Object rl = rlClass.getConstructor(String.class).newInstance(id);
-//$$                java.lang.reflect.Method getMethod = blockRegistry.getClass().getMethod("get", rlClass);
-//$$                return (Block) getMethod.invoke(blockRegistry, rl);
-//$$            } catch (Exception e) {
-//$$                // fallback
-//$$            }
-//$$        }
-//$$        return null;
-//$$    }
+//                    rlClass = Class.forName("net.minecraft.resources.ResourceLocation");
+//                } catch (ClassNotFoundException e) {
+//                    rlClass = Class.forName("net.minecraft.util.Identifier");
+//                }
+//                Object rl = rlClass.getConstructor(String.class).newInstance(id);
+//                java.lang.reflect.Method getMethod = blockRegistry.getClass().getMethod("get", rlClass);
+//                return (Block) getMethod.invoke(blockRegistry, rl);
+//            } catch (Exception e) {
+//                // fallback
+//            }
+//        }
+//        return null;
+//    }
 
     //#else
     public static void tickChunk(Object chunk, Object level) {}
