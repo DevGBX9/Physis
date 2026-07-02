@@ -637,19 +637,19 @@ public class FloraGrowthHandler {
 //$$            try {
 //$$                Class<?> rlClass;
 //$$                try {
-//                    rlClass = Class.forName("net.minecraft.resources.ResourceLocation");
-//                } catch (ClassNotFoundException e) {
-//                    rlClass = Class.forName("net.minecraft.util.Identifier");
-//                }
-//                Object rl = rlClass.getConstructor(String.class).newInstance(id);
-//                java.lang.reflect.Method getMethod = blockRegistry.getClass().getMethod("get", rlClass);
-//                return (Block) getMethod.invoke(blockRegistry, rl);
-//            } catch (Exception e) {
-//                // fallback
-//            }
-//        }
-//        return null;
-//    }
+//$$                    rlClass = Class.forName("net.minecraft.resources.ResourceLocation");
+//$$                } catch (ClassNotFoundException e) {
+//$$                    rlClass = Class.forName("net.minecraft.util.Identifier");
+//$$                }
+//$$                Object rl = rlClass.getConstructor(String.class).newInstance(id);
+//$$                java.lang.reflect.Method getMethod = blockRegistry.getClass().getMethod("get", rlClass);
+//$$                return (Block) getMethod.invoke(blockRegistry, rl);
+//$$            } catch (Exception e) {
+//$$                // fallback
+//$$            }
+//$$        }
+//$$        return null;
+//$$    }
 
     //#else
     public static void tickChunk(Object chunk, Object level) {}
