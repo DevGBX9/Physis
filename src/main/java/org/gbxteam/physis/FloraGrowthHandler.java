@@ -55,8 +55,8 @@ public class FloraGrowthHandler {
 //$$        if (!level.isLoaded(pos.getMiddleBlockPosition(0))) return;
 //$$        BlockPos center = pos.getMiddleBlockPosition(0);
 //#else
-        if (!level.isLoaded(new BlockPos(pos.x * 16 + 8, 0, pos.z * 16 + 8))) return;
-        BlockPos center = new BlockPos(pos.x * 16 + 8, 0, pos.z * 16 + 8);
+//$$        if (!level.isLoaded(new BlockPos(pos.x * 16 + 8, 0, pos.z * 16 + 8))) return;
+//$$        BlockPos center = new BlockPos(pos.x * 16 + 8, 0, pos.z * 16 + 8);
 //#endif
 //$$
 //$$        int ox = random.nextInt(16);
@@ -64,7 +64,7 @@ public class FloraGrowthHandler {
 //#if MC >= 11700
 //$$        BlockPos targetPos = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, center.offset(ox, 0, oz));
 //#else
-        BlockPos targetPos = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, new BlockPos(center.getX() + ox, 0, center.getZ() + oz));
+//$$        BlockPos targetPos = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, new BlockPos(center.getX() + ox, 0, center.getZ() + oz));
 //#endif
 //$$
 //$$        healWound(level, targetPos, random);
@@ -86,7 +86,7 @@ public class FloraGrowthHandler {
 //#if MC >= 11800
 //$$        isGrassBelow = belowState.is(net.minecraft.world.level.block.Blocks.GRASS_BLOCK);
 //#else
-        isGrassBelow = (belowState.getBlock() == net.minecraft.world.level.block.Blocks.GRASS_BLOCK);
+//$$        isGrassBelow = (belowState.getBlock() == net.minecraft.world.level.block.Blocks.GRASS_BLOCK);
 //#endif
 //$$        if (!isGrassBelow) return;
 //$$
@@ -182,7 +182,7 @@ public class FloraGrowthHandler {
 //#if MC >= 11800
 //$$            if (level.getBlockState(p).is(Blocks.WATER)) {
 //#else
-            if (level.getBlockState(p).getBlock() == Blocks.WATER) {
+//$$            if (level.getBlockState(p).getBlock() == Blocks.WATER) {
 //#endif
 //$$                return true;
 //$$            }
